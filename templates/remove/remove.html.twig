@@ -1,0 +1,403 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <!-- Datepicker -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+{% endblock %}
+
+{% block title %}
+Khemeia | Consultation
+{% endblock %}
+
+{% block body %}
+<section id="invoice">
+    <div  id="box-warning" class="box box-warning">
+        <div class="box-header with-border">
+            <h3 class="product-title">{{ storagecard.getIdChimicalproduct().getNameChimicalproduct() }}</h3>
+            <h3 class="fiche-title">Fiche produit</h3>
+        </div><!-- /.box-header -->
+            
+        <div class="box-body">
+            <!-- text input -->
+            <div class="info-group">
+                <label>Nom du produit</label>
+                <p>{{ storagecard.getIdChimicalproduct().getNameChimicalproduct() }}</p>
+            </div>
+
+            {% if storagecard.getIdChimicalproduct().getSolvent() is not null %}
+                <div class="info-group">
+                    <label>Solvant</label>
+                    <p>{{ storagecard.getIdChimicalproduct().getSolvent() }}</p>
+                </div>
+            {% endif %}
+
+            <div class="info-group">
+                <label>Formule chimique</label>
+                <p>{{ storagecard.getIdChimicalproduct().getFormula() }}</p>
+            </div>
+
+            <div class="info-group">
+                <label>N° de CAS</label>
+                <p>{{ storagecard.getIdChimicalproduct().getCasnumber() }}</p>
+            </div>
+
+            <div class="info-group">
+                <div class="radio-style">
+                    {% if storagecard.getIdChimicalproduct().getIscmr() %}
+                        <label>Ce produit est CMR.</label>
+                    {% else %}
+                        <label>Ce produit n'est pas CMR.</label>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if storagecard.getIdChimicalproduct().getIdDangersymbol()|length > 0 %}
+                <div class="info-group">
+                    <label>Symboles de danger</label>
+                    <p>
+                    {% for dangerSymbol in storagecard.getIdChimicalproduct().getIdDangersymbol() %}
+                        <img
+                            src="{{ asset('assets/uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}" 
+                            alt="{{ dangerSymbol.getDescriptionDangersymbol() }}"
+                            height="50px"
+                            width="50px">
+                    {% endfor %}
+                    </p>
+                </div>
+            {% endif %}
+            
+
+            {% if storagecard.getIdChimicalproduct().getIdCautionaryadvice()|length > 0  %}
+                <div class="info-group">
+                    <label>Conseils de prudence</label>
+                    <p>
+                        {% for cautionaryAdvice in storagecard.getIdChimicalproduct().getIdCautionaryadvice() %}
+                            <span class="label label-primary" title="{{ cautionaryAdvice.getSentenceCautionaryadvice() }}">{{ cautionaryAdvice.getNameCautionaryadvice() }}</span>
+                        {% endfor %}
+                    </p>
+                </div>
+            {% endif %}
+            
+            {% if storagecard.getIdChimicalproduct().getIdDangernote()|length > 0  %}
+                <div class="info-group">
+                    <label>Mentions de danger</label>
+                    <p>
+                        {% for dangerNote in storagecard.getIdChimicalproduct().getIdDangernote() %}
+                            <span class="label label-primary" title="{{ dangerNote.getSentenceDangernote() }}">{{ dangerNote.getNameDangernote() }}</span>
+                        {% endfor %}
+                    </p>
+                </div>
+            {% endif %}
+
+            {% if storagecard.getIdChimicalproduct().getIdType()|length > 0  %}
+                <div class="info-group">
+                    <label>Type de produit</label>
+                    <p>
+                        {% for type in storagecard.getIdChimicalproduct().getIdType() %}
+                            <span class="label label-primary">{{ type.getNameType() }}</span>
+                        {% endfor %}
+                    </p>
+                </div>
+            {% endif %}
+
+            {% if storagecard.getIdSecurityfile() is not null %}
+                <div class="info-group no-print">
+                    <label>Fiche de sécurité</label>
+                    <p>
+                        <a href="{{ asset('assets/uploads/fiches_de_prudences/' ~ storagecard.getIdSecurityfile().getNameSecurityfile()) }}" class="btn btn-block btn-social btn-pdf">
+                            <i class="fa fa-file-pdf-o"></i> Voir la fiche de sécurité
+                        </a>
+                    </p>
+                </div>
+            {% endif %}
+
+            {% if storagecard.getIdAnalysisfile() is not null %}
+                <div class="info-group no-print">
+                    <label>Certificat d'analyse</label>
+                    <p>
+                        <a href="{{ asset('assets/uploads/Certificats_d_analyse/' ~ storagecard.getIdAnalysisfile().getNameAnalysisfile()) }}" class="btn btn-block btn-social btn-pdf">
+                            <i class="fa fa-file-pdf-o"></i> Voir le certificat d'analyse
+                        </a>
+                    </p>
+                </div>
+            {% endif %}
+        </div><!-- /.box-body -->
+
+        {# Visiteur : Ne voit pas la fiche de stockage #}
+        {% if app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() =='utilisateur' %}
+            <div class="box-header with-border">
+                <h3 class="fiche-title">Fiche de stockage</h3>
+            </div><!-- /.box-header -->
+
+            <div class="box-body">
+
+                <div class="info-group">
+                    <label>Identifiant unique</label>
+                    <p>{{ storagecard.getIdStoragecard() }}</p>
+                </div>
+                <!-- text input -->
+                <div class="info-group">
+                    <label>Lieu de stockage</label>
+                    {# Si le produit est risqué, selon le statut de la personne sur la page: #}
+                    {% if storagecard.getIsrisked() %}
+                        {# Utilisateur : On cache le lieu exacte #}
+                        {% if app.user.getIdStatus.getNameStatus() == 'utilisateur' %}
+                            <p class="">{{ storagecard.getIdShelvingunit().getHiddenName() }} - 
+                            <i class="icon fa fa-warning text-yellow"></i> Pour acceder à ce produit, merci de contacter le responsable du site: </br>
+                            {{ storagecard.getIdShelvingunit().getIdCupboard().getIdStock().getIdSite().getFullnamesupervisor() }} - 
+                            {{ storagecard.getIdShelvingunit().getIdCupboard().getIdStock().getIdSite().getPhonenumber() }}</p>
+                        {# Admin et responsable : Voient le lieu de stockage exacte #}
+                        {% elseif app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable'%}
+                            <p>{{ storagecard.getIdShelvingunit() }}</p>
+                        {% endif %}
+                    {# Sinon, le produit n'est pas risqué, on montre le lieu de stockage: #}
+                    {% else %}
+                        <p>{{ storagecard.getIdShelvingunit() }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- text input -->
+                {% if storagecard.getStockquantity() is not null %}
+                    <div class="info-group">
+                        <label>Quantité en stock</label>
+                        <p>{{ storagecard.getStockquantity() }} ml ou g</p>
+                    </div>
+                {% endif %}
+
+                <!-- text input -->
+                {% if storagecard.getCapacity() is not null %}
+                    <div class="info-group">
+                        <label>Capacité totale du produit</label>
+                        <p>{{ storagecard.getCapacity() }} ml ou g</p>
+                    </div>
+                {% endif %}
+
+                <!-- text input -->
+                {% if storagecard.getPurity() is not null %}
+                    <div class="info-group">
+                        <label>Pureté du produit</label>
+                        <p>{{ storagecard.getPurity() }}</p>
+                    </div>
+                {% endif %}
+
+                {% if storagecard.getSerialnumber() is not null %}
+                    <div class="info-group">
+                        <label>Numéro de série</label>
+                        <p>{{ storagecard.getSerialnumber() }}</p>
+                    </div>
+                {% endif %}
+
+                {% if storagecard.getOpendate() is not null %}
+                    <div class="info-group">
+                        <label>Date d'ouverture du produit</label>
+                        <p>{{ storagecard.getOpendate().format('d/m/Y') }}</p>
+                    </div>
+                {% endif %}
+
+                {% if storagecard.getExpirationdate() is not null %}
+                    <div class="info-group">
+                        <label>Date de péremption du produit</label>
+                        <p>{{ storagecard.getExpirationdate().format('d/m/Y') }}</p>
+                    </div>
+                {% endif %}
+
+                {% if storagecard.getTemperature() is not null %}
+                    <div class="info-group">
+                        <label>Température de conservation du produit</label>
+                        <p>{{ storagecard.getTemperature() }} °C</p>
+                    </div>
+                {% endif %}
+
+                {% if storagecard.getIdSupplier() is not null %}
+                    <div class="info-group">
+                        <label>Fournisseur</label>
+                        <p>{{ storagecard.getIdSupplier().getNameSupplier() }}
+                            {% if storagecard.getReference() is not null %}
+                            - Ref: {{ storagecard.getReference() }}
+                            {% endif %}
+                        </p>
+                    </div>
+                {% endif %}
+
+                {% if storagecard.getIdProperty() is not null %}
+                    <div class="info-group">
+                        <label>Propriétaire</label>
+                        <p>{{ storagecard.getIdProperty().getNameProperty() }}</p>
+                    </div>
+                {% endif %}
+
+                {% if storagecard.getCommentary() is not null %}
+                    <div class="info-group">
+                        <label>Commentaires</label>
+                        <p>{{ storagecard.getCommentary() }}</p>
+                    </div>
+                {% endif %}
+            </div><!-- /.box-body -->
+
+        {% endif %}
+
+    </div>
+
+    <div class="row no-print">
+        <div class="col-xs-12">
+            <button type="button" id="btnPrint" class="btn btn-success pull-right">
+                <i class="fa fa-print"></i> Imprimer
+            </button>
+            {# Gestion des autorisations de retraits #}
+                {# Si le user est un utilisateur  et qu'il appartient au même site que le produit#}
+                {% if app.user.getIdSite() == storagecard.getIdShelvingunit().getIdCupboard().getIdStock().getIdSite() %}
+
+                    {% if app.user.getIdStatus.getNameStatus() =='utilisateur' %}
+                        {# Si le produit est risqué #}
+                        {# L'utilisateur demande l'autorisation de retirer un produit #}
+                        {% if storagecard.getIsrisked() %}
+                            <a href="{{ path('remove_ask', {id: storagecard.getIdStoragecard()}) }}" class="btn bg-navy pull-right" style="margin-right: 5px;">
+                                <i class="fa fa-flask"></i> Demander l'autorisation d'utiliser ce produit
+                            </a>
+                        {# Sinon on autorise le retrait #}
+                        {% else %}
+                            <button type="button" class="btn bg-navy pull-right" style="margin-right: 5px;" data-toggle="modal" data-target="#modal-default">
+                                <i class="fa fa-flask"></i> Retirer une quantité de ce produit
+                            </button>
+                        {% endif %}
+                    {# S'il est responsable ou administrateur #}
+                    {% else %}
+                        {# On lui autorise le retrait #}
+                        <button type="button" class="btn bg-navy pull-right" style="margin-right: 5px;" data-toggle="modal" data-target="#modal-default">
+                                <i class="fa fa-flask"></i> Retirer une quantité de ce produit
+                        </button>
+                    {% endif %}
+
+                {% else %}
+                    <a href="{{ path('remove_ask', {id: storagecard.getIdStoragecard()}) }}" class="btn bg-navy pull-right" style="margin-right: 5px;">
+                        <i class="fa fa-flask"></i> Demander l'autorisation d'utiliser ce produit
+                    </a>
+                {% endif %}
+                
+            
+        </div>
+    </div>
+
+    <!-- NON AFFICHÉ - modal - boite de dialogue retirer une quantité de produit -->
+    <div class="modal fade" id="modal-default" style="display: none;">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span></button>
+                    <h4 class="modal-title">Quelle quantité de produit voulez-vous retirer?</h4>
+                </div>
+                <form role="form" action="{{ path('remove_quantity', {id: id}) }}" method="post">
+                <div class="modal-body">
+
+                    {% if storagecard.getStockquantity() is not null and storagecard.getStockquantity() > 0 %}
+                        <div class="form-group">
+                            <label>Quantité retirée</label> (en g ou ml)
+                            {{ form_widget(form.retiredquantity, {'attr': {'class': 'form-control',
+                            'placeholder': 'Entrez une quantité'}}) }}
+                        </div>
+                    {% endif %}
+
+
+                    {% if storagecard.getOpendate() is null %}
+                        <div class="form-group">
+                            <label>Voulez-vous ajouter une date d'ouverture?</label><span class="text-red"> *</span>
+                            <div class="radio-style">
+                                {{ form_widget(form.isopened, {'label_attr': {'class': 'radio-label'}},) }}
+                            </div>
+                        </div>
+
+                        <!-- datepicker -->
+                        <div class="form-group" id="open">
+                            <label>Selectionnez une date d'ouverture</label>
+
+                            <div class="input-group date">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </div>
+                                {{ form_widget(form.opendate, {'attr': {'class': 'form-control pull-right datepicker',
+                                    'data-date-language':'fr'}}) }}
+                            </div>
+                        </div>
+
+                        <div class="form-group" id="expiration">
+                            <label>Ajouter une date de péremption</label>
+
+                            <div class="input-group date">
+                                <div class="input-group-addon">
+                                    <i class="fa fa-calendar"></i>
+                                </div>
+                                {{ form_widget(form.expirationdate, {'attr': {'class': 'form-control pull-right datepicker',
+                                    'data-date-language':'fr'}}) }}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="form-group">
+                        <label>Avez-vous déplacé le produit?</label><span class="text-red"> *</span>
+                        <div class="radio-style">
+                            {{ form_widget(form.ismoved, {'label_attr': {'class': 'radio-label'}},) }}
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="localisation">
+                        <label>Selectionnez le nouvel emplacement</label>
+
+                        {{ form_widget(form.idShelvingunit, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                            'style':"width: 100%;",
+                            'required':'required',
+                        'data-placeholder':'Selectionez l\'emplacement de ce produit',
+                        'tabindex':"-1"}}) }}
+                    </div>
+                    <div class="checkbox">
+                        <label>
+                             {{ form_widget(form.agreeTerms) }} J'ai lu et compris les consignes de sécurité liées à l'utilisation de ce produit.
+                             <span class="text-red"> *</span>
+                        </label>
+                    </div>
+                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Annuler</button>
+                    <button type="submit" class="btn bg-navy"><i class="fa fa-trash"></i> Valider</button>
+                </div>
+                </form>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+    <!-- Select2 -->
+    <script src="{{ asset('assets/js/form.js') }}"></script>
+    <!-- Page script -->
+    <script type="text/javascript">
+        let printButton = document.getElementById("btnPrint");
+        printButton.addEventListener('click', () => {
+            window.print();
+        });
+    </script>
+
+    <!-- bootstrap datepicker -->
+    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
+    <!-- Language script -->
+    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
+
+    <!-- Code javaScript qui paramètre le widget des dates -->
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.datepicker').datepicker({
+                "format": "dd/mm/yyyy",
+                "language": "fr",
+                "keyboardNavigation": false,
+                "setDate": new Date(),
+                "autoclose": true,
+                "clearBtn": true,
+                "todayHighlight": true
+            });
+        });
+    </script>
+{% endblock %}

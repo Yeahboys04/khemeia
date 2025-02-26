@@ -1,0 +1,152 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <!-- Select2 -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+{% endblock %}
+
+{% block title %}
+Khemeia | Historique personnel
+{% endblock %}
+
+{% block body %}
+<section>
+    <div class="box box-warning">
+        <div class="box-header with-border">
+            <h3 class="box-title">Historique personnel de contact avec les produits chimiques</h3>
+        </div><!-- /.box-header -->
+
+        <div class="box-body">
+            <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                <div class="row">
+                    <div class="col-sm-12">
+                        <table id="example2" class="table table-bordered table-hover dataTable">
+                            <thead>
+                                <tr role="row">
+                                    <th>Identifiant unique</th>
+                                    <th>Nom du produit</th>
+                                    <th>Produit CMR:</th>
+                                    <th>Symboles de danger</th>
+                                    <th>Conseils de prudence</th>
+                                    <th>Mentions de danger</th>
+                                    <th>Types du produit</th>
+                                    <th>en date du</th>
+                                    <th>quantité utilisée (en ml ou g)</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {# S'il y a des armoires #}
+                                {% if tracability is defined %}
+                                    {% if tracability is not null %}
+                                        {# Pour chaque armoire dans la liste
+                                        On boucle pour créer de nouvelles lignes
+                                        dans le tableau sous le même format#}
+                                        {% for oneTracability in tracability %}
+                                            <tr role="row" class="odd">
+                                                <td data-title="Identifiant unique" class="sorting_1">{{ oneTracability.getIdStoragecard().getIdStoragecard() }}</td>
+                                                <td data-title="Nom du produit">{{ oneTracability.getIdStoragecard().getIdChimicalproduct().getNameChimicalproduct() }}</td>
+                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIsCMR() %}
+                                                    <td data-title="Produit CMR:">Oui</td>
+                                                {% else %}
+                                                    <td data-title="Produit CMR:">Non</td>
+                                                {% endif %}
+
+                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol()|length > 0 %}
+                                                    <td data-title="Symboles de danger">
+                                                        {% for dangerSymbol in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol() %}
+                                                            <img
+                                                                src="{{ asset('assets/uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}" 
+                                                                alt="{{ dangerSymbol.getDescriptionDangersymbol() }}"
+                                                                height="50px"
+                                                                width="50px">
+                                                        {% endfor %}
+                                                    </td>
+                                                {% else %}
+                                                    <td></td>
+                                                {% endif %}
+
+                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdCautionaryadvice()|length > 0  %}
+                                                    <td data-title="Conseils de prudence">
+                                                        {% for cautionaryAdvice in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdCautionaryadvice() %}
+                                                            <span class="label label-primary" title="{{ cautionaryAdvice.getSentenceCautionaryadvice() }}">{{ cautionaryAdvice.getNameCautionaryadvice() }}</span>
+                                                        {% endfor %}
+                                                    </td>
+                                                {% else %}
+                                                    <td></td>
+                                                {% endif %}
+                                                
+                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangernote()|length > 0  %}
+                                                    <td data-title="Mentions de danger">
+                                                            {% for dangerNote in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangernote() %}
+                                                                <span class="label label-primary" title="{{ dangerNote.getSentenceDangernote() }}">{{ dangerNote.getNameDangernote() }}</span>
+                                                            {% endfor %}
+                                                    </td>
+                                                {% else %}
+                                                    <td></td>
+                                                {% endif %}
+
+                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdType()|length > 0  %}
+                                                    <td data-title="Types du produit">
+                                                            {% for type in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdType() %}
+                                                                <span class="label label-primary">{{ type.getNameType() }}</span>
+                                                            {% endfor %}
+                                                    </td>
+                                                {% else %}
+                                                    <td></td>
+                                                {% endif %}
+                                        
+                                                <td data-title="en date du">{{ oneTracability.getRetiredate().format('d/m/Y') }}</td>
+                                                <td data-title="quantité utilisée (en ml ou g)">{{ oneTracability.getRetirequantity() }}</td>
+                                            </tr>
+                                        {% endfor %}
+                                    {% endif %}
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div><!-- /.col -->
+                </div><!-- /.row -->
+            </div>
+        </div><!-- /.box-body -->
+    </div>
+
+    <div class="row no-print">
+        <div class="col-xs-12">
+            <button type="button" id="btnPrint" class="btn btn-success pull-right">
+                <i class="fa fa-print"></i> Imprimer
+            </button>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+    <!-- DataTables -->
+    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
+    <!-- Page script -->
+    <script>
+        $(document).ready(function () {
+            //Initialize #example2 Elements
+            $('#example2').DataTable({
+            'paging'      : true,
+            'lengthChange': false,
+            'searching'   : true,
+            'ordering'    : true,
+            'info'        : true,
+            'autoWidth'   : false,
+            'language': {
+            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
+        }
+            })
+        });
+        let printButton = document.getElementById("btnPrint");
+        printButton.addEventListener('click', () => {
+            window.print();
+        })
+    </script>
+{% endblock %}
+

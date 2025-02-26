@@ -1,0 +1,106 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <!-- Select2 -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+{% endblock %}
+
+{% block title %}
+Khemeia | Consultation
+{% endblock %}
+
+{% block body %}
+<section>
+    <div class="box box-warning">
+        <div class="box-header with-border">
+            <h3 class="box-title">Historique du produit : {{ storageCard.getIdChimicalproduct().getNameChimicalproduct() }}</h3>
+        </div><!-- /.box-header -->
+
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+                <li class=""><a href="{{ path('moved_history', {id: storageCard.getIdStoragecard()}) }}">Historique des déplacements</a></li>
+                <li class="active"><a class="" data-toggle="tab" href="#" aria-expanded="true">Historique des utilisations</a></li>
+
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active" id="tab_1">
+                    <div class="box-body">
+                        <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <table id="example2" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                            <tr role="row">
+                                                <th>Utilisé par</th>
+                                                <th>en date du</th>
+                                                <th>quantité retirée (ml ou g)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {# S'il y a des armoires #}
+                                            {% if tracability is defined %}
+                                                {% if tracability is not null %}
+                                                    {# Pour chaque armoire dans la liste
+                                                    On boucle pour créer de nouvelles lignes
+                                                    dans le tableau sous le même format#}
+                                                    {% for oneTracability in tracability %}
+                                                        <tr role="row" class="odd">
+                                                            <td data-title="Utilisé par" class="sorting_1">{{ oneTracability.getIdUser().getFullname() }}</td>
+                                                            <td data-title="en date du" class="sorting_1">{{ oneTracability.getRetiredate().format('d/m/Y') }}</td>
+                                                            <td data-title="quantité retirée (ml ou g)" class="sorting_1">{{ oneTracability.getRetirequantity() }}</td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div><!-- /.col -->
+                            </div><!-- /.row -->
+                        </div>
+                    </div><!-- /.box-body -->
+                </div><!-- /.tab-pane -->
+            </div><!-- /.tab-content -->
+        </div>
+    </div>
+
+    <div class="row no-print">
+        <div class="col-xs-12">
+            <button type="button" id="btnPrint" class="btn btn-success pull-right">
+                <i class="fa fa-print"></i> Imprimer
+            </button>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block javascripts %}
+    <!-- DataTables -->
+    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
+    <!-- Page script -->
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //Initialize #example2 Elements
+            $('#example2').DataTable({
+                'paging'      : true,
+                'lengthChange': false,
+                'searching'   : true,
+                'ordering'    : true,
+                'info'        : true,
+                'autoWidth'   : false,
+                'language': {
+                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
+                }
+            })
+        });
+
+        let printButton = document.getElementById("btnPrint");
+        printButton.addEventListener('click', () => {
+            window.print();
+        })
+    </script>
+{% endblock %}

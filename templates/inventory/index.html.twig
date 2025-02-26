@@ -1,0 +1,131 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+{% endblock %}
+
+{% block title %}
+Khemeia | Inventaire
+{% endblock %}
+
+{% block body %}
+    <section class="content-header">
+        <h1>
+            Inventaire
+            <small>{{ site }}</small>
+        </h1>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-sm-4 col-xs-6 responsive-col">
+                <!-- small box -->
+                <div class="small-box bg-green">
+                    <div class="inner">
+                        <h3>{{ storagecards|length }}</h3>
+
+                        <p>en stock</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-shopping-cart"></i>
+                    </div>
+                    <a href="{{ path('inventory_stock')}}" class="small-box-footer">
+                        Plus d'infos
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div><!-- ./col -->
+
+            <div class="col-sm-4 col-xs-6">
+                <!-- small box -->
+                <div class="small-box bg-yellow">
+                    <div class="inner">
+                        <h3>{{ expirationStoragecards|length }}</h3>
+
+                        <p>en alerte stock ou périmés</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-cart-arrow-down"></i>
+                    </div>
+                    <a href="{{ path('inventory_expiration')}}" class="small-box-footer">
+                        Plus d'infos
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div><!-- ./col -->
+
+            <div class="col-sm-4 col-xs-6">
+                <!-- small box -->
+                <div class="small-box bg-red">
+                    <div class="inner">
+                        <h3>{{ emptyStoragecards|length }}</h3>
+
+                        <p>en rupture de stock</p>
+                    </div>
+                    <div class="icon">
+                        <i class="fa fa-window-close"></i>
+                    </div>
+                    <a href="{{ path('inventory_alert')}}" class="small-box-footer">
+                        Plus d'infos
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div><!-- ./col -->
+        </div>
+        <div class="row">
+            <div class="col-sm-4 col-xs-6">
+                <!-- small box -->
+                <div class="small-box bg-aqua">
+                    <div class="inner">
+                        <h4>Réaliser l'inventaire des</br>produits de votre site</h4>
+                        <h3></br></h3>
+                    </div>
+                    <div class="icon">
+                        <p><br></p>
+                        <i class="fa fa-cubes"></i>
+                    </div>
+                    <a href="{{ path('inventory_make')}}" class="small-box-footer">
+
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div><!-- ./col -->
+
+            <div class="col-sm-4 col-xs-6">
+                <!-- small box -->
+                <div class="small-box bg-purple">
+                    <div class="inner">
+                        <h4>Générer un état des</br>stocks actuels en .pdf</h4>
+                        <h3></br></h3>
+                    </div>
+                    <div class="icon">
+                        <p><br></p>
+                        <i class="fa fa-bar-chart"></i>
+                    </div>
+                    <a href="{{ path('inventory_pdf')}}" class="small-box-footer"> 
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div><!-- ./col -->
+
+            <div class="col-sm-4 col-xs-6">
+                <!-- small box -->
+                <div class="small-box bg-maroon">
+                    <div class="inner">
+                        <h4 class="">Exporter le stock vers</br>un fichier .csv pour GPUC</h4>
+                        <h3></br></h3>
+                    </div>
+                    <div class="icon">
+                        <p><br></p>
+                        <i class="fa fa-file-zip-o"></i>
+                    </div>
+                    <a href="{{ path('inventory_export')}}" class="small-box-footer">
+                        <i class="fa fa-arrow-circle-right"></i>
+                    </a>
+                </div>
+            </div><!-- ./col -->
+        </div>
+    </section>
+    <section class="content">
+    </section>
+{% endblock %}

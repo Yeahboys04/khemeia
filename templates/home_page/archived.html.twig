@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+        
+        <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap/dist/css/bootstrap.min.css') }}">
+        <!-- Font Awesome -->
+        <link rel="stylesheet" href="{{ asset('assets/bower_components/font-awesome/css/font-awesome.min.css') }}">
+        <!-- Ionicons -->
+        <link rel="stylesheet" href="{{ asset('assets/bower_components/Ionicons/css/ionicons.min.css') }}">
+        <!-- Theme style -->
+        <link rel="stylesheet" href="{{ asset('assets/dist/css/AdminLTE.min.css') }}">
+        <!-- AdminLTE Skins. We have chosen the skin-purple for this starter
+                page. However, you can choose any other skin. Make sure you
+                apply the skin class to the body tag so the changes take effect. -->
+        <link rel="stylesheet" href="{{ asset('assets/dist/css/skins/georessources.css') }}">
+        <!-- Google Font -->
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+        <link rel="stylesheet" href="{{ asset('assets/css/header_style.css') }}">
+
+        <title>Khemeia</title>
+    </head>
+
+
+    <body class="hold-transition skin-blue sidebar-mini">
+        <div class="wrapper">
+            <!-- header -->
+
+            <header class="main-header">
+                <div id="header">
+                    <a href="{{ path('home_page') }}" class="logo">
+                        <img src="{{ asset('assets/images/logo_rvb.png') }}" class="user-image"/>
+                    </a>
+                    
+                </div>
+
+                <nav class="navbar navbar-static-top">
+                    <!-- Sidebar toggle button-->
+                    <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+                        <span class="sr-only">Toggle navigation</span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                        <span class="icon-bar"></span>
+                    </a>
+
+                    {% if app.user %}
+                        <div class="login">
+                            <p>Bienvenue {{ app.user.fullname|capitalize }}, vous êtes : {{ app.user.getIdStatus.getNameStatus()|capitalize }}</p>
+                            
+                            <a href="{{ path('app_logout') }}">
+                                <input type='button' value='Se déconnecter' class="btn btn-block btn-warning">
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if app.user is null %}
+                        <div class="login">
+                            <a href="{{ path('app_login') }}">
+                                <input type='button' value='Se connecter' class="btn btn-block btn-warning btn-lg">
+                            </a>
+                        </div>
+                    {% endif %}
+                </nav>
+            </header>
+
+            <div class="content-wrapper" style="min-height: 836px;">
+                <div class="box box-default">
+            <div class="box-header with-border">
+              <i class="fa fa-bullhorn"></i>
+
+              <h3 class="box-title">Profil archivé</h3>
+            </div>
+            <!-- /.box-header -->
+            <div class="box-body">
+              <div class="callout callout-danger">
+                <h4>Bonjour,</h4>
+
+                <p>Vous n'avez actuellement plus de droits d'accès au logiciel. 
+                    Merci de vous tourner vers votre responsable pour demander le renouvellement
+                     de vos droits.</p>
+              </div>
+            </div>
+            <!-- /.box-body -->
+          </div>
+            </div>
+            {{ include('footer.html.twig') }}
+            
+
+           <!-- jQuery 3 -->
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+            <script src="{{ asset('assets/bower_components/jquery/dist/jquery.min.js') }}"></script>
+            <script src="{{ asset('assets/bower_components/bootstrap/dist/js/bootstrap.min.js') }}"></script>
+            <script src="{{ asset('assets/dist/js/adminlte.min.js') }}"></script>
+            {% block javascripts %}{% endblock %}
+
+        </div>
+    </body>
+</html>

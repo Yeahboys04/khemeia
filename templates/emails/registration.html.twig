@@ -1,0 +1,23 @@
+{# templates/emails/registration.html.twig #}
+{# templates/emails/registration.html.twig #}
+<h3>Un nouvel utilisateur s'est connecté</h3>
+
+<p>Bonjour,</p>
+<p>Un nouvel utilisateur s'est connecté le {{ date.format('d/m/Y') }} à Khemeia avec les informations suivantes:</p>
+<ul>
+    <li>Login : {{ user.getUsername() }}</li>
+    <li>Nom Prénom : {{ user.getFullname() }}</li>
+    <li>Adresse mail : {{ user.getMail() }}</li>
+</ul>
+
+{# example, assuming you have a route named "login" #}
+<p>Pour controller la connexion,
+et lui accorder des droits, veuillez vous connecter à 
+    <a href="http://geor-fs-srv-w01.ad.univ-lorraine.fr/khemeia/">Khemeia</a>.
+</p>
+
+<p>Belle journée,</p>
+<p>Khemeia</p>
+
+{# Makes an absolute URL to the /images/logo.png file #}
+<img src="{{ asset('assets/images/logo_rvb.png') }}">

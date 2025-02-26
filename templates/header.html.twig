@@ -1,0 +1,147 @@
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/header_style.css') }}">
+{% endblock %}
+<header class="main-header">
+    <div id="header">
+        <a href="{{ path('home_page') }}" class="logo">
+            <img src="{{ asset('assets/images/logo_rvb.png') }}" class="user-image"/>
+        </a>
+        
+    </div>
+
+    <nav class="navbar navbar-static-top">
+        <!-- Sidebar toggle button-->
+        <a href="#" class="sidebar-toggle" data-toggle="push-menu" role="button">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+        </a>
+        {% if app.user %}
+
+            
+            <div class="login">
+                <p>Bienvenue {{ app.user.fullname|capitalize }}, vous êtes : {{ app.user.getIdStatus.getNameStatus()|capitalize }}</p>
+                <a href="{{ path('profil') }}">
+                    <input type='button' value='Modifier mon profil' class="btn btn-block btn-warning">
+                </a>
+                <a href="{{ path('app_logout') }}">
+                    <input type='button' value='Se déconnecter' class="btn btn-block btn-warning">
+                </a>
+            </div>
+        {% endif %}
+
+        {% if app.user is null %}
+            <div class="login">
+                <a href="{{ path('app_login') }}">
+                    <input type='button' value='Se connecter' class="btn btn-block btn-warning">
+                </a>
+            </div>
+        {% endif %}
+    </nav>
+</header>
+
+{% if app.user %}
+<aside class="main-sidebar control-sidebar control-sidebar-dark">
+    <section class="sidebar">
+            <ul id="menu" class="sidebar-menu tree" data-widget="tree">
+                <li class="header"><span>MENU</span></li>
+                {# Tout le monde peut acceder à la page de consultation #}
+                <li><a href="{{ path('search') }}">
+                        <i class="fa  fa-file-text"></i>
+                        <span>Consultation</span>
+                    </a>
+                </li>
+                {# Les utilisateurs, les responsables et les administrateurs peuvent retirer des produits #}
+                {% if app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() == 'utilisateur' %}
+                <li><a href="{{ path('remove') }}">
+                        <i class="fa fa-flask"></i>
+                        <span>Retrait de produit</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                {# Les reponsables et les administrateurs peuvent Gerer le stock #}
+                {% if app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable' %}
+                <li class="treeview">
+                    <a href="{{ path('home_page') }}">
+                        <i class="fa fa-shopping-cart"></i>
+                        <span>Gestion des stocks</span>
+                        <span class="pull-right-container">
+                                <i class="fa fa-angle-left pull-right"></i>
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li><a href="{{ path('inventory') }}">
+                                <span>Inventaire</span>
+                            </a>
+                        </li>
+                        <li><a href="{{ path('inventory_product') }}">
+                                <span>Créer une fiche produit</span>
+                            </a>
+                        </li>
+                        <li><a href="{{ path('inventory_storage') }}">
+                                <span>Créer une fiche de stockage</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+                {# Les utilisateurs, les responsables et les administrateurs peuvent consulter l'historique
+                 des produits avec lesquels ils ont été en contact #}
+                 {% if app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() == 'utilisateur' %}
+                <li class="treeview">
+                    <a href="{{ path('home_page') }}">
+                        <i class="fa fa-folder-open"></i>
+                        <span>Historique</span>
+                        <span class="pull-right-container">
+                                <i class="fa fa-angle-left pull-right"></i>
+                        </span>
+                    </a>
+                    <ul class="treeview-menu">
+                        <li><a href="{{ path('tracability') }}">
+                                <span>Historique personnel</span>
+                            </a>
+                        </li>
+                        <li><a href="{{ path('tracability_search') }}">
+                                <span>Ajouter des produits contacts</span>
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+                {% endif %}
+
+                {# Les administrateurs peuvent acceder à la gestion de la base de donnée #}
+                {% if app.user.getIdStatus.getNameStatus() == 'administrateur' %}
+                    <li class="treeview">
+                        <a>
+                            <i class="fa fa-gears"></i>
+                            <span>Administration</span>
+                            <span class="pull-right-container">
+                                <i class="fa fa-angle-left pull-right"></i>
+                            </span>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li><a href="{{ path('admin_user') }}">
+                                    <span>Gestion des utilisateurs</span>
+                                </a>
+                            </li>
+                            <li><a href="{{ path('admin_site') }}">
+                                    <span>Gestion des sites</span>
+                                </a>
+                            </li>
+                            <li><a href="{{ path('admin_product') }}">
+                                    <span>Gestion des référentiels</span>
+                                </a>
+                            </li>
+                            <li><a href="{{ path('admin_database') }}">
+                                    <span>Gestion de la base de donnée</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                {% endif %}
+            </ul>
+    </section>
+</aside>
+{% endif %}

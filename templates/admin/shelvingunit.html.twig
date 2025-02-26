@@ -1,0 +1,201 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="panel box box-warning">
+        <div class="box-header with-border">
+            <h4 class="box-title">
+                Gestion du site {{ site.getNameSite() }} - {{ stock.getNameStock() }} - {{ cupboard.getNameCupboard() }}
+            </h4>
+        </div>
+        <div class="nav-tabs-custom">
+            <ul class="nav nav-tabs">
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                    Gestion des Entrepôts <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% for oneSite in sites %}
+                            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ path('admin_stock', {id: oneSite.getIdSite()}) }}">{{ oneSite.getNameSite() }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+
+                <li class="dropdown">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="false">
+                    Gestion des Armoires <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% for oneStock in stocks %}
+                            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ path('admin_cupboard', {id: oneStock.getIdStock()}) }}">{{ oneStock.getNameStock() }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+
+                <li class="dropdown active">
+                    <a class="dropdown-toggle" data-toggle="dropdown" href="#" aria-expanded="true">
+                    Gestion des Étagères <span class="caret"></span>
+                    </a>
+                    <ul class="dropdown-menu">
+                        {% for oneCupboard in cupboards %}
+                            <li role="presentation"><a role="menuitem" tabindex="-1" href="{{ path('admin_shelvingunit', {id: oneCupboard.getIdCupboard()}) }}">{{ oneCupboard.getNameCupboard() }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane active">
+                    <div class="box-body">
+                        {# Selon que l'on veut créer, modifier ou supprimer une étagère,
+                            on paramètre la méthode qui reçoit le formulaire avec la bonne route
+                            ainsi que le bon texte du bouton de soumission du formulaire#}
+                        {% if action == 'modify' %}
+                        <form role="form" action="{{ path('admin_shelvingunit_modify', {id: shelvingunit.getIdShelvingunit()}) }}" method="post" >
+
+                        {% elseif action == 'remove' %}
+                        <form role="form" action="{{ path('admin_shelvingunit_remove', {id: shelvingunit.getIdShelvingunit()}) }}" method="post" >
+
+                        {% else %}
+                        <form role="form" action="{{ path('admin_shelvingunit', {id: cupboard.getIdCupboard()})}}" method="post" >
+                        {% endif %}
+
+                            <!-- select -->
+                            <div class="form-group">
+                                <label>Armoire</label><span class="text-red"> *</span>
+                                {{ form_widget(form.idCupboard, {'attr': {'class': 'form-control'}}) }}
+                            </div>
+
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Nom de l'étagère</label><span class="text-red"> *</span>
+                                {{ form_widget(form.nameShelvingunit, {'attr': {'class': 'form-control',
+                                'placeholder': 'Entrez un nom d\'étagère'}}) }}
+                            </div>
+
+                            {% if action == 'create' %}
+                                <div class="box-footer">
+                                    <button type="submit" class="btn btn-warning">Ajouter</button>
+                                </div>
+                            {% endif %}
+
+                            {% if action == 'modify' %}
+                                <div class="box-footer">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fa fa-edit"></i>
+                                        Modifier
+                                    </button>
+                                </div>
+                            {% endif %}
+
+                            {% if action == 'remove' %}
+                                <div class="box-footer">
+                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modal-default">
+                                        <i class="fa fa-trash"></i>
+                                        Supprimer
+                                    </button>
+                                </div>
+                            {% endif %}
+
+                            <!-- NON AFFICHÉ - modal - boite de dialogue pour confirmer la suppression -->
+                            <div class="modal fade" id="modal-default" style="display: none;">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                            <span aria-hidden="true">×</span></button>
+                                            <h4 class="modal-title">Confirmation</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Êtes-vous sûr de vouloir supprimer cette étagère?</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Non</button>
+                                            <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Oui</button>
+                                        </div>
+                                    </div><!-- /.modal-content -->
+                                </div><!-- /.modal-dialog -->
+                            </div><!-- /.modal fade -->
+                        </form> 
+
+                        <div class="row">
+                            <div class="col-xs-12">
+                                <div class="box">
+                                    <div class="box-header">
+                                        <h3 class="box-title">Liste des étagères</h3>
+                                    </div><!-- /.box-header -->
+                                    <div class="box-body">
+                                        <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                                            <div class="row">
+                                                <div class="col-sm-12">
+                                                    <table id="example2" class="table table-bordered table-hover dataTable">
+                                                        <thead>
+                                                            <tr role="row">
+                                                                <th>Nom de l'étagère</th>
+                                                                <th></th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {# S'il y a des étagères #}
+                                                            {% if shelvingunits is defined %}
+                                                                {% if shelvingunits is not null %}
+                                                                    {# Pour chaque étagère dans la liste
+                                                                    On boucle pour créer de nouvelles lignes
+                                                                    dans le tableau sous le même format#}
+                                                                    {% for oneShelvingunit in shelvingunits %}
+                                                                        <tr role="row" class="odd">
+                                                                            <td data-title="Nom de l'étagère" class="sorting_1">{{ oneShelvingunit.getNameShelvingunit() }}</td>
+                                                                            <td>
+                                                                                <a href=" {{ path('admin_shelvingunit_modify', {id: oneShelvingunit.getIdShelvingunit()}) }}" class="btn btn-success">
+                                                                                    <i class="fa fa-edit"></i> Modifier
+                                                                                </a>
+                                                                                <a href="{{ path('admin_shelvingunit_remove', {id: oneShelvingunit.getIdShelvingunit()}) }}" class="btn btn-danger">
+                                                                                    <i class="fa fa-trash"></i> Supprimer
+                                                                                </a>
+                                                                            </td>
+                                                                        </tr>
+                                                                    {% endfor %}
+                                                                {% endif %}
+                                                            {% endif %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div><!-- /.box-body -->
+                                </div><!-- /.box -->
+                            </div><!-- /.col -->
+                        </div><!-- /.row -->
+                    </div><!-- /.box-body -->
+                </div><!-- /.tab-pane -->
+            </div><!-- /.tab-content -->
+        </div><!-- nav-tabs-custom -->
+    </div><!-- panel box box-warning -->
+{% endblock %}
+
+{% block javascripts %}
+    <!-- DataTables -->
+    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
+    <!-- Page script -->
+    <script>
+        $(document).ready(function () {
+            //Initialize #example2 Elements
+            $('#example2').DataTable({
+            'paging'      : true,
+            'lengthChange': false,
+            'searching'   : true,
+            'ordering'    : true,
+            'info'        : true,
+            'autoWidth'   : false,
+            'language': {
+            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
+        }
+            })
+        });
+    </script>
+{% endblock %}

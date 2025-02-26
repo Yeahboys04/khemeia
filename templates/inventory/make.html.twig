@@ -1,0 +1,159 @@
+{% extends 'base.html.twig' %}
+{% block stylesheets %}
+    <!-- Datepicker -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
+    <!-- Select2 -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+{% endblock %}
+
+{% block title %}
+Khemeia | Inventaire
+{% endblock %}
+
+{% block body %}
+<div class="panel box box-warning">
+    <div class="box-header with-border">
+        <h4 class="box-title">
+            Inventaire des produits du site {{ site }}
+        </h4>
+    </div>
+
+    <div class="box-body">
+        <div class="row">
+            <div class="col-xs-12">
+                <div class="box">
+                    <div class="box-header">
+                        <h3 class="box-title">Liste des fiches de stockage</h3>
+                    </div><!-- /.box-header -->
+
+                    <div class="box-body">
+                        <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                            <div class="row">
+                                <div class="col-sm-12">
+                                    <table id="example2" class="table table-bordered table-hover dataTable">
+                                        <thead>
+                                            <tr role="row">
+                                                <th>Identifiant unique</th>
+                                                <th>Nom du produit</th>
+                                                <th>Lieu de stockage</th>
+                                                <th>Numéro de série</th>
+                                                <th>Quantité en stock<br>(en ml ou g)</th>
+                                                <th>Capacité totale<br>(en ml ou g)</th>
+                                                <th>Pureté</th>
+                                                <th>Fournisseur</th>
+                                                <th>Date d'ouverture</th>
+                                                <th>Date de péremption</th>
+                                                <th></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {# S'il y a des fiches de stockage #}
+                                            {% if storagecards is defined %}
+                                                {% if storagecards is not null %}
+                                                    {# Pour chaque fiche de stockage dans la liste
+                                                    On boucle pour créer de nouvelles lignes
+                                                    dans le tableau sous le même format#}
+                                                    {% for oneStoragecard in storagecards %}
+                                                        <tr>
+                                                            <td data-title="Identifiant unique" class="sorting_1">{{ oneStoragecard.getIdStoragecard() }}</td>
+                                                            <td data-title="Nom du produit">{{ oneStoragecard.getIdChimicalproduct() }}</td>
+                                                            <td data-title="Lieu de stockage">{{ oneStoragecard.getIdShelvingunit().getLocalName() }}</td>
+                                                            <td data-title="Numéro de série">{{ oneStoragecard.getSerialnumber() }}</td>
+                                                            <td data-title="Quantité en stock">{{ oneStoragecard.getStockquantity() }}</td>
+                                                            <td data-title="Capacité totale">{{ oneStoragecard.getCapacity() }}</td>
+                                                            <td data-title="Pureté">{{ oneStoragecard.getPurity() }}</td>
+                                                            <td data-title="Fournisseur">{{ oneStoragecard.getIdSupplier() }}</td>
+                                                            {% if oneStoragecard.getOpendate() %}
+                                                                <td data-title="Date d'ouverture">{{ oneStoragecard.getOpendate().format('d/m/Y') }}</td>
+                                                            {% else %}
+                                                                <td data-title="Aucune date d'ouverture"></td>
+                                                            {% endif %}
+
+                                                            {% if oneStoragecard.getExpirationdate() %}
+                                                                <td data-title="Date de péremption">{{ oneStoragecard.getExpirationdate().format('d/m/Y') }}</td>
+                                                            {% else %}
+                                                                <td data-title="Aucune date de péremption"></td>
+                                                            {% endif %}
+                                                            <td style="min-width: 230px;">
+                                                                <a href="{{ path('read', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-aqua no-print" title="Consultation">
+                                                                    <i class="fa  fa-file-text"></i>
+                                                                </a>
+                                                                <a href="{{ path('inventory_modify', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-success no-print" title="Modifier">
+                                                                    <i class="fa fa-pencil"></i>
+                                                                </a>
+                                                                <a href="{{ path('moved_history', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-purple no-print" title="Historique">
+                                                                    <i class="fa fa-folder-open"></i>
+                                                                </a>
+                                                                <a href="{{ path('inventory_storage_copy', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-maroon no-print" title="Dupliquer">
+                                                                    <i class="fa  fa-copy"></i>
+                                                                </a>
+                                                                <a href="{{ path('inventory_archived', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-danger no-print" title="Archiver">
+                                                                    <i class="fa fa-archive"></i>
+                                                                </a>
+                                                                
+                                                            </td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% endif %}
+                                            {% endif %}
+                                        </tbody>
+                                    </table>
+                                </div><!-- /.col -->
+                            </div><!-- /.row -->
+                        </div><!-- /.example2_wrapper -->
+                    </div><!-- /.box-body -->
+                </div><!-- /.box -->
+            </div><!-- /.col -->
+        </div><!-- /.row -->
+    </div><!-- /.box-body -->
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    <!-- bootstrap datepicker -->
+    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
+    <!-- Language script -->
+    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
+
+    <!-- Code javaScript qui paramètre le widget des dates -->
+    <script type="text/javascript">
+        $(document).ready(function(){
+            $('.datepicker').datepicker({
+            "format": "dd/mm/yyyy",
+            "language": "fr",
+            "keyboardNavigation": false,
+            "setDate": new Date(),
+            "autoclose": true,
+            "clearBtn": true,
+            "todayHighlight": true
+            });
+        });
+    </script>
+    <!-- Select2 -->
+    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
+    <!-- DataTables -->
+    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
+    <!-- Page script -->
+    <script>
+        $(document).ready(function () {
+            //Initialize Select2 Elements
+            $('.select2').select2()
+            //Initialize #example2 Elements
+            $('#example2').DataTable({
+            'paging'      : true,
+            'lengthChange': false,
+            'searching'   : true,
+            'ordering'    : true,
+            'info'        : true,
+            'autoWidth'   : false,
+            'language': {
+            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
+        }
+            })
+        });
+    </script>
+{% endblock %}

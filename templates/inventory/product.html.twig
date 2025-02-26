@@ -1,0 +1,117 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <!-- Select2 -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+{% endblock %}
+
+{% block title %}
+Khemeia | Création d'une fiche produit
+{% endblock %}
+
+{% block body %}
+    <div class="panel box box-warning">
+        <div class="box-header with-border">
+            <h4 class="box-title">
+                Création d'un produit chimique
+            </h4>
+        </div>
+        <div class="nav-tabs-custom">
+            <div class="tab-content">
+                <div class="tab-pane active" id="tab_1">
+                    <div class="box-body">
+                        <form role="form" action="{{ path('inventory_product')}}" method="post" >
+
+                            <!-- text input -->
+                            <div class="form-group">
+                                <label>Nom du produit</label><span class="text-red"> *</span>
+                                {{ form_widget(form.nameChimicalproduct, {'attr': {'class': 'form-control',
+                                'placeholder': 'Entrez un nom de produit'}}) }}
+                            </div>
+
+                            <div class="form-group">
+                                <label>Solvant</label>
+                                {{ form_widget(form.solvent, {'attr': {'class': 'form-control',
+                                'placeholder': 'Entrez un nom de solvant'}}) }}
+                            </div>
+
+                            <div class="form-group">
+                                <label>Formule chimique</label>
+                                {{ form_widget(form.formula, {'attr': {'class': 'form-control',
+                                'placeholder': 'Entrez la formule chimique. Ex: CH2-I2'}}) }}
+                            </div>
+
+                            <div class="form-group">
+                                <label>N° de CAS</label>
+                                {{ form_widget(form.casnumber, {'attr': {'class': 'form-control',
+                                'placeholder': 'Entrez le n° de CAS'}}) }}
+                            </div>
+
+                            <div class="form-group">
+                                <label>Ce produit est-il CMR?</label><span class="text-red"> *</span>
+                                <div class="radio-style">
+                                    {{ form_widget(form.iscmr, {'label_attr': {'class': 'radio-label'}},) }}
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Symbole de danger</label>
+                                
+                                {{ form_widget(form.idDangersymbol, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                 'style':"width: 100%;",
+                                 'data-placeholder':"Selectionnez un ou plusieurs symboles de danger",
+                                 'tabindex':"-1"}}) }}
+                            </div>
+
+                            <div class="form-group">
+                                <label>Conseils de prudence</label>
+                                
+                                {{ form_widget(form.idCautionaryadvice, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                 'style':"width: 100%;",
+                                 'data-placeholder':"Selectionnez un ou plusieurs conseils de prudence",
+                                 'tabindex':"-1"}}) }}
+                            </div>
+
+                            <div class="form-group">
+                                <label>Mention de danger</label>
+                                
+                                {{ form_widget(form.idDangernote, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                 'style':"width: 100%;",
+                                 'data-placeholder':"Selectionnez une ou plusieurs mentions de danger",
+                                 'tabindex':"-1"}}) }}
+                            </div>
+
+                            <div class="form-group">
+                                <label>Type de produit</label>
+                                
+                                {{ form_widget(form.idType, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                 'style':"width: 100%;",
+                                 'data-placeholder':"Selectionnez un ou plusieurs types de produits",
+                                 'tabindex':"-1"}}) }}
+                            </div>
+                                
+                            {{ form_rest(form) }}
+                            
+                            <div class="box-footer">
+                                <button type="submit" class="btn btn-warning">Ajouter</button>
+                            </div>
+                        </form> 
+                    </div><!-- /.box-body -->
+                </div><!-- /.tab-pane -->
+            </div><!-- /.tab-content -->
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <!-- Select2 -->
+    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
+    <!-- Page script -->
+    <script>
+        $(document).ready(function () {
+            //Initialize Select2 Elements
+            $('.select2').select2()
+        });
+    </script>
+{% endblock %}

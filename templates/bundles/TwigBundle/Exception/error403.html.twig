@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+{% endblock %}
+
+{% block title %}
+    Khemeia | 403 access denied
+{% endblock %}
+
+{% block body %}
+    <!-- Content Header (Page header) -->
+    <section class="content-header">
+        <h1>403 Page inaccessible</h1>
+    </section>
+
+    <!-- Main content -->
+    <section class="content">
+        <div class="error-page">
+            <h2 class="headline text-maroon">403</h2>
+
+            <div class="error-content error-style">
+                <h3><i class="fa fa-warning text-maroon"></i> Oops! Page non autorisée.</h3>
+
+                <p>Nous ne pouvons vous afficher la page que vous recherchez car vous n'en avez pas les droits.
+                    Cependant, vous pouvez <a href="{{ path('home_page') }}">revenir à l'accueil</a> ou contacter votre administrateur pour demander l'autorisation d'acceder à cette section.
+                </p>
+            </div><!-- /.error-content -->
+        </div><!-- /.error-page -->
+    </section><!-- /.content -->
+{% endblock %}

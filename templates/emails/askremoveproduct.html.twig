@@ -1,0 +1,63 @@
+{# templates/emails/registration.html.twig #}
+<h3>Un utilisateur vous demande l'autorisation d'utiliser ce produit</h3>
+
+<p>Bonjour,</p>
+<p>{{ user.getFullname() }} vous demande l'autorisation d'utiliser ce produit: 
+{{ storagecard.getIdChimicalproduct().getNameChimicalproduct()}}.</p>
+<p>Informations sur le produit concerné: </p>
+<ul>
+    {% if storagecard.getIdChimicalproduct().getSolvent() is not null %}
+        <li>Solvant : >{{ storagecard.getIdChimicalproduct().getSolvent() }}</li>
+    {% endif %}
+    <li>Formule chimique : {{ storagecard.getIdChimicalproduct().getFormula() }}</li>
+    <li>N° de CAS : {{ storagecard.getIdChimicalproduct().getCasnumber() }}</li>
+
+    <li>Emplacement : {{ storagecard.getIdShelvingunit() }}</li>
+
+    {% if storagecard.getStockquantity() is not null %}
+        <li>Quantité en stock : {{ storagecard.getStockquantity() }} ml ou g</li>
+    {% endif %}
+
+    {% if storagecard.getCapacity() is not null %}
+        <li>Capacité totale du produit : {{ storagecard.getCapacity() }} ml ou g</li>
+    {% endif %}
+
+    {% if storagecard.getPurity() is not null %}
+        <li>Pureté du produit : {{ storagecard.getPurity() }}</li>
+    {% endif %}
+
+    {% if storagecard.getSerialnumber() is not null %}
+        <li>Numéro de série : {{ storagecard.getSerialnumber() }}</li>
+    {% endif %}
+
+    {% if storagecard.getOpendate() is not null %}
+        <li>Date d'ouverture du produit : {{ storagecard.getOpendate().format('d/m/Y') }}</li>
+    {% endif %}
+
+    {% if storagecard.getIdSupplier() is not null %}
+        <li>Fournisseur : {{ storagecard.getIdSupplier().getNameSupplier() }}
+                {% if storagecard.getReference() is not null %}
+                - Ref: {{ storagecard.getReference() }}
+                {% endif %}
+        </li>
+    {% endif %}
+
+    {% if storagecard.getIdProperty() is not null %}
+        <li>Propriétaire : {{ storagecard.getIdProperty().getNameProperty() }}</li>
+    {% endif %}
+</ul>
+<p>Information sur l'utilisateur demandeur: </p>
+<ul>
+    <li>Login : {{ user.getUsername() }}</li>
+    <li>Nom Prénom : {{ user.getFullname() }}</li>
+    <li>Adresse mail : {{ user.getMail() }}</li>
+</ul>
+
+<p>Merci d'entrer en contact avec <a href="mailto:{{ user.getMail() }}">{{ user.getFullname() }}</a> concernant l'utilisation de ce produit.
+</p>
+
+<p>Belle journée,</p>
+<p><a href="http://geor-fs-srv-w01.ad.univ-lorraine.fr/khemeia/">Khemeia</a></p>
+
+{# Makes an absolute URL to the /images/logo.png file #}
+<img src="{{ asset('assets/images/logo_rvb.png') }}">

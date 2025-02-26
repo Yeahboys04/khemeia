@@ -1,0 +1,141 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <!-- Select2 -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+{% endblock %}
+
+{% block title %}
+Khemeia | Consultation
+{% endblock %}
+
+{% block body %}
+<section>
+    <div class="box box-warning">
+        <div class="box-header with-border">
+            <h3 class="box-title">Recherche</h3>
+        </div><!-- /.box-header -->
+        <div class="box-body">
+            {{ form_start(formStoragecard) }}
+                <div class="form-group">
+                    <label>Site</label>
+                    {{ form_widget(formStoragecard.idSite, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                        'style':"width: 100%;",
+                        'required':'required',
+                    'data-placeholder':'Selectionez l\'emplacement de ce produit',
+                    'tabindex':"-1"}}) }}
+                </div>
+
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Nom du produit chimique</label>
+                    
+                    {{ form_widget(formStoragecard.idChimicalproduct, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                        'style':"width: 100%;",
+                        'required':'required',
+                        'data-placeholder':"Selectionnez un produit chimique",
+                        'tabindex':"-1"}}) }}
+                </div>
+                {{ form_rest(formStoragecard) }}
+
+                <div class="box-footer no-print">
+                    <button type="submit" class="btn btn-warning pull-right">Rechercher</button>
+                </div>
+            {{ form_end(formStoragecard) }}
+        </div><!-- /.box-body -->
+        <div class="row">
+            {# S'il y a des fiches de stockage #}
+            {% if storagecards is defined %}
+                {% if storagecards is not null %}
+                    {% if storagecards|length > 0 %}
+                        <div class="col-xs-12">
+                            <div class="box">
+                                <div class="box-header">
+                                    <h3 class="box-title">Résultats de votre recherche</h3>
+                                </div><!-- /.box-header -->
+
+                                <div class="box-body">
+                                    <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                                        <div class="row">
+                                            <div class="col-sm-12">
+                                                <table id="example2" class="table table-bordered table-hover dataTable">
+                                                    <thead>
+                                                        <tr role="row">
+                                                            <th>Identifiant unique</th>
+                                                            <th>Nom du produit</th>
+                                                            <th>Formule brute</th>
+                                                            <th>N° de CAS</th>
+                                                            <th>Quantité en stock</th>
+                                                            <th>Fournisseur</th>
+                                                            <th>Emplacement</th>
+                                                            <th></th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>      
+                                                        {% for oneProduct in storagecards %}
+                                                        {# Si le produit est archivé, on ne l'affiche pas #}
+                                                            {% if oneProduct.getIsarchived() == false %}
+                                                                <tr>
+                                                                    <td data-title="Identifiant unique" class="sorting_1">{{ oneProduct.getIdStoragecard() }}</td>
+                                                                    <td data-title="Nom du produit">{{ oneProduct.getIdChimicalproduct() }}</td>
+                                                                    <td data-title="Formule brute">{{ oneProduct.getIdChimicalproduct().getFormula() }}</td>
+                                                                    <td data-title="N° de CAS">{{ oneProduct.getIdChimicalproduct().getCasnumber() }}</td>
+                                                                    {# Si la quantité en stock est null, on affiche "épuisé" #}
+                                                                    {% if oneProduct.getStockquantity() is same as (0) %}
+                                                                        <td data-title="Quantité en stock" class="text-red">épuisé</td>
+                                                                    {% else %}
+                                                                        <td data-title="Quantité en stock">{{ oneProduct.getStockquantity() }}</td>
+                                                                    {% endif %}
+                                                                    <td data-title="Fournisseur">{{ oneProduct.getIdSupplier() }}</td>
+                                                                    <td data-title="Emplacement">{{ oneProduct.getIdShelvingunit().getHiddenName() }}</td>
+                                                                    {# Gestion des boutons #}
+                                                                    <td>
+                                                                        <a href="{{ path('tracability_add', {id: oneProduct.getIdStoragecard()}) }}" class="btn btn-success no-print" title="Ajouter">
+                                                                            <i class="fa fa-plus-square"></i>
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </tbody>
+                                                </table>
+                                            </div><!-- /.col -->
+                                        </div><!-- /.row -->
+                                    </div>
+                                </div><!-- /.box-body -->
+                            </div><!-- /.box -->
+                        </div><!-- /.col -->
+                    {% else %}
+                        <div class="col-xs-12">
+                            <div class="box">
+                                <div class="box-header">
+                                    <h3 class="box-title">Il n'y a pas de résultats pour votre recherche</h3>
+                                </div><!-- /.box-header -->
+                            </div><!-- /.box -->
+                        </div><!-- /.col -->
+                    {% endif %}
+                {% endif %}
+            {% endif %}
+        </div><!-- /.row -->
+    </div>
+</section>
+{% endblock %}
+
+
+{% block javascripts %}
+    <!-- Select2 -->
+    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
+    <!-- Page script -->
+    <script type="text/javascript">
+        $(document).ready(function () {
+            //Initialize Select2 Elements
+            $('.select2').select2()
+        });
+        let printButton = document.getElementById("btnPrint");
+        printButton.addEventListener('click', () => {
+            window.print();
+        })
+    </script>
+{% endblock %}

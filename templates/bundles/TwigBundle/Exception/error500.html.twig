@@ -1,0 +1,31 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+{% endblock %}
+
+{% block title %}
+Khemeia | 500 internal server error
+{% endblock %}
+
+{% block body %}
+<!-- Content Header (Page header) -->
+<section class="content-header">
+    <h1>Erreur interne du serveur</h1>
+</section>
+
+<!-- Main content -->
+<section class="content">
+    <div class="error-page">
+        <h2 class="headline text-red">500</h2>
+
+        <div class="error-content error-style">
+            <h3><i class="fa fa-warning text-red"></i> Oops! Quelque chose s'est mal passé.</h3>
+
+            <p>Nous travaillerons à corriger cela. Si le problème persiste, veuillez contacter votre administrateur.
+                En attendant, vous pouvez <a href="{{ path('home_page') }}">revenir à l'accueil</a>.
+            </p>
+        </div><!-- /.error-content -->
+    </div><!-- /.error-page -->
+</section><!-- /.content -->
+{% endblock %}

@@ -1,0 +1,196 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="panel box box-warning">
+        <div class="box-header with-border">
+            <h4 class="box-title">
+                Gestion des sites
+            </h4>
+        </div>
+
+        <div class="box-body">
+
+            {# Si le formulaire n'est pas valide #}
+            {% if not form.vars.valid %}
+                {# Boucle pour tous les items du formulaire #}
+                {% for child in form.children %}
+                    {# Boucle pour afficher toutes les erreurs du formulaire #}
+                    {% for error in child.vars.errors %}
+                        <div class="box-body">
+                            <div class="alert alert-danger alert-dismissible">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                <h4><i class="icon fa fa-check"></i> Alerte!</h4>
+                                <p>{{error.message}}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+
+            {# Selon que l'on veut créer, modifier ou supprimer un site,
+             on paramètre la méthode qui reçoit le formulaire avec la bonne route
+             ainsi que le bon texte du bouton de soumission du formulaire#}
+            {% if action == 'modify' %}
+            <form role="form" action="{{ path('admin_site_modify', {id: id}) }}" method="post" >
+            
+            {% elseif action == 'remove' %}
+            <form role="form" action="{{ path('admin_site_remove', {id: id}) }}" method="post" >
+            
+            {% else %}
+            <form role="form" action="{{ path('admin_site')}}" method="post" >
+            {% endif %}
+
+                <!-- text input -->
+                <div class="form-group">
+                    <label>Nom du site</label><span class="text-red"> *</span>
+                    {{ form_widget(form.nameSite, {'attr': {'class': 'form-control',
+                        'placeholder': 'Entrez un nom de site'}}) }}
+                </div>
+                <div class="form-group">
+                    <label>Nom du Responsable du site</label><span class="text-red"> *</span>
+                    {{ form_widget(form.fullnamesupervisor, {'attr': {'class': 'form-control',
+                        'placeholder': 'Entrez un nom et un prénom'}}) }}
+                </div>
+                <div class="form-group">
+                    <label for="phonenumber">Numéro de téléphone</label><span class="text-red"> *</span>
+                    {{ form_widget(form.phonenumber, {'attr': {'class': 'form-control',
+                        'placeholder': '0XXXXXXXXX'}}) }}
+                </div>
+
+                {% if action == 'create' %}
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-warning">Ajouter</button>
+                    </div>
+                {% endif %}
+
+                {% if action == 'modify' %}
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa fa-edit"></i>
+                            Modifier
+                        </button>
+                    </div>
+                {% endif %}
+
+                {% if action == 'remove' %}
+                    <div class="box-footer">
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modal-default">
+                            <i class="fa fa-trash"></i>
+                            Supprimer
+                        </button>
+                    </div>
+                {% endif %}
+
+                <!-- NON AFFICHÉ - modal - boite de dialogue pour confirmer la suppression -->
+                <div class="modal fade" id="modal-default" style="display: none;">
+                    <div class="modal-dialog">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                <span aria-hidden="true">×</span></button>
+                                <h4 class="modal-title">Confirmation</h4>
+                            </div>
+                            <div class="modal-body">
+                                <p>Êtes-vous sûr de vouloir supprimer ce site?</p>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Non</button>
+                                <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Oui</button>
+                            </div>
+                        </div><!-- /.modal-content -->
+                    </div><!-- /.modal-dialog -->
+                </div><!-- /.modal -->
+
+                {{ form_rest(form) }}
+            </form>   
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Liste des sites</h3>
+                </div><!-- /.box-header -->
+                <div class="box-body">
+                    <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table id="example2" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                        <tr role="row">
+                                            <th>Nom du site</th>
+                                            <th>Responsable</th>
+                                            <th>N° de téléphone</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {# S'il y a des sites #}
+                                        {% if sites is defined %}
+                                            {% if sites is not null %}
+                                                {# Pour chaque site dans la liste
+                                                On boucle pour créer de nouvelles lignes
+                                                dans le tableau sous le même format#}
+                                                {% for oneSite in sites %}
+                                                    <tr role="row" class="odd">
+                                                        <td data-title="Nom du site" class="sorting_1">{{ oneSite.getNameSite() }}</td>
+                                                        <td data-title="Responsable">{{ oneSite.getFullnamesupervisor() }}</td>
+                                                        <td data-title="N° de téléphone">{{ oneSite.getPhonenumber() }}</td>
+                                                        <td>
+                                                            <a href=" {{ path('admin_stock', {id: oneSite.getIdSite()}) }}" class="btn btn-warning">
+                                                                <i class="fa fa-institution"></i> Éditer l'organisation de ce site
+                                                            </a>
+                                                            <a href=" {{ path('admin_site_modify', {id: oneSite.getIdSite()}) }}" class="btn btn-success">
+                                                                <i class="fa fa-edit"></i> Modifier
+                                                            </a>
+                                                            <a href="{{ path('admin_site_remove', {id: oneSite.getIdSite()}) }}" class="btn btn-danger">
+                                                                <i class="fa fa-trash"></i> Supprimer
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% endif %}
+                                    </tbody>
+                                </table>
+                            </div><!-- /.col -->
+                        </div><!-- /.row -->
+                    </div>
+                </div><!-- /.box-body -->
+            </div><!-- /.box -->
+        </div><!-- /.col -->
+    </div><!-- /.row -->
+{% endblock %}
+
+{% block javascripts %}
+<!-- bootstrap datepicker -->
+<script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
+<!-- Language script -->
+<script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
+<!-- DataTables -->
+    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
+    <!-- Page script -->
+    <script>
+        $(document).ready(function () {
+            //Initialize #example2 Elements
+            $('#example2').DataTable({
+            'paging'      : true,
+            'lengthChange': false,
+            'searching'   : true,
+            'ordering'    : true,
+            'info'        : true,
+            'autoWidth'   : false,
+            'language': {
+            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
+        }
+            })
+        });
+    </script>
+{% endblock %}

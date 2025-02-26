@@ -1,0 +1,264 @@
+{% extends 'base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
+    <!-- DataTables -->
+    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+{% endblock %}
+
+{% block body %}
+    <div class="panel box box-warning">
+        <div class="box-header with-border">
+            <h4 class="box-title">
+                Gestion des utilisateurs
+            </h4>
+        </div>
+
+        <div class="box-body">
+
+            {# Si le formulaire n'est pas valide #}
+            {% if not form.vars.valid %}
+                {# Boucle pour tous les items du formulaire #}
+                {% for child in form.children %}
+                    {# Boucle pour afficher toutes les erreurs du formulaire #}
+                    {% for error in child.vars.errors %}
+                        <div class="box-body">
+                            <div class="alert alert-danger alert-dismissible">
+                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                                <h4><i class="icon fa fa-check"></i> Alerte!</h4>
+                                <p>{{error.message}}</p>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endfor %}
+            {% endif %}
+
+            {# Selon que l'on veut créer, modifier ou supprimer un utilisateur,
+             on paramètre la méthode qui reçoit le formulaire avec la bonne route
+             ainsi que le bon texte du bouton de soumission du formulaire#}
+            {% if action == 'modify' %}
+                <form role="form" action="{{ path('admin_user_modify', {id: id}) }}" method="post" >
+
+            {% elseif action == 'remove' %}
+                <form role="form" action="{{ path('admin_user_remove', {id: id}) }}" method="post" >
+
+            {% else %}
+                <form role="form" action="{{ path('admin_user')}}" method="post" >
+            {% endif %}
+
+                    <!-- text input -->
+                    <div class="form-group">
+                      <label>Nom Prénom</label><span class="text-red"> *</span>
+                      {{ form_widget(form.fullname, {'attr': {'class': 'form-control',
+                        'placeholder': 'Entrez un nom et prénom'}}) }}
+                    </div>
+                    <div class="form-group">
+                      <label>Login</label><span class="text-red"> *</span>
+                      {{ form_widget(form.username, {'attr': {'class': 'form-control',
+                        'placeholder': 'Entrez un login'}}) }}
+                    </div>
+                    <div class="form-group">
+                      <label for="password">Mot de passe</label>
+                      {{ form_widget(form.password, {'attr': {'class': 'form-control',
+                        'placeholder': 'Entrez un mot de passe'}}) }}
+                    </div>
+                    <div class="form-group">
+                        <label>Email</label><span class="text-red"> *</span>
+                        {{ form_widget(form.mail, {'attr': {'class': 'form-control',
+                        'placeholder': 'Entrez un e-mail'}}) }}
+                    </div>
+
+                    <!-- select -->
+                    <div class="form-group">
+                      <label>Statut</label><span class="text-red"> *</span>
+                      {{ form_widget(form.idStatus, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+
+                    <!-- select -->
+                    <div class="form-group">
+                      <label>Site</label><span class="text-red"> *</span>
+                      {{ form_widget(form.idSite, {'attr': {'class': 'form-control'}}) }}
+                    </div>
+
+                    <!-- datepicker -->
+                    <div class="form-group">
+                      <label>{{ form_label(form.endrightdate) }}</label>
+
+                      <div class="input-group date">
+                          <div class="input-group-addon">
+                          <i class="fa fa-calendar"></i>
+                          </div>
+                          {{ form_widget(form.endrightdate, {'attr': {'class': 'form-control pull-right datepicker',
+                          'data-date-language':'fr'}}) }}
+                      </div> <!-- /.input group -->
+                    </div>
+
+                {% if action == 'create' %}
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-warning">Ajouter</button>
+                    </div>
+                {% endif %}
+
+                {% if action == 'modify' %}
+                    <div class="box-footer">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fa fa-edit"></i>
+                            Modifier
+                        </button>
+                    </div>
+                {% endif %}
+
+                {% if action == 'remove' %}
+                    <div class="box-footer">
+                        <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modal-default">
+                            <i class="fa fa-trash"></i>
+                            Supprimer
+                        </button>
+                    </div>
+                {% endif %}
+                
+                    <!-- NON AFFICHÉ - modal - boite de dialogue pour confirmer la suppression -->
+                    <div class="modal fade" id="modal-default" style="display: none;">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                    <span aria-hidden="true">×</span></button>
+                                    <h4 class="modal-title">Confirmation</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <p>Êtes-vous sûr de vouloir supprimer cet utilisateur?</p>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Non</button>
+                                    <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Oui</button>
+                                </div>
+                            </div>
+                            <!-- /.modal-content -->
+                        </div>
+                        <!-- /.modal-dialog -->
+                    </div>
+                    {{ form_rest(form) }}
+                </form>
+        </div> <!-- /div box-body -->
+    </div> <!-- /div panel box box-warning -->
+
+    <div class="row">
+        <div class="col-xs-12">
+            <div class="box">
+                <div class="box-header">
+                    <h3 class="box-title">Liste des utilisateurs</h3>
+                </div>
+                <!-- /.box-header -->
+                <div class="box-body">
+                    <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                        <div class="row">
+                            <div class="col-sm-12">
+                                <table id="example2" class="table table-bordered table-hover dataTable">
+                                    <thead>
+                                    <tr role="row">
+                                        <th>Nom Prénom</th>
+                                        <th>Login</th>
+                                        <th>Email</th>
+                                        <th>Statut</th>
+                                        <th>Site</th>
+                                        <th>Date de fin de droit</th>
+                                        <th></th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {# S'il y a des utilisateurs #}
+                                    {% if users is defined %}
+                                        {% if users is not null %}
+                                            {# Pour chaque utilisateur dans la liste
+                                             On boucle pour créer de nouvelles lignes
+                                             dans le tableau sous le même format#}
+                                            {% for oneUser in users %}
+                                                <tr role="row" class="odd">
+                                                    <td data-title="Nom Prénom" class="sorting_1">{{ oneUser.getFullname() }}</td>
+                                                    <td data-title="Login">{{ oneUser.getUsername() }}</td>
+                                                    <td data-title="Email">{{ oneUser.getMail() }}</td>
+                                                    <td data-title="Statut">{{ oneUser.getIdStatus().getNameStatus() }}</td>
+                                                    <td data-title="Site">{{ oneUser.getIdSite() }}</td>
+                                                    {# On vérifie si la date est nulle #}
+                                                    {% if oneUser.getEndRightDate() is null  %}
+                                                        <td data-title="Date de fin de droit">aucune</td>
+                                                    {% else %}
+                                                        <td data-title="Date de fin de droit">{{ oneUser.getEndRightDate()|date('d/m/Y') }}</td>
+                                                    {% endif %}
+                                                    <td>
+                                                        {# On empeche l'utilisateur connecté de se supprimer
+                                                         ou de se modifier lui-même. #}
+                                                        {% if app.user == oneUser %}
+                                                            <a class="btn btn-success disabled">
+                                                                <i class="fa fa-edit"></i> Modifier
+                                                            </a>
+                                                            <a class="btn btn-danger disabled">
+                                                                <i class="fa fa-trash"></i> Supprimer
+                                                            </a>
+                                                        {% else %}
+                                                            <a href=" {{ path('admin_user_modify', {id: oneUser.getIdUser()}) }}" class="btn btn-success">
+                                                                <i class="fa fa-edit"></i> Modifier
+                                                            </a>
+                                                            <a href="{{ path('admin_user_remove', {id: oneUser.getIdUser()}) }}" class="btn btn-danger">
+                                                                <i class="fa fa-trash"></i> Supprimer
+                                                            </a>
+                                                        {% endif %}
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% endif %}
+                                    {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- /.box-body -->
+            </div>
+            <!-- /.box -->
+        </div>
+        <!-- /.col -->
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    <!-- bootstrap datepicker -->
+    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
+    <!-- Language script -->
+    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
+    <!-- Select2 -->
+    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
+    <!-- DataTables -->
+    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
+    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
+    <!-- Page script -->
+    <script>
+        $(document).ready(function () {
+            $('.datepicker').datepicker({
+            "format": "dd/mm/yyyy",
+            "language": "fr",
+            "keyboardNavigation": false,
+            "setDate": new Date(),
+            "autoclose": true,
+            "clearBtn": true,
+            "todayHighlight": true
+            });
+            //Initialize Select2 Elements
+            $('.select2').select2()
+            //Initialize #example2 Elements
+            $('#example2').DataTable({
+            'paging'      : true,
+            'lengthChange': false,
+            'searching'   : true,
+            'ordering'    : true,
+            'info'        : true,
+            'autoWidth'   : false,
+            'language': {
+            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
+        }
+            })
+        });
+    </script>
+{% endblock %}
