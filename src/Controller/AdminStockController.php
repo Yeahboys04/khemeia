@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Cupboard;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,9 +20,16 @@ class AdminStockController extends AbstractController
         // try {
         $repositorySite = $entityManager->getRepository(Site::class);
         $repositoryStock = $entityManager->getRepository(Stock::class);
+        $repositoryCupboard = $entityManager->getRepository(Cupboard::class);
 
         $site = $repositorySite->find($id);
         $sites = $repositorySite->findAll();
+
+        $firstStock = $repositoryStock->findOneBy([
+            'idSite' => $site->getIdSite()]);
+
+        $firstCupboard = $repositoryCupboard->findOneBy([
+            'idStock' => $firstStock->getIdStock()]);
 
         if ($site != null || !empty($site)) {
 
@@ -57,6 +65,8 @@ class AdminStockController extends AbstractController
                 'stock' => $stock,
                 'sites' => $sites,
                 'stocks' => $stocks,
+                'firstStock' => $firstStock,
+                'firstCupboard' => $firstCupboard,
             ]);
         } else {
             $this->addFlash('error',

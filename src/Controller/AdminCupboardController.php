@@ -29,6 +29,9 @@ class AdminCupboardController extends AbstractController
         $stocks = $repositoryStock->findBy([
             'idSite' => $site->getIdSite()]);
 
+        $firstCupboard = $repositoryCupboard->findOneBy([
+            'idStock' => $stock->getIdStock()]);
+
         if ($stock != null || !empty($stock) ){
 
             $cupboards = $repositoryCupboard->findBy([
@@ -63,7 +66,8 @@ class AdminCupboardController extends AbstractController
                 'sites' => $sites,
                 'stocks' => $stocks,
                 'cupboards' => $cupboards,
-                'site' => $site
+                'site' => $site,
+                'firstCupboard' => $firstCupboard
             ]);
         }
         else {

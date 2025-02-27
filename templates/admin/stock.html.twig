@@ -25,8 +25,15 @@
                         {% endfor %}
                     </ul>
                 </li>
-                <li class=""><a href="{{ path('admin_cupboard', {id: site.getIdSite()}) }}">Gestion des Armoires</a></li>
-                <li class=""><a href="{{ path('admin_shelvingunit', {id: site.getIdSite()}) }}">Gestion des Étagères</a></li>
+                {% if (firstStock) is not null %}
+                <li class=""><a href="{{ path('admin_cupboard', {id: firstStock.getIdStock()}) }}">Gestion des Armoires</a></li>
+                    {% if (firstCupboard) is not null  %}
+                        <li class=""><a href="{{ path('admin_shelvingunit', {id: firstCupboard.getIdCupboard}) }}">Gestion des Étagères</a></li>
+                    {% endif %}
+
+                {% endif %}
+
+
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active" id="tab_1">

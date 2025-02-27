@@ -36,7 +36,10 @@
                         {% endfor %}
                     </ul>
                 </li>
-                <li class=""><a href="{{ path('admin_shelvingunit', {id: site.getIdSite()}) }}">Gestion des Étagères</a></li>
+
+                {% if firstCupboard is not null  %}
+                <li class=""><a href="{{ path('admin_shelvingunit', {id: firstCupboard.getIdCupboard()}) }}">Gestion des Étagères</a></li>
+                {% endif %}
             </ul>
             <div class="tab-content">
                 <div class="tab-pane active">
