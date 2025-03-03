@@ -144,15 +144,16 @@ Khemeia | Inventaire
             $('.select2').select2()
             //Initialize #example2 Elements
             $('#example2').DataTable({
-            'paging'      : true,
-            'lengthChange': false,
-            'searching'   : true,
-            'ordering'    : true,
-            'info'        : true,
-            'autoWidth'   : false,
-            'language': {
-            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
-        }
+                'paging'      : true,
+                'lengthChange': false,
+                'searching'   : true,
+                'ordering'    : true,
+                'info'        : true,
+                'autoWidth'   : false,
+                'scrollX'     : true,  // Ajouter cette ligne pour activer le défilement horizontal
+                'language': {
+                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
+                }
             })
         });
     </script>

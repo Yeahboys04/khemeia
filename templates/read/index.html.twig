@@ -57,7 +57,7 @@ Khemeia | Consultation
                     <p>
                     {% for dangerSymbol in storagecard.getIdChimicalproduct().getIdDangersymbol() %}
                         <img
-                            src="{{ asset('assets/uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}" 
+                            src="{{ asset('uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}" 
                             alt="{{ dangerSymbol.getDescriptionDangersymbol() }}"
                             height="50px"
                             width="50px">
@@ -104,7 +104,7 @@ Khemeia | Consultation
                 <div class="info-group no-print">
                     <label>Fiche de sécurité</label>
                     <p>
-                        <a href="{{ asset('assets/uploads/fiches_de_prudences/' ~ storagecard.getIdSecurityfile().getNameSecurityfile()) }}" class="btn btn-block btn-social btn-pdf">
+                        <a href="{{ asset('uploads/fiches_de_prudences/' ~ storagecard.getIdSecurityfile().getNameSecurityfile()) }}" class="btn btn-block btn-social btn-pdf">
                             <i class="fa fa-file-pdf-o"></i> Voir la fiche de sécurité
                         </a>
                     </p>
@@ -115,7 +115,7 @@ Khemeia | Consultation
                 <div class="info-group no-print">
                     <label>Certificat d'analyse</label>
                     <p>
-                        <a href="{{ asset('assets/uploads/Certificats_d_analyse/' ~ storagecard.getIdAnalysisfile().getNameAnalysisfile()) }}" class="btn btn-block btn-social btn-pdf">
+                        <a href="{{ asset('uploads/Certificats_d_analyse/' ~ storagecard.getIdAnalysisfile().getNameAnalysisfile()) }}" class="btn btn-block btn-social btn-pdf">
                             <i class="fa fa-file-pdf-o"></i> Voir le certificat d'analyse
                         </a>
                     </p>

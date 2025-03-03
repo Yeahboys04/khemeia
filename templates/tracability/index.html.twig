@@ -59,7 +59,7 @@ Khemeia | Historique personnel
                                                     <td data-title="Symboles de danger">
                                                         {% for dangerSymbol in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol() %}
                                                             <img
-                                                                src="{{ asset('assets/uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}" 
+                                                                src="{{ asset('uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}" 
                                                                 alt="{{ dangerSymbol.getDescriptionDangersymbol() }}"
                                                                 height="50px"
                                                                 width="50px">

@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Erreur d'authentification CAS{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card mt-5">
+                    <div class="card-header bg-danger text-white">
+                        <h1 class="h3 mb-3 font-weight-normal">Erreur d'authentification CAS</h1>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-danger">
+                            {{ message }}
+                        </div>
+                        <a href="{{ path('app_login') }}" class="btn btn-primary">Retour à la page de connexion</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
