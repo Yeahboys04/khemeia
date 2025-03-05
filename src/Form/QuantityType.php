@@ -92,6 +92,6 @@ class QuantityType extends AbstractType
         ]);
         $resolver->setAllowedTypes('idSite', 'string');
         // Correction : autoriser 'int' ou 'null' comme types pour stockquantity
-        $resolver->setAllowedTypes('stockquantity', ['int', 'null']);
+        $resolver->setAllowedTypes('stockquantity', ['float', 'null']);
     }
 }
