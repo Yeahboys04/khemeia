@@ -11,12 +11,12 @@ use LogicException;
  */
 #[ORM\Table(name: 'storagecard')]
 #[ORM\UniqueConstraint(name: 'id_storageCard', columns: ['id_storageCard'])]
-#[ORM\Index(name: 'FK_storageCard_analysisfile', columns: ['id_analysisfile'])]
-#[ORM\Index(name: 'FK_storageCard_chimicalProduct', columns: ['id_chimicalProduct'])]
-#[ORM\Index(name: 'FK_storageCard_property', columns: ['id_property'])]
-#[ORM\Index(name: 'FK_storageCard_securityfile', columns: ['id_securityfile'])]
-#[ORM\Index(name: 'FK_storageCard_shelvingUnit', columns: ['id_shelvingUnit'])]
-#[ORM\Index(name: 'FK_storageCard_supplier', columns: ['id_supplier'])]
+#[ORM\Index(columns: ['id_analysisfile'], name: 'FK_storageCard_analysisfile')]
+#[ORM\Index(columns: ['id_chimicalProduct'], name: 'FK_storageCard_chimicalProduct')]
+#[ORM\Index(columns: ['id_property'], name: 'FK_storageCard_property')]
+#[ORM\Index(columns: ['id_securityfile'], name: 'FK_storageCard_securityfile')]
+#[ORM\Index(columns: ['id_shelvingUnit'], name: 'FK_storageCard_shelvingUnit')]
+#[ORM\Index(columns: ['id_supplier'], name: 'FK_storageCard_supplier')]
 #[ORM\Entity(repositoryClass: StoragecardRepository::class)]
 class Storagecard
 {
@@ -25,11 +25,11 @@ class Storagecard
     #[ORM\GeneratedValue(strategy: 'IDENTITY')]
     private ?int $idStoragecard = null;
 
-    #[ORM\Column(name: 'stockQuantity', type: 'integer', nullable: true)]
-    private ?int $stockquantity = null;
+    #[ORM\Column(name: 'stockQuantity',type: 'decimal', precision: 11, scale: 2, nullable: true)]
+    private ?float $stockquantity = null;
 
-    #[ORM\Column(name: 'capacity', type: 'integer')]
-    private ?int $capacity = null;
+    #[ORM\Column(name: 'capacity', type: 'decimal', precision: 11, scale: 2)]
+    private ?float $capacity = null;
 
     #[ORM\Column(name: 'purity', type: 'string', length: 50, nullable: true)]
     private ?string $purity = null;
@@ -90,24 +90,24 @@ class Storagecard
         return $this->idStoragecard;
     }
 
-    public function getStockquantity(): ?int
+    public function getStockquantity(): ?float
     {
         return $this->stockquantity;
     }
 
-    public function setStockquantity(?int $stockquantity): self
+    public function setStockquantity(?float $stockquantity): self
     {
         $this->stockquantity = $stockquantity;
 
         return $this;
     }
 
-    public function getCapacity(): ?int
+    public function getCapacity(): ?float
     {
         return $this->capacity;
     }
 
-    public function setCapacity(?int $capacity): self
+    public function setCapacity(?float $capacity): self
     {
         $this->capacity = $capacity;
 

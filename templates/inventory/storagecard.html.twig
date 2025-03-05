@@ -6,23 +6,73 @@
     <!-- Select2 -->
     <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+    <!-- Style personnalisé pour le formulaire de stockage -->
+    <style>
+        .quantity-group {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+        .quantity-group .quantity-input {
+            flex: 3;
+            margin-right: 10px;
+        }
+        .quantity-group .unit-selector {
+            flex: 1;
+            min-width: 80px;
+        }
+        .state-type-container {
+            display: flex;
+            gap: 20px;
+            padding: 15px;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+        }
+        .state-type-container label {
+            display: inline-flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 8px 15px;
+            background-color: #eee;
+            border-radius: 4px;
+            transition: all 0.3s;
+        }
+        .state-type-container label.active {
+            background-color: #f39c12;
+            color: white;
+        }
+        .state-type-container input[type="radio"] {
+            margin-right: 8px;
+        }
+        .unit-card {
+            background-color: #fcf8e3;
+            border-left: 5px solid #f39c12;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 3px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
 {% endblock %}
 
 {% block title %}
-Khemeia | Création d'une fiche de stockage
+    Khemeia | Création d'une fiche de stockage
 {% endblock %}
 
 {% block body %}
     <div class="panel box box-warning">
         <div class="box-header with-border">
             <h4 class="box-title">
-            {% if action == 'create' %}
-                Création d'une fiche de stockage
-            {% elseif action == 'copy' %}
-                Dupliquer une fiche de stockage
-            {% elseif action == 'modify' %}
-                Modifier une fiche de stockage
-            {% endif %}
+                {% if action == 'create' %}
+                    Création d'une fiche de stockage
+                {% elseif action == 'copy' %}
+                    Dupliquer une fiche de stockage
+                {% elseif action == 'modify' %}
+                    Modifier une fiche de stockage
+                {% endif %}
             </h4>
         </div>
         <div class="nav-tabs-custom">
@@ -30,144 +80,160 @@ Khemeia | Création d'une fiche de stockage
                 <div class="tab-pane active" id="tab_1">
                     <div class="box-body">
                         {{ form_start(form) }}
-                            <!-- select -->
-                            <div class="form-group">
-                                <label>Produit chimique concerné</label><span class="text-red"> *</span>
-                                
-                                {{ form_widget(form.idChimicalproduct, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'required':'required',
-                                 'data-placeholder':"Selectionnez un produit chimique",
-                                 'tabindex':"-1"}}) }}
-                            </div>
+                        <!-- select -->
+                        <div class="form-group">
+                            <label>Produit chimique concerné</label><span class="text-red"> *</span>
 
-                            <div class="form-group">
-                                <label>Emplacement</label><span class="text-red"> *</span>
-                                {{ form_widget(form.idShelvingunit, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'required':'required',
+                            {{ form_widget(form.idChimicalproduct, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                'style':"width: 100%;",
+                                'required':'required',
+                                'data-placeholder':"Selectionnez un produit chimique",
+                                'tabindex':"-1"}}) }}
+                        </div>
+
+                        <div class="form-group">
+                            <label>Emplacement</label><span class="text-red"> *</span>
+                            {{ form_widget(form.idShelvingunit, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                'style':"width: 100%;",
+                                'required':'required',
                                 'data-placeholder':'Selectionez l\'emplacement de ce produit',
                                 'tabindex':"-1"}}) }}
+                        </div>
+
+                        <!-- État physique du produit -->
+                        <div class="unit-card">
+                            <div class="form-group">
+                                <label>État physique du produit</label><span class="text-red"> *</span>
+                                <div class="state-type-container">
+                                    {{ form_widget(form.stateType, {'label_attr': {'class': 'state-type-label'}}) }}
+                                </div>
                             </div>
 
-                            <!-- text input -->
+                            <!-- text input pour la quantité -->
                             <div class="form-group">
-                                <label>Quantité en stock </label> (en g ou ml)
-                                {{ form_widget(form.stockquantity, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez une quantité'}}) }}
+                                <label>Quantité en stock</label><span class="text-red"> *</span>
+                                <div class="quantity-group">
+                                    {{ form_widget(form.stockquantity, {'attr': {'class': 'form-control quantity-input',
+                                        'placeholder': 'Entrez une quantité'}}) }}
+                                    {{ form_widget(form.stockUnit, {'attr': {'class': 'form-control unit-selector'}}) }}
+                                </div>
                             </div>
 
                             <div class="form-group">
-                                <label>Capacité totale </label> (en g ou ml)
-                                {{ form_widget(form.capacity, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez une capacité'}}) }}
+                                <label>Capacité totale</label><span class="text-red"> *</span>
+                                <div class="quantity-group">
+                                    {{ form_widget(form.capacity, {'attr': {'class': 'form-control quantity-input',
+                                        'placeholder': 'Entrez une capacité'}}) }}
+                                    {{ form_widget(form.capacityUnit, {'attr': {'class': 'form-control unit-selector'}}) }}
+                                </div>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Pureté</label>
-                                {{ form_widget(form.purity, {'attr': {'class': 'form-control',
+                        <div class="form-group">
+                            <label>Pureté</label>
+                            {{ form_widget(form.purity, {'attr': {'class': 'form-control',
                                 'placeholder': 'Entrez la pureté du produit'}}) }}
-                            </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Température de stockage</label> en °C
-                                {{ form_widget(form.temperature, {'attr': {'class': 'form-control',
+                        <div class="form-group">
+                            <label>Température de stockage</label> en °C
+                            {{ form_widget(form.temperature, {'attr': {'class': 'form-control',
                                 'placeholder': 'Entrez la température de stockage du produit'}}) }}
-                            </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Numéro de série</label>
-                                {{ form_widget(form.serialnumber, {'attr': {'class': 'form-control',
+                        <div class="form-group">
+                            <label>Numéro de série</label>
+                            {{ form_widget(form.serialnumber, {'attr': {'class': 'form-control',
                                 'placeholder': 'Entrez un numéro de série'}}) }}
-                            </div>
+                        </div>
 
-                            <!-- datepicker -->
-                            <div class="form-group">
-                                <label>{{ form_label(form.opendate) }}</label>
+                        <!-- datepicker -->
+                        <div class="form-group">
+                            <label>{{ form_label(form.opendate) }}</label>
 
-                                <div class="input-group date">
-                                    <div class="input-group-addon">
+                            <div class="input-group date">
+                                <div class="input-group-addon">
                                     <i class="fa fa-calendar"></i>
-                                    </div>
-                                    {{ form_widget(form.opendate, {'attr': {'class': 'form-control pull-right datepicker',
-                                    'data-date-language':'fr'}}) }}
                                 </div>
+                                {{ form_widget(form.opendate, {'attr': {'class': 'form-control pull-right datepicker',
+                                    'data-date-language':'fr'}}) }}
                             </div>
+                        </div>
 
-                            <!-- datepicker -->
-                            <div class="form-group">
-                                <label>{{ form_label(form.expirationdate) }}</label>
+                        <!-- datepicker -->
+                        <div class="form-group">
+                            <label>{{ form_label(form.expirationdate) }}</label>
 
-                                <div class="input-group date">
-                                    <div class="input-group-addon">
+                            <div class="input-group date">
+                                <div class="input-group-addon">
                                     <i class="fa fa-calendar"></i>
-                                    </div>
-                                    {{ form_widget(form.expirationdate, {'attr': {'class': 'form-control pull-right datepicker',
+                                </div>
+                                {{ form_widget(form.expirationdate, {'attr': {'class': 'form-control pull-right datepicker',
                                     'data-date-language':'fr'}}) }}
-                                </div>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Faut-il archiver ce produit?</label><span class="text-red"> *</span>
-                                <div class="radio-style">
-                                    {{ form_widget(form.isarchived, {'label_attr': {'class': 'radio-label'}},) }}
-                                </div>
+                        <div class="form-group">
+                            <label>Faut-il archiver ce produit?</label><span class="text-red"> *</span>
+                            <div class="radio-style">
+                                {{ form_widget(form.isarchived, {'label_attr': {'class': 'radio-label'}},) }}
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Voulez-vous cacher l'emplacement exact de ce flacon?</label><span class="text-red"> *</span>
-                                <div class="radio-style">
-                                    {{ form_widget(form.isrisked, {'label_attr': {'class': 'radio-label'}},) }}
-                                </div>
+                        <div class="form-group">
+                            <label>Voulez-vous cacher l'emplacement exact de ce flacon?</label><span class="text-red"> *</span>
+                            <div class="radio-style">
+                                {{ form_widget(form.isrisked, {'label_attr': {'class': 'radio-label'}},) }}
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Propriétaire du flacon</label>
-                                {{ form_widget(form.idProperty, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
+                        <div class="form-group">
+                            <label>Propriétaire du flacon</label>
+                            {{ form_widget(form.idProperty, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                'style':"width: 100%;",
                                 'data-placeholder':'Selectionez le propriétaire de ce produit',
                                 'tabindex':"-1"}}) }}
-                            </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Fiche de prudence </label> (fichier PDF)
-                                {{ form_widget(form.uploadedSecurityFile, {'attr': {'class': 'form-control'}}) }}
-                            </div>
+                        <div class="form-group">
+                            <label>Fiche de prudence </label> (fichier PDF)
+                            {{ form_widget(form.uploadedSecurityFile, {'attr': {'class': 'form-control'}}) }}
+                        </div>
 
-                            <div class="form-group">
-                                <label>Certificat d'analyse </label> (fichier PDF)
-                                {{ form_widget(form.uploadedAnalysisFile, {'attr': {'class': 'form-control'}}) }}
-                            </div>
+                        <div class="form-group">
+                            <label>Certificat d'analyse </label> (fichier PDF)
+                            {{ form_widget(form.uploadedAnalysisFile, {'attr': {'class': 'form-control'}}) }}
+                        </div>
 
-                            <div class="form-group">
-                                <label>Fournisseur</label>
-                                {{ form_widget(form.idSupplier, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
+                        <div class="form-group">
+                            <label>Fournisseur</label>
+                            {{ form_widget(form.idSupplier, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                'style':"width: 100%;",
                                 'data-placeholder': 'Selectionnez le fournisseur de ce produit',
                                 'tabindex':"-1"}}) }}
-                            </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Référence du produit chez le fournisseur</label>
-                                {{ form_widget(form.reference, {'attr': {'class': 'form-control',
+                        <div class="form-group">
+                            <label>Référence du produit chez le fournisseur</label>
+                            {{ form_widget(form.reference, {'attr': {'class': 'form-control',
                                 'placeholder': 'Entrez la référence fournisseur du produit'}}) }}
-                            </div>
+                        </div>
 
-                            <div class="form-group"><span class="text-red"> *</span>
-                                <label>Voulez-vous publier directement ce produit et le rendre consultable ou le placer en analyse?</label>
-                                <div class="radio-style">
-                                    {{ form_widget(form.ispublished, {'label_attr': {'class': 'radio-label'}},) }}
-                                </div>
+                        <div class="form-group"><span class="text-red"> *</span>
+                            <label>Voulez-vous publier directement ce produit et le rendre consultable ou le placer en analyse?</label>
+                            <div class="radio-style">
+                                {{ form_widget(form.ispublished, {'label_attr': {'class': 'radio-label'}},) }}
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Commentaires</label>
-                                {{ form_widget(form.commentary, {'attr': {'class': 'form-control',
-                                    'placeholder': 'Entrez les informations complémentaires que vous souhaitez'}}) }}
-                            </div>
-                                
-                            {{ form_rest(form) }}
-                        
+                        <div class="form-group">
+                            <label>Commentaires</label>
+                            {{ form_widget(form.commentary, {'attr': {'class': 'form-control',
+                                'placeholder': 'Entrez les informations complémentaires que vous souhaitez'}}) }}
+                        </div>
+
+                        {{ form_rest(form) }}
+
                         {% if action == 'create' %}
                             <div class="box-footer">
                                 <button type="submit" class="btn btn-warning">Ajouter</button>
@@ -199,13 +265,78 @@ Khemeia | Création d'une fiche de stockage
     <script type="text/javascript">
         $(document).ready(function(){
             $('.datepicker').datepicker({
-            "format": "dd/mm/yyyy",
-            "language": "fr",
-            "keyboardNavigation": false,
-            "setDate": new Date(),
-            "autoclose": true,
-            "clearBtn": true,
-            "todayHighlight": true
+                "format": "dd/mm/yyyy",
+                "language": "fr",
+                "keyboardNavigation": false,
+                "setDate": new Date(),
+                "autoclose": true,
+                "clearBtn": true,
+                "todayHighlight": true
+            });
+
+            // Script pour gérer les unités en fonction de l'état physique
+            function updateUnitOptions() {
+                var stateType = $('input[name="storagecard_resp[stateType]"]:checked').val();
+
+                if (stateType === 'solid') {
+                    // Unités pour les solides
+                    $('#storagecard_resp_stockUnit option').remove();
+                    $('#storagecard_resp_capacityUnit option').remove();
+
+                    var solidUnits = [
+                        {value: 'g', text: 'g'},
+                        {value: 'mg', text: 'mg'},
+                        {value: 'kg', text: 'kg'}
+                    ];
+
+                    $.each(solidUnits, function(index, unit) {
+                        $('#storagecard_resp_stockUnit').append($('<option>', {
+                            value: unit.value,
+                            text: unit.text
+                        }));
+                        $('#storagecard_resp_capacityUnit').append($('<option>', {
+                            value: unit.value,
+                            text: unit.text
+                        }));
+                    });
+                } else {
+                    // Unités pour les liquides
+                    $('#storagecard_resp_stockUnit option').remove();
+                    $('#storagecard_resp_capacityUnit option').remove();
+
+                    var liquidUnits = [
+                        {value: 'ml', text: 'ml'},
+                        {value: 'cl', text: 'cl'},
+                        {value: 'l', text: 'l'}
+                    ];
+
+                    $.each(liquidUnits, function(index, unit) {
+                        $('#storagecard_resp_stockUnit').append($('<option>', {
+                            value: unit.value,
+                            text: unit.text
+                        }));
+                        $('#storagecard_resp_capacityUnit').append($('<option>', {
+                            value: unit.value,
+                            text: unit.text
+                        }));
+                    });
+                }
+            }
+
+            // Style visuel pour le sélecteur d'état
+            function updateStateTypeUI() {
+                $('.state-type-label').removeClass('active');
+                $('input[name="storagecard_resp[stateType]"]:checked').parent().addClass('active');
+            }
+
+            // Initialisation
+            updateUnitOptions();
+            updateStateTypeUI();
+
+            // Écouteurs d'événements
+            $('input[name="storagecard_resp[stateType]"]').change(function() {
+                updateUnitOptions();
+                updateStateTypeUI();
             });
         });
     </script>
