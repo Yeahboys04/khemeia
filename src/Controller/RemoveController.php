@@ -15,6 +15,7 @@ use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 use Symfony\Component\Routing\Attribute\Route;
@@ -242,13 +243,17 @@ class RemoveController extends AbstractController
         }
         $user = $tokenStorage->getToken()->getUser();
 
+        // Vérifier que des emails ont bien été récupérés
+        if (empty($mails)) {
+            throw new LogicException('Aucun responsable n\'a été trouvé pour recevoir l\'email.');
+        }
+
         $email = (new Email())
             ->from('contact@khemeia.fr')
             ->to(...$mails)
             ->subject('Khemeia - Demande de retrait de produit')
             ->html(
                 $this->renderView(
-                // templates/emails/askremoveproduct.html.twig
                     'emails/askremoveproduct.html.twig',
                     [
                         'user' => $user,
@@ -258,7 +263,17 @@ class RemoveController extends AbstractController
                 )
             );
 
-        $mailer->send($email);
+        try {
+            $mailer->send($email);
+        } catch (TransportExceptionInterface $e) {
+            $this->addFlash('error',
+                'Une erreur est survenue lors de l\'envoi de l\'email.');
+            return $this->redirectToRoute('remove_quantity', [
+                'id' => $id,
+            ]);
+        }
+
+
         $this->addFlash('success',
             'Votre demande a été transmise au responsable.');
         return $this->redirectToRoute('remove_quantity', [
