@@ -25,11 +25,10 @@ class RemoveController extends AbstractController
     #[Route('/remove', name: 'remove')]
     public function index(Request $request, EntityManagerInterface $entityManager): Response
     {
-        // try {
-        //Initialise le repository pour la base de données
+        // Initialise le repository pour la base de données
         $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
 
-        //Initialise le formulaire
+        // Initialise le formulaire
         $storagecard = new Storagecard();
 
         $form = $this->createForm(SearchType::class, $storagecard, [
@@ -37,39 +36,66 @@ class RemoveController extends AbstractController
         ]);
 
         $form->handleRequest($request);
-        //Si le formulaire est soumis et valide
+
+        // Si le formulaire est soumis et valide
         if ($form->isSubmitted() && $form->isValid()) {
-            //on récupère les données
-            $storagecard = $form->get('idChimicalproduct')->getData();
-            $site = $form->get('idSite')->getData();
+            // Récupère le type de recherche (produit ou CAS)
+            $searchType = $form->get('searchType')->getData();
+
+            // Récupère l'option de recherche sur tous les sites
+            $searchAll = $form->get('searchAll')->getData();
+
+            // Récupère le site sélectionné seulement si on ne cherche pas sur tous les sites
+            $site = null;
+            if ($searchAll === 'non') {
+                $site = $form->get('idSite')->getData();
+            }
 
 
-            //Cherche tous les produits qui correspondent à la recherche
-            $storagecards = $repositoryStoragecard->loadStorageCardBySite($site, $storagecard);
+            // Récupère le produit chimique selon le type de recherche
+            if ($searchType === 'cas') {
+                // Recherche par numéro CAS
+                $chimicalProduct = $form->get('casSearch')->getData();
 
-            //on retourne la page avec les informations trouvées
+
+            } else {
+                // Recherche par nom de produit (par défaut)
+                $chimicalProduct = $form->get('idChimicalproduct')->getData();
+            }
+
+
+
+            // Si aucun produit n'est sélectionné, affiche un message d'erreur
+            if (!$chimicalProduct) {
+                $this->addFlash('error', 'Veuillez sélectionner un produit.');
+                return $this->render('remove/index.html.twig', [
+                    'form' => $form->createView(),
+                ]);
+            }
+
+            // Recherche les produits correspondants (selon option tous sites ou site spécifique)
+            if ($searchAll === 'oui') {
+                // Fonction à créer dans le repository ou utilisation de findBy
+                $storagecards = $repositoryStoragecard->loadStorageCardsByCAS($chimicalProduct->getCasnumber());
+            } else {
+                $storagecards = $repositoryStoragecard->loadStorageCardBySite($site, $chimicalProduct);
+            }
+
+            // Rend la page avec les résultats
             return $this->render('remove/index.html.twig', [
                 'form' => $form->createView(),
                 'storagecards' => $storagecards,
                 'site' => $site
             ]);
         }
-        //}
-        // S'il y a tout autre exception
-        // catch (\Exception $e) {
-        //     $this->addFlash('error',
-        //         'Attention, une erreur est survenue.'
-        //         .' Contactez votre administrateur.');
-        //     //on redirige vers la page d'accueil
-        //     return $this->redirectToRoute('home_page');
-        // }
 
-        //Quoi qu'il arrive on rend la page initiale
+        // Rend la page initiale
         return $this->render('remove/index.html.twig', [
             'form' => $form->createView(),
         ]);
     }
 
+    // Les autres méthodes restent inchangées
     #[Route('/remove/{id}', name: 'remove_quantity')]
     public function removeQuantity(
         $id,
@@ -103,7 +129,6 @@ class RemoveController extends AbstractController
             //Si le formulaire est soumis et valide
             if ($form->isSubmitted()) {
                 //on récupère les données
-                //$idShelvingunit = $form->get('idShelvingunit')->getData();
                 $chimicalproduct = $storagecard->getIdChimicalproduct();
 
                 $retiredQuantity = $form->get('retiredquantity')->getData();
@@ -158,15 +183,7 @@ class RemoveController extends AbstractController
                 return $this->redirectToRoute('remove_quantity', [
                     'id' => $id,
                 ]);
-
-                //on retourne la page avec les informations trouvées
-                return $this->render('remove/remove.html.twig', [
-                    'form' => $form->createView(),
-                    'id' => $id,
-                    'storagecard' => $storagecard,
-                ]);
             }
-
 
             return $this->render('remove/remove.html.twig', [
                 'form' => $form->createView(),
@@ -182,14 +199,7 @@ class RemoveController extends AbstractController
                 'storagecard' => $storagecard
             ]);
         }
-        // S'il y a tout autre exception
-        // catch (\Exception $e) {
-        //     $this->addFlash('error',
-        //         'Attention, une erreur est survenue.'
-        //         .' Contactez votre administrateur.');
-        //     //on redirige vers la page d'accueil
-        //     return $this->redirectToRoute('home_page');
-        // }
+
         return $this->render('remove/remove.html.twig', [
             'form' => $form->createView(),
             'id' => $id,
@@ -205,7 +215,6 @@ class RemoveController extends AbstractController
         EntityManagerInterface $entityManager,
         TokenStorageInterface $tokenStorage
     ): Response {
-        //try {
         //Initialise le repository pour la base de données
         $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
 
@@ -254,21 +263,6 @@ class RemoveController extends AbstractController
             'Votre demande a été transmise au responsable.');
         return $this->redirectToRoute('remove_quantity', [
             'id' => $id,
-        ]);
-
-        //}
-        // S'il y a tout autre exception
-        // catch (\Exception $e) {
-        //     $this->addFlash('error',
-        //         'Attention, une erreur est survenue.'
-        //         .' Contactez votre administrateur.');
-        //     //on redirige vers la page d'accueil
-        //     return $this->redirectToRoute('home_page');
-        // }
-        return $this->render('remove/remove.html.twig', [
-            'form' => $form->createView(),
-            'id' => $id,
-            'storagecard' => $storagecard
         ]);
     }
 }

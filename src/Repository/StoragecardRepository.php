@@ -42,6 +42,18 @@ class StoragecardRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+
+    public function loadStorageCardsByCAS($casnumber): array
+    {
+        return $this->createQueryBuilder('sc')
+            ->innerJoin(Chimicalproduct::class, 'cp', 'WITH', 'sc.idChimicalproduct = cp.idChimicalproduct')
+            ->where('cp.casnumber = :querycas')
+            ->andWhere('sc.isarchived = false')
+            ->setParameter('querycas', $casnumber)
+            ->getQuery()
+            ->getResult();
+    }
+
     /**
      * Load storage cards by site with sufficient stock and valid expiration date
      *
@@ -149,6 +161,7 @@ class StoragecardRepository extends ServiceEntityRepository
             ->getResult();
     }
 
+
     /**
      * Load storage cards by shelving unit
      *
@@ -164,4 +177,5 @@ class StoragecardRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
 }
