@@ -9,7 +9,7 @@ use Doctrine\ORM\Mapping as ORM;
  */
 #[ORM\Table(name: 'shelvingunit')]
 #[ORM\UniqueConstraint(name: 'id_shelvingUnit', columns: ['id_shelvingUnit'])]
-#[ORM\Index(name: 'FK_shelvingUnit_cupboard', columns: ['id_cupboard'])]
+#[ORM\Index(columns: ['id_cupboard'], name: 'FK_shelvingUnit_cupboard')]
 #[ORM\Entity]
 class Shelvingunit
 {
