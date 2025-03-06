@@ -64,7 +64,7 @@ class StoragecardRespType extends AbstractType
                 'kg' => 'kg',
                 'ml' => 'ml',
                 'cl' => 'cl',
-                'l' => 'l'
+                'L' => 'L'
             ],
             'data' => 'g',
             'attr' => ['class' => 'unit-selector solid-units']

@@ -1,352 +1,377 @@
 {% extends 'base.html.twig' %}
 
 {% block stylesheets %}
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
     <!-- Datepicker -->
     <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
     <!-- Select2 -->
     <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <!-- Style personnalisé pour le formulaire de stockage -->
-    <style>
-        .quantity-group {
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-        .quantity-group .quantity-input {
-            flex: 3;
-            margin-right: 10px;
-        }
-        .quantity-group .unit-selector {
-            flex: 1;
-            min-width: 80px;
-        }
-        .state-type-container {
-            display: flex;
-            gap: 20px;
-            padding: 15px;
-            margin-bottom: 15px;
-            background-color: #f9f9f9;
-            border-radius: 5px;
-        }
-        .state-type-container label {
-            display: inline-flex;
-            align-items: center;
-            cursor: pointer;
-            padding: 8px 15px;
-            background-color: #eee;
-            border-radius: 4px;
-            transition: all 0.3s;
-        }
-        .state-type-container label.active {
-            background-color: #f39c12;
-            color: white;
-        }
-        .state-type-container input[type="radio"] {
-            margin-right: 8px;
-        }
-        .unit-card {
-            background-color: #fcf8e3;
-            border-left: 5px solid #f39c12;
-            padding: 15px;
-            margin-bottom: 20px;
-            border-radius: 3px;
-        }
-        .hidden {
-            display: none;
-        }
-    </style>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ asset('assets/css/storagecard.css') }}">
 {% endblock %}
 
 {% block title %}
-    Khemeia | Création d'une fiche de stockage
+    Khemeia | {% if action == 'create' %}Création{% elseif action == 'copy' %}Duplication{% elseif action == 'modify' %}Modification{% endif %} d'une fiche de stockage
 {% endblock %}
 
 {% block body %}
-    <div class="panel box box-warning">
-        <div class="box-header with-border">
-            <h4 class="box-title">
-                {% if action == 'create' %}
-                    Création d'une fiche de stockage
-                {% elseif action == 'copy' %}
-                    Dupliquer une fiche de stockage
-                {% elseif action == 'modify' %}
-                    Modifier une fiche de stockage
-                {% endif %}
-            </h4>
+    <div class="storage-container">
+        <!-- Progress tracker -->
+        <div class="progress-container">
+            <div class="progress-bar">
+                <div class="progress-fill"></div>
+            </div>
+            <div class="progress-status">
+                <span>Remplissage du formulaire</span>
+                <span class="progress-text">0%</span>
+            </div>
         </div>
-        <div class="nav-tabs-custom">
-            <div class="tab-content">
-                <div class="tab-pane active" id="tab_1">
-                    <div class="box-body">
-                        {{ form_start(form) }}
-                        <!-- select -->
-                        <div class="form-group">
-                            <label>Produit chimique concerné</label><span class="text-red"> *</span>
 
-                            {{ form_widget(form.idChimicalproduct, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                'style':"width: 100%;",
-                                'required':'required',
-                                'data-placeholder':"Selectionnez un produit chimique",
-                                'tabindex':"-1"}}) }}
-                        </div>
+        <!-- Main form card -->
+        <div class="form-card">
+            <div class="card-header">
+                <h2>
+                    {% if action == 'create' %}
+                        <i class="fas fa-plus-circle"></i> Création d'une fiche de stockage
+                    {% elseif action == 'copy' %}
+                        <i class="fas fa-copy"></i> Duplication d'une fiche de stockage
+                    {% elseif action == 'modify' %}
+                        <i class="fas fa-edit"></i> Modification d'une fiche de stockage
+                    {% endif %}
+                </h2>
+            </div>
 
-                        <div class="form-group">
-                            <label>Emplacement</label><span class="text-red"> *</span>
-                            {{ form_widget(form.idShelvingunit, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                'style':"width: 100%;",
-                                'required':'required',
-                                'data-placeholder':'Selectionez l\'emplacement de ce produit',
-                                'tabindex':"-1"}}) }}
-                        </div>
+            <div class="card-content">
+                {{ form_start(form, {'attr': {'id': 'storage-form', 'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
 
-                        <!-- État physique du produit -->
-                        <div class="unit-card">
-                            <div class="form-group">
-                                <label>État physique du produit</label><span class="text-red"> *</span>
-                                <div class="state-type-container">
-                                    {{ form_widget(form.stateType, {'label_attr': {'class': 'state-type-label'}}) }}
+                <!-- Product identification section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-flask"></i>
+                        <h3>Identification du produit</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-tag"></i> Produit chimique concerné
+                            <span class="text-red">*</span>
+                            <i class="fas fa-info-circle ml-1 text-primary" data-bs-toggle="tooltip" title="Sélectionnez le produit chimique associé à cette fiche"></i>
+                        </label>
+                        {{ form_widget(form.idChimicalproduct, {'attr': {
+                            'class': 'form-control select2',
+                            'required': 'required',
+                            'data-placeholder': 'Rechercher un produit chimique'
+                        }}) }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-map-marker-alt"></i> Emplacement
+                            <span class="text-red">*</span>
+                        </label>
+                        {{ form_widget(form.idShelvingunit, {'attr': {
+                            'class': 'form-control select2',
+                            'required': 'required',
+                            'data-placeholder': 'Sélectionner l\'emplacement de ce produit'
+                        }}) }}
+                    </div>
+                </div>
+
+                <!-- Physical properties section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-vial"></i>
+                        <h3>Propriétés physiques</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">État physique du produit <span class="text-red">*</span></label>
+                        <div class="state-selector">
+                            {% for choice in form.stateType %}
+                                <div class="state-option">
+                                    {{ form_widget(choice, {'attr': {'class': 'state-option-input'}}) }}
+                                    <label for="{{ choice.vars.id }}">
+                                        <i class="fas {% if choice.vars.value == 'solid' %}fa-cube{% else %}fa-tint{% endif %} icon"></i>
+                                        <span>{{ choice.vars.label }}</span>
+                                    </label>
                                 </div>
-                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
 
-                            <!-- text input pour la quantité -->
-                            <div class="form-group">
-                                <label>Quantité en stock</label><span class="text-red"> *</span>
-                                <div class="quantity-group">
-                                    {{ form_widget(form.stockquantity, {'attr': {'class': 'form-control quantity-input',
-                                        'placeholder': 'Entrez une quantité'}}) }}
-                                    {{ form_widget(form.stockUnit, {'attr': {'class': 'form-control unit-selector'}}) }}
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-balance-scale"></i> Quantité en stock
+                            <span class="text-red">*</span>
+                        </label>
+                        <div class="quantity-group">
+                            {{ form_widget(form.stockquantity, {'attr': {
+                                'class': 'form-control quantity-input',
+                                'placeholder': 'Quantité',
+                                'required': 'required'
+                            }}) }}
+                            {{ form_widget(form.stockUnit, {'attr': {
+                                'class': 'form-control unit-selector',
+                                'data-minimum-results-for-search': 'Infinity'
+                            }}) }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-flask"></i> Capacité totale
+                            <span class="text-red">*</span>
+                        </label>
+                        <div class="quantity-group">
+                            {{ form_widget(form.capacity, {'attr': {
+                                'class': 'form-control quantity-input',
+                                'placeholder': 'Capacité',
+                                'required': 'required'
+                            }}) }}
+                            {{ form_widget(form.capacityUnit, {'attr': {
+                                'class': 'form-control unit-selector',
+                                'data-minimum-results-for-search': 'Infinity'
+                            }}) }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-percentage"></i> Pureté
+                        </label>
+                        {{ form_widget(form.purity, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Pureté du produit (ex: 99.5%)'
+                        }}) }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-thermometer-half"></i> Température de stockage (°C)
+                        </label>
+                        {{ form_widget(form.temperature, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Température recommandée'
+                        }}) }}
+                    </div>
+                </div>
+
+                <!-- Identification and tracking section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-barcode"></i>
+                        <h3>Identification et suivi</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-fingerprint"></i> Numéro de série
+                        </label>
+                        {{ form_widget(form.serialnumber, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Numéro de série ou lot'
+                        }}) }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-calendar-alt"></i> {{ form_label(form.opendate) }}
+                        </label>
+                        <div class="date-input">
+                            {{ form_widget(form.opendate, {'attr': {
+                                'class': 'form-control datepicker',
+                                'data-date-language': 'fr',
+                                'placeholder': 'JJ/MM/AAAA'
+                            }}) }}
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-hourglass-end"></i> {{ form_label(form.expirationdate) }}
+                        </label>
+                        <div class="date-input">
+                            {{ form_widget(form.expirationdate, {'attr': {
+                                'class': 'form-control datepicker',
+                                'data-date-language': 'fr',
+                                'placeholder': 'JJ/MM/AAAA'
+                            }}) }}
+                            <i class="fas fa-calendar"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Status & visibility section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-eye"></i>
+                        <h3>Statut et visibilité</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Faut-il archiver ce produit ? <span class="text-red">*</span></label>
+                        <div class="radio-group">
+                            {% for choice in form.isarchived %}
+                                <div class="radio-card">
+                                    {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}}) }}
+                                    <label for="{{ choice.vars.id }}">
+                                        <i class="fas {% if choice.vars.value == false %}fa-box-open{% else %}fa-archive{% endif %}"></i>
+                                        {{ choice.vars.label }}
+                                    </label>
                                 </div>
-                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
 
-                            <div class="form-group">
-                                <label>Capacité totale</label><span class="text-red"> *</span>
-                                <div class="quantity-group">
-                                    {{ form_widget(form.capacity, {'attr': {'class': 'form-control quantity-input',
-                                        'placeholder': 'Entrez une capacité'}}) }}
-                                    {{ form_widget(form.capacityUnit, {'attr': {'class': 'form-control unit-selector'}}) }}
+                    <div class="form-group">
+                        <label class="form-label">Voulez-vous cacher l'emplacement exact ? <span class="text-red">*</span></label>
+                        <div class="radio-group">
+                            {% for choice in form.isrisked %}
+                                <div class="radio-card">
+                                    {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}}) }}
+                                    <label for="{{ choice.vars.id }}">
+                                        <i class="fas {% if choice.vars.value == false %}fa-eye{% else %}fa-eye-slash{% endif %}"></i>
+                                        {{ choice.vars.label }}
+                                    </label>
                                 </div>
-                            </div>
+                            {% endfor %}
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label>Pureté</label>
-                            {{ form_widget(form.purity, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez la pureté du produit'}}) }}
-                        </div>
-
-                        <div class="form-group">
-                            <label>Température de stockage</label> en °C
-                            {{ form_widget(form.temperature, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez la température de stockage du produit'}}) }}
-                        </div>
-
-                        <div class="form-group">
-                            <label>Numéro de série</label>
-                            {{ form_widget(form.serialnumber, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez un numéro de série'}}) }}
-                        </div>
-
-                        <!-- datepicker -->
-                        <div class="form-group">
-                            <label>{{ form_label(form.opendate) }}</label>
-
-                            <div class="input-group date">
-                                <div class="input-group-addon">
-                                    <i class="fa fa-calendar"></i>
+                    <div class="form-group">
+                        <label class="form-label">Statut de publication <span class="text-red">*</span></label>
+                        <div class="radio-group">
+                            {% for choice in form.ispublished %}
+                                <div class="radio-card">
+                                    {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}}) }}
+                                    <label for="{{ choice.vars.id }}">
+                                        <i class="fas {% if choice.vars.value == true %}fa-check-circle{% else %}fa-microscope{% endif %}"></i>
+                                        {{ choice.vars.label }}
+                                    </label>
                                 </div>
-                                {{ form_widget(form.opendate, {'attr': {'class': 'form-control pull-right datepicker',
-                                    'data-date-language':'fr'}}) }}
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional information section -->
+                <div class="form-section">
+                    <div class="section-header">
+                        <i class="fas fa-info-circle"></i>
+                        <h3>Informations complémentaires</h3>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-user"></i> Propriétaire du flacon
+                        </label>
+                        {{ form_widget(form.idProperty, {'attr': {
+                            'class': 'form-control select2',
+                            'data-placeholder': 'Sélectionner le propriétaire'
+                        }}) }}
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-file-pdf"></i> Fiche de prudence
+                        </label>
+                        <div class="file-upload">
+                            {{ form_widget(form.uploadedSecurityFile, {'attr': {'class': 'file-input'}}) }}
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div class="file-prompt">
+                                <p>Déposez votre fichier PDF ici ou cliquez pour parcourir</p>
+                                <p class="text-muted">Taille maximale: 1 Mo</p>
+                            </div>
+                            <div class="file-selected">
+                                Fichier sélectionné: <span class="file-name"></span>
                             </div>
                         </div>
+                    </div>
 
-                        <!-- datepicker -->
-                        <div class="form-group">
-                            <label>{{ form_label(form.expirationdate) }}</label>
-
-                            <div class="input-group date">
-                                <div class="input-group-addon">
-                                    <i class="fa fa-calendar"></i>
-                                </div>
-                                {{ form_widget(form.expirationdate, {'attr': {'class': 'form-control pull-right datepicker',
-                                    'data-date-language':'fr'}}) }}
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-file-alt"></i> Certificat d'analyse
+                        </label>
+                        <div class="file-upload">
+                            {{ form_widget(form.uploadedAnalysisFile, {'attr': {'class': 'file-input'}}) }}
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <div class="file-prompt">
+                                <p>Déposez votre fichier PDF ici ou cliquez pour parcourir</p>
+                                <p class="text-muted">Taille maximale: 1 Mo</p>
+                            </div>
+                            <div class="file-selected">
+                                Fichier sélectionné: <span class="file-name"></span>
                             </div>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label>Faut-il archiver ce produit?</label><span class="text-red"> *</span>
-                            <div class="radio-style">
-                                {{ form_widget(form.isarchived, {'label_attr': {'class': 'radio-label'}},) }}
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-building"></i> Fournisseur
+                        </label>
+                        {{ form_widget(form.idSupplier, {'attr': {
+                            'class': 'form-control select2',
+                            'data-placeholder': 'Sélectionner le fournisseur'
+                        }}) }}
+                    </div>
 
-                        <div class="form-group">
-                            <label>Voulez-vous cacher l'emplacement exact de ce flacon?</label><span class="text-red"> *</span>
-                            <div class="radio-style">
-                                {{ form_widget(form.isrisked, {'label_attr': {'class': 'radio-label'}},) }}
-                            </div>
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-hashtag"></i> Référence fournisseur
+                        </label>
+                        {{ form_widget(form.reference, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Référence du produit chez le fournisseur'
+                        }}) }}
+                    </div>
 
-                        <div class="form-group">
-                            <label>Propriétaire du flacon</label>
-                            {{ form_widget(form.idProperty, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                'style':"width: 100%;",
-                                'data-placeholder':'Selectionez le propriétaire de ce produit',
-                                'tabindex':"-1"}}) }}
-                        </div>
+                    <div class="form-group">
+                        <label class="form-label">
+                            <i class="fas fa-comment-alt"></i> Commentaires
+                        </label>
+                        {{ form_widget(form.commentary, {'attr': {
+                            'class': 'form-control',
+                            'placeholder': 'Informations complémentaires',
+                            'rows': '4'
+                        }}) }}
+                    </div>
+                </div>
 
-                        <div class="form-group">
-                            <label>Fiche de prudence </label> (fichier PDF)
-                            {{ form_widget(form.uploadedSecurityFile, {'attr': {'class': 'form-control'}}) }}
-                        </div>
+                {{ form_rest(form) }}
 
-                        <div class="form-group">
-                            <label>Certificat d'analyse </label> (fichier PDF)
-                            {{ form_widget(form.uploadedAnalysisFile, {'attr': {'class': 'form-control'}}) }}
-                        </div>
+                <div class="form-footer">
+                    {% if action == 'create' %}
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-save"></i> Créer la fiche
+                        </button>
+                    {% elseif action == 'copy' %}
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="fas fa-copy"></i> Dupliquer la fiche
+                        </button>
+                    {% elseif action == 'modify' %}
+                        <button type="submit" class="btn btn-success btn-lg">
+                            <i class="fas fa-check-circle"></i> Enregistrer les modifications
+                        </button>
+                    {% endif %}
+                </div>
 
-                        <div class="form-group">
-                            <label>Fournisseur</label>
-                            {{ form_widget(form.idSupplier, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                'style':"width: 100%;",
-                                'data-placeholder': 'Selectionnez le fournisseur de ce produit',
-                                'tabindex':"-1"}}) }}
-                        </div>
-
-                        <div class="form-group">
-                            <label>Référence du produit chez le fournisseur</label>
-                            {{ form_widget(form.reference, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez la référence fournisseur du produit'}}) }}
-                        </div>
-
-                        <div class="form-group"><span class="text-red"> *</span>
-                            <label>Voulez-vous publier directement ce produit et le rendre consultable ou le placer en analyse?</label>
-                            <div class="radio-style">
-                                {{ form_widget(form.ispublished, {'label_attr': {'class': 'radio-label'}},) }}
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label>Commentaires</label>
-                            {{ form_widget(form.commentary, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez les informations complémentaires que vous souhaitez'}}) }}
-                        </div>
-
-                        {{ form_rest(form) }}
-
-                        {% if action == 'create' %}
-                            <div class="box-footer">
-                                <button type="submit" class="btn btn-warning">Ajouter</button>
-                            </div>
-                        {% elseif action == 'copy' %}
-                            <div class="box-footer">
-                                <button type="submit" class="btn bg-maroon">Dupliquer</button>
-                            </div>
-                        {% elseif action == 'modify' %}
-                            <div class="box-footer">
-                                <button type="submit" class="btn btn-success">Modifier</button>
-                            </div>
-                        {% endif %}
-                        {{ form_end(form) }}
-                    </div><!-- /.box-body -->
-                </div><!-- /.tab-pane -->
-            </div><!-- /.tab-content -->
+                {{ form_end(form) }}
+            </div>
         </div>
     </div>
 {% endblock %}
 
 {% block javascripts %}
-    <!-- bootstrap datepicker -->
+    <!-- Bootstrap datepicker -->
     <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
     <!-- Language script -->
     <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
-
-    <!-- Code javaScript qui paramètre le widget des dates -->
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $('.datepicker').datepicker({
-                "format": "dd/mm/yyyy",
-                "language": "fr",
-                "keyboardNavigation": false,
-                "setDate": new Date(),
-                "autoclose": true,
-                "clearBtn": true,
-                "todayHighlight": true
-            });
-
-            // Script pour gérer les unités en fonction de l'état physique
-            function updateUnitOptions() {
-                var stateType = $('input[name="storagecard_resp[stateType]"]:checked').val();
-
-                if (stateType === 'solid') {
-                    // Unités pour les solides
-                    $('#storagecard_resp_stockUnit option').remove();
-                    $('#storagecard_resp_capacityUnit option').remove();
-
-                    var solidUnits = [
-                        {value: 'g', text: 'g'},
-                        {value: 'mg', text: 'mg'},
-                        {value: 'kg', text: 'kg'}
-                    ];
-
-                    $.each(solidUnits, function(index, unit) {
-                        $('#storagecard_resp_stockUnit').append($('<option>', {
-                            value: unit.value,
-                            text: unit.text
-                        }));
-                        $('#storagecard_resp_capacityUnit').append($('<option>', {
-                            value: unit.value,
-                            text: unit.text
-                        }));
-                    });
-                } else {
-                    // Unités pour les liquides
-                    $('#storagecard_resp_stockUnit option').remove();
-                    $('#storagecard_resp_capacityUnit option').remove();
-
-                    var liquidUnits = [
-                        {value: 'ml', text: 'ml'},
-                        {value: 'cl', text: 'cl'},
-                        {value: 'l', text: 'l'}
-                    ];
-
-                    $.each(liquidUnits, function(index, unit) {
-                        $('#storagecard_resp_stockUnit').append($('<option>', {
-                            value: unit.value,
-                            text: unit.text
-                        }));
-                        $('#storagecard_resp_capacityUnit').append($('<option>', {
-                            value: unit.value,
-                            text: unit.text
-                        }));
-                    });
-                }
-            }
-
-            // Style visuel pour le sélecteur d'état
-            function updateStateTypeUI() {
-                $('.state-type-label').removeClass('active');
-                $('input[name="storagecard_resp[stateType]"]:checked').parent().addClass('active');
-            }
-
-            // Initialisation
-            updateUnitOptions();
-            updateStateTypeUI();
-
-            // Écouteurs d'événements
-            $('input[name="storagecard_resp[stateType]"]').change(function() {
-                updateUnitOptions();
-                updateStateTypeUI();
-            });
-        });
-    </script>
     <!-- Select2 -->
     <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
-    <!-- Page script -->
-    <script>
-        $(document).ready(function () {
-            //Initialize Select2 Elements
-            $('.select2').select2()
-        });
-    </script>
+    <!-- Custom JS -->
+    <script src="{{ asset('assets/js/storagecard.js') }}"></script>
 {% endblock %}
