@@ -7,121 +7,534 @@
     <!-- DataTables -->
     <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        /* Styles modernisés */
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2980b9;
+            --accent-color: #f39c12;
+            --danger-color: #e74c3c;
+            --success-color: #2ecc71;
+            --light-gray: #f8f9fa;
+            --medium-gray: #e9ecef;
+            --dark-gray: #495057;
+            --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            --border-radius: 8px;
+            --transition: all 0.3s ease;
+        }
 
+        .page-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 30px;
+            border-radius: var(--border-radius);
+            margin-bottom: 25px;
+            box-shadow: var(--box-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .page-header:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: rgba(255, 255, 255, 0.1);
+            transform: rotate(30deg);
+            pointer-events: none;
+        }
+
+        .page-header h1 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .page-header p {
+            font-size: 16px;
+            opacity: 0.8;
+            margin-bottom: 0;
+        }
+
+        .card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            margin-bottom: 25px;
+            overflow: hidden;
+            border: none;
+        }
+
+        .card-header {
+            background-color: var(--light-gray);
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--medium-gray);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .card-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--dark-gray);
+            margin: 0;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        /* Tableau modernisé */
+        .modern-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        .modern-table th {
+            background-color: var(--light-gray);
+            color: var(--dark-gray);
+            font-weight: 600;
+            text-align: left;
+            padding: 12px 15px;
+            border-bottom: 2px solid var(--medium-gray);
+        }
+
+        .modern-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid var(--medium-gray);
+            vertical-align: middle;
+        }
+
+        .modern-table tr:hover {
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+
+        /* Pagination modernisée */
+        .dataTables_paginate .paginate_button {
+            padding: 8px 12px;
+            margin: 0 2px;
+            border-radius: 4px;
+            border: 1px solid var(--medium-gray);
+            background-color: white;
+            transition: var(--transition);
+        }
+
+        .dataTables_paginate .paginate_button:hover {
+            background-color: var(--light-gray);
+            border-color: var(--primary-color);
+        }
+
+        .dataTables_paginate .paginate_button.current {
+            background-color: var(--primary-color);
+            border-color: var(--primary-color);
+            color: white !important;
+        }
+
+        /* Badges et étiquettes */
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 4px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+
+        .badge-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .badge-danger {
+            background-color: var(--danger-color);
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .badge-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        /* Boutons */
+        .btn-modern {
+            padding: 10px 16px;
+            border-radius: 4px;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+        }
+
+        .btn-modern i {
+            margin-right: 8px;
+        }
+
+        .btn-modern-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-modern-primary:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-modern-warning {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn-modern-warning:hover {
+            background-color: #e67e22;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .btn-modern-success {
+            background-color: var(--success-color);
+            color: white;
+        }
+
+        .btn-modern-success:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Icônes de danger */
+        .danger-icon {
+            width: 30px;
+            height: 30px;
+            margin-right: 5px;
+            transition: var(--transition);
+        }
+
+        .danger-icon:hover {
+            transform: scale(1.2);
+        }
+
+        /* Tooltip */
+        .tooltip-trigger {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .tooltip-trigger:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .tooltip-content {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-10px);
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.2s ease;
+            z-index: 1000;
+        }
+
+        /* Groupe de boutons actions */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* Style du splash texte */
+        .cmr-tag {
+            background-color: var(--danger-color);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-weight: 500;
+            font-size: 12px;
+        }
+
+        /* Responsive pour tableaux */
+        @media (max-width: 768px) {
+            .table-responsive {
+                overflow-x: auto;
+            }
+
+            .modern-table th,
+            .modern-table td {
+                white-space: nowrap;
+            }
+        }
+
+        /* Animation pour le chargement */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Filtres de recherche */
+        .dataTables_filter input {
+            border: 1px solid var(--medium-gray);
+            border-radius: 4px;
+            padding: 8px 12px;
+            width: 250px;
+            margin-left: 10px;
+        }
+
+        .dataTables_filter input:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.25);
+        }
+
+        /* Statut info */
+        .info-box {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+            background-color: var(--light-gray);
+            padding: 15px;
+            border-radius: var(--border-radius);
+        }
+
+        .info-box i {
+            font-size: 24px;
+            margin-right: 15px;
+            color: var(--primary-color);
+        }
+
+        .info-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            flex: 1;
+            min-width: 200px;
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .stat-card .icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background-color: rgba(52, 152, 219, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+        .stat-card .icon i {
+            font-size: 24px;
+            color: var(--primary-color);
+        }
+
+        .stat-card h3 {
+            font-size: 24px;
+            font-weight: 600;
+            margin: 0 0 5px 0;
+        }
+
+        .stat-card p {
+            color: var(--dark-gray);
+            margin: 0;
+        }
+
+        .stat-card.danger .icon {
+            background-color: rgba(231, 76, 60, 0.1);
+        }
+
+        .stat-card.danger .icon i {
+            color: var(--danger-color);
+        }
+
+
+    </style>
 {% endblock %}
 
 {% block title %}
-Khemeia | Historique personnel
+    Khemeia | Historique personnel
 {% endblock %}
 
 {% block body %}
-<section>
-    <div class="box box-warning">
-        <div class="box-header with-border">
-            <h3 class="box-title">Historique personnel de contact avec les produits chimiques</h3>
-        </div><!-- /.box-header -->
+    <div class="container-fluid">
+        <!-- En-tête de page moderne -->
+        <div class="page-header fade-in">
+            <h1><i class="fas fa-history"></i> Historique personnel</h1>
+            <p>Votre historique d'utilisation et de contact avec les produits chimiques</p>
+        </div>
 
-        <div class="box-body">
-            <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-                <div class="row">
-                    <div class="col-sm-12">
-                        <table id="example2" class="table table-bordered table-hover dataTable">
-                            <thead>
-                                <tr role="row">
-                                    <th>Identifiant unique</th>
-                                    <th>Nom du produit</th>
-                                    <th>Produit CMR:</th>
-                                    <th>Symboles de danger</th>
-                                    <th>Conseils de prudence</th>
-                                    <th>Mentions de danger</th>
-                                    <th>Types du produit</th>
-                                    <th>en date du</th>
-                                    <th>quantité utilisée (en ml ou g)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {# S'il y a des armoires #}
-                                {% if tracability is defined %}
-                                    {% if tracability is not null %}
-                                        {# Pour chaque armoire dans la liste
-                                        On boucle pour créer de nouvelles lignes
-                                        dans le tableau sous le même format#}
-                                        {% for oneTracability in tracability %}
-                                            <tr role="row" class="odd">
-                                                <td data-title="Identifiant unique" class="sorting_1">{{ oneTracability.getIdStoragecard().getIdStoragecard() }}</td>
-                                                <td data-title="Nom du produit">{{ oneTracability.getIdStoragecard().getIdChimicalproduct().getNameChimicalproduct() }}</td>
-                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIsCMR() %}
-                                                    <td data-title="Produit CMR:">Oui</td>
-                                                {% else %}
-                                                    <td data-title="Produit CMR:">Non</td>
-                                                {% endif %}
+        <!-- Statistiques rapides -->
+        <div class="info-stats fade-in">
+            {% set totalProducts = tracability|length %}
+            {% set cmrCount = 0 %}
+            {% for oneTracability in tracability %}
+                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIsCMR() %}
+                    {% set cmrCount = cmrCount + 1 %}
+                {% endif %}
+            {% endfor %}
 
-                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol()|length > 0 %}
-                                                    <td data-title="Symboles de danger">
-                                                        {% for dangerSymbol in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol() %}
-                                                            <img
-                                                                src="{{ asset('uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}" 
-                                                                alt="{{ dangerSymbol.getDescriptionDangersymbol() }}"
-                                                                height="50px"
-                                                                width="50px">
-                                                        {% endfor %}
-                                                    </td>
-                                                {% else %}
-                                                    <td></td>
-                                                {% endif %}
-
-                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdCautionaryadvice()|length > 0  %}
-                                                    <td data-title="Conseils de prudence">
-                                                        {% for cautionaryAdvice in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdCautionaryadvice() %}
-                                                            <span class="label label-primary" title="{{ cautionaryAdvice.getSentenceCautionaryadvice() }}">{{ cautionaryAdvice.getNameCautionaryadvice() }}</span>
-                                                        {% endfor %}
-                                                    </td>
-                                                {% else %}
-                                                    <td></td>
-                                                {% endif %}
-                                                
-                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangernote()|length > 0  %}
-                                                    <td data-title="Mentions de danger">
-                                                            {% for dangerNote in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangernote() %}
-                                                                <span class="label label-primary" title="{{ dangerNote.getSentenceDangernote() }}">{{ dangerNote.getNameDangernote() }}</span>
-                                                            {% endfor %}
-                                                    </td>
-                                                {% else %}
-                                                    <td></td>
-                                                {% endif %}
-
-                                                {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdType()|length > 0  %}
-                                                    <td data-title="Types du produit">
-                                                            {% for type in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdType() %}
-                                                                <span class="label label-primary">{{ type.getNameType() }}</span>
-                                                            {% endfor %}
-                                                    </td>
-                                                {% else %}
-                                                    <td></td>
-                                                {% endif %}
-                                        
-                                                <td data-title="en date du">{{ oneTracability.getRetiredate().format('d/m/Y') }}</td>
-                                                <td data-title="quantité utilisée (en ml ou g)">{{ oneTracability.getRetirequantity() }}</td>
-                                            </tr>
-                                        {% endfor %}
-                                    {% endif %}
-                                {% endif %}
-                            </tbody>
-                        </table>
-                    </div><!-- /.col -->
-                </div><!-- /.row -->
+            <div class="stat-card">
+                <div class="icon">
+                    <i class="fas fa-flask"></i>
+                </div>
+                <h3>{{ totalProducts }}</h3>
+                <p>Produits manipulés</p>
             </div>
-        </div><!-- /.box-body -->
-    </div>
 
-    <div class="row no-print">
-        <div class="col-xs-12">
-            <button type="button" id="btnPrint" class="btn btn-success pull-right">
-                <i class="fa fa-print"></i> Imprimer
-            </button>
+            <div class="stat-card danger">
+                <div class="icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>{{ cmrCount }}</h3>
+                <p>Produits CMR</p>
+            </div>
+
+            <div class="stat-card">
+                <div class="icon">
+                    <i class="fas fa-calendar-alt"></i>
+                </div>
+                <h3>{{ "now"|date("d/m/Y") }}</h3>
+                <p>Dernière mise à jour</p>
+            </div>
+        </div>
+
+        <!-- Carte principale avec tableau -->
+        <div class="card fade-in">
+            <div class="card-header">
+                <h5 class="card-title"><i class="fas fa-table"></i> Historique des produits chimiques</h5>
+                <a href="{{ path('tracability_export') }}" class="btn-modern btn-modern-warning">
+                    <i class="fas fa-file-pdf"></i> Exporter en PDF
+                </a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table id="example2" class="modern-table">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Produit</th>
+                            <th>CMR</th>
+                            <th>Symboles</th>
+                            <th>Prudence</th>
+                            <th>Dangers</th>
+                            <th>Types</th>
+                            <th>Date</th>
+                            <th>Quantité (ml/g)</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% if tracability is defined and tracability is not null %}
+                            {% for oneTracability in tracability %}
+                                <tr>
+                                    <td>{{ oneTracability.getIdStoragecard().getIdStoragecard() }}</td>
+                                    <td><strong>{{ oneTracability.getIdStoragecard().getIdChimicalproduct().getNameChimicalproduct() }}</strong></td>
+
+                                    <td>
+                                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIsCMR() %}
+                                            <span class="cmr-tag"><i class="fas fa-exclamation-triangle"></i> CMR</span>
+                                        {% else %}
+                                            <span class="badge badge-success">Non</span>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol()|length > 0 %}
+                                            <div class="danger-icons">
+                                                {% for dangerSymbol in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol() %}
+                                                    <img
+                                                            src="{{ asset('uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}"
+                                                            alt="{{ dangerSymbol.getDescriptionDangersymbol() }}"
+                                                            class="danger-icon"
+                                                            title="{{ dangerSymbol.getDescriptionDangersymbol() }}">
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdCautionaryadvice()|length > 0 %}
+                                            <div class="badge-container">
+                                                {% for cautionaryAdvice in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdCautionaryadvice() %}
+                                                    <span class="badge badge-primary tooltip-trigger">
+                                                        {{ cautionaryAdvice.getNameCautionaryadvice() }}
+                                                        <span class="tooltip-content">{{ cautionaryAdvice.getSentenceCautionaryadvice() }}</span>
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangernote()|length > 0 %}
+                                            <div class="badge-container">
+                                                {% for dangerNote in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangernote() %}
+                                                    <span class="badge badge-danger tooltip-trigger">
+                                                        {{ dangerNote.getNameDangernote() }}
+                                                        <span class="tooltip-content">{{ dangerNote.getSentenceDangernote() }}</span>
+                                                    </span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>
+                                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdType()|length > 0 %}
+                                            <div class="badge-container">
+                                                {% for type in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdType() %}
+                                                    <span class="badge badge-warning">{{ type.getNameType() }}</span>
+                                                {% endfor %}
+                                            </div>
+                                        {% endif %}
+                                    </td>
+
+                                    <td>{{ oneTracability.getRetiredate().format('d/m/Y') }}</td>
+                                    <td>{{ oneTracability.getRetirequantity() }}</td>
+                                </tr>
+                            {% endfor %}
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
-</section>
 {% endblock %}
 
 {% block javascripts %}
@@ -131,23 +544,48 @@ Khemeia | Historique personnel
     <!-- Page script -->
     <script>
         $(document).ready(function () {
-            //Initialize #example2 Elements
+            // Initialisation de DataTables avec configuration moderne
             $('#example2').DataTable({
-            'paging'      : true,
-            'lengthChange': false,
-            'searching'   : true,
-            'ordering'    : true,
-            'info'        : true,
-            'autoWidth'   : false,
-            'language': {
-            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
-        }
-            })
+                'paging': true,
+                'lengthChange': false,
+                'searching': true,
+                'ordering': true,
+                'info': true,
+                'autoWidth': false,
+                'language': {
+                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json",
+                    "paginate": {
+                        "previous": "Précédent",
+                        "next": "Suivant"
+                    }
+                },
+                'responsive': true,
+                'pageLength': 10,
+                'pagingType': 'simple_numbers',
+                'columnDefs': [
+                    { "orderable": false, "targets": [3, 4, 5, 6] }
+                ]
+            });
+
+            // Gestion du bouton d'impression
+            document.getElementById("btnPrint").addEventListener('click', () => {
+                window.print();
+            });
+
+            // Animation pour les badges au survol
+            $('.badge').hover(
+                function() { $(this).css('transform', 'scale(1.1)'); },
+                function() { $(this).css('transform', 'scale(1)'); }
+            );
+
+            // Initialisation des tooltips améliorés
+            $('.tooltip-trigger').on('mouseenter', function() {
+                var tooltip = $(this).find('.tooltip-content');
+                var tooltipWidth = tooltip.outerWidth();
+                var elemWidth = $(this).outerWidth();
+                var leftOffset = (tooltipWidth - elemWidth) / 2;
+                tooltip.css('margin-left', -leftOffset + 'px');
+            });
         });
-        let printButton = document.getElementById("btnPrint");
-        printButton.addEventListener('click', () => {
-            window.print();
-        })
     </script>
 {% endblock %}
-

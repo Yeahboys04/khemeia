@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Historique d'utilisation des produits chimiques</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            color: #333;
+            line-height: 1.3;
+        }
+        .container {
+            width: 100%;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #f39c12;
+        }
+        .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 12px;
+        }
+        .info-box {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 8px;
+            margin-bottom: 15px;
+        }
+        .info-title {
+            font-weight: bold;
+            margin-bottom: 4px;
+            color: #f39c12;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            font-size: 8px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 4px;
+            text-align: left;
+            vertical-align: top;
+        }
+        th {
+            background-color: #f39c12;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        .danger-icon {
+            width: 20px;
+            height: 20px;
+            margin: 2px;
+        }
+        .label {
+            display: inline-block;
+            padding: 2px 3px;
+            font-size: 7px;
+            font-weight: bold;
+            line-height: 1;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: baseline;
+            border-radius: 3px;
+            background-color: #3498db;
+            margin: 1px;
+        }
+        .footer {
+            text-align: center;
+            font-size: 8px;
+            color: #666;
+            margin-top: 20px;
+            padding-top: 8px;
+            border-top: 1px solid #ddd;
+        }
+        .cmr-warning {
+            background-color: #ff9800;
+            color: white;
+            padding: 2px 3px;
+            border-radius: 3px;
+            font-size: 8px;
+            font-weight: bold;
+        }
+        .page-break {
+            page-break-after: always;
+        }
+        .summary {
+            margin-bottom: 30px;
+        }
+        .summary-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .summary-table th,
+        .summary-table td {
+            padding: 8px;
+            text-align: left;
+        }
+        .summary-table th {
+            background-color: #f5f5f5;
+            border-bottom: 2px solid #ddd;
+        }
+        .filter-section {
+            background-color: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        .filter-title {
+            font-weight: bold;
+            color: #f39c12;
+            margin-bottom: 5px;
+        }
+        .filter-item {
+            display: inline-block;
+            background-color: #e9ecef;
+            border-radius: 3px;
+            padding: 3px 7px;
+            margin: 2px;
+            font-size: 11px;
+        }
+
+        .admin-tag {
+            background-color: #ff9800;
+            color: white;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 5px;
+        }
+
+        .highlight {
+            background-color: #fff8e1;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <div class="title">Historique d'utilisation des produits chimiques</div>
+        <div class="subtitle">Rapport généré le {{ date|date('d/m/Y') }}</div>
+    </div>
+
+    <div class="info-box">
+        <div class="info-title">Informations</div>
+        <p><strong>Utilisateur générant le rapport:</strong> {{ user.getFullname() }}
+            {% if is_admin %}<span class="admin-tag">Admin</span>{% endif %}
+        </p>
+        <p><strong>Site:</strong> {{ user.idSite.nameSite }}</p>
+
+        {% if not filters.defaultFilter %}
+            <div class="filter-section">
+                <div class="filter-title">Filtres appliqués:</div>
+
+                {% if is_admin is defined and is_admin %}
+                    {% if showAllUsers is defined and showAllUsers %}
+                        <div class="filter-item highlight">Tous les utilisateurs</div>
+                    {% elseif filters.user is defined and filters.user %}
+                        <div class="filter-item">Utilisateur: {{ filters.user.getFullname() }}</div>
+                    {% endif %}
+                {% endif %}
+
+                {% if filters.filterByCMR %}
+                    <div class="filter-item">Produits CMR uniquement</div>
+                {% endif %}
+
+                {% if filters.dateRangeFilter != 'all' %}
+                    {% if filters.dateRangeFilter == 'lastMonth' %}
+                        <div class="filter-item">Dernier mois</div>
+                    {% elseif filters.dateRangeFilter == 'last3Months' %}
+                        <div class="filter-item">Derniers 3 mois</div>
+                    {% elseif filters.dateRangeFilter == 'last6Months' %}
+                        <div class="filter-item">Derniers 6 mois</div>
+                    {% elseif filters.dateRangeFilter == 'lastYear' %}
+                        <div class="filter-item">Dernière année</div>
+                    {% elseif filters.dateRangeFilter == 'custom' %}
+                        <div class="filter-item">Du {{ filters.startDate|date('d/m/Y') }} au {{ filters.endDate|date('d/m/Y') }}</div>
+                    {% endif %}
+                {% endif %}
+
+                {% if filters.product %}
+                    <div class="filter-item">Produit: {{ filters.product.nameChimicalproduct }}</div>
+                {% endif %}
+
+                {% if filters.sortBy == 'date_desc' %}
+                    <div class="filter-item">Tri: Date (récent → ancien)</div>
+                {% elseif filters.sortBy == 'date_asc' %}
+                    <div class="filter-item">Tri: Date (ancien → récent)</div>
+                {% elseif filters.sortBy == 'product_name' %}
+                    <div class="filter-item">Tri: Nom du produit</div>
+                {% elseif filters.sortBy == 'quantity' %}
+                    <div class="filter-item">Tri: Quantité utilisée</div>
+                {% elseif filters.sortBy == 'user_name' %}
+                    <div class="filter-item">Tri: Nom d'utilisateur</div>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="summary">
+        <div class="info-title">Résumé de l'exposition</div>
+        <p>Nombre total de produits manipulés: <strong>{{ tracability|length }}</strong></p>
+
+        {% set cmrCount = 0 %}
+        {% for oneTracability in tracability %}
+            {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIsCMR() %}
+                {% set cmrCount = cmrCount + 1 %}
+            {% endif %}
+        {% endfor %}
+
+        <p>Produits CMR manipulés: <strong>{{ cmrCount }}</strong></p>
+
+        {% if is_admin and showAllUsers is defined and showAllUsers %}
+            {% set userSet = {} %}
+            {% for oneTracability in tracability %}
+                {% set userSet = userSet|merge({(oneTracability.getIdUser().getIdUser()): oneTracability.getIdUser().getFullname()}) %}
+            {% endfor %}
+            <p>Nombre d'utilisateurs concernés: <strong>{{ userSet|length }}</strong></p>
+        {% endif %}
+    </div>
+
+    <table>
+        <thead>
+        <tr>
+            <th>Produit</th>
+
+            {# Ajout colonne utilisateur pour les admins si "tous les utilisateurs" est sélectionné #}
+            {% if is_admin is defined and is_admin and showAllUsers is defined and showAllUsers %}
+                <th>Utilisateur</th>
+            {% endif %}
+
+            {% if filters.showDate %}
+                <th>Date</th>
+            {% endif %}
+            {% if filters.showQuantity %}
+                <th>Quantité (ml/g)</th>
+            {% endif %}
+            {% if filters.showCMR %}
+                <th>CMR</th>
+            {% endif %}
+            {% if filters.showSymbols %}
+                <th>Symboles</th>
+            {% endif %}
+            {% if filters.showCautionaryAdvice %}
+                <th>Conseils de prudence</th>
+            {% endif %}
+            {% if filters.showDangerNotes %}
+                <th>Mentions de danger</th>
+            {% endif %}
+            {% if filters.showProductTypes %}
+                <th>Types</th>
+            {% endif %}
+        </tr>
+        </thead>
+        <tbody>
+        {% for oneTracability in tracability %}
+            <tr>
+                <td>{{ oneTracability.getIdStoragecard().getIdChimicalproduct().getNameChimicalproduct() }}</td>
+
+                {# Affiche l'utilisateur pour l'admin si option "tous les utilisateurs" est sélectionnée #}
+                {% if is_admin is defined and is_admin and showAllUsers is defined and showAllUsers %}
+                    <td>{{ oneTracability.getIdUser().getFullname() }}</td>
+                {% endif %}
+
+                {% if filters.showDate %}
+                    <td>{{ oneTracability.getRetiredate()|date('d/m/Y') }}</td>
+                {% endif %}
+
+                {% if filters.showQuantity %}
+                    <td>{{ oneTracability.getRetirequantity() }}</td>
+                {% endif %}
+
+                {% if filters.showCMR %}
+                    <td>
+                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIsCMR() %}
+                            <span class="cmr-warning">CMR</span>
+                        {% else %}
+                            Non
+                        {% endif %}
+                    </td>
+                {% endif %}
+
+                {% if filters.showSymbols %}
+                    <td>
+                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol()|length > 0 %}
+                            {% for dangerSymbol in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangersymbol() %}
+                                <img class="danger-icon" src="data:image/png;base64,{{ getDangerSymbolBase64(dangerSymbol.getIcon()) }}" alt="{{ dangerSymbol.getDescriptionDangersymbol() }}">
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                {% endif %}
+
+                {% if filters.showCautionaryAdvice %}
+                    <td>
+                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdCautionaryadvice()|length > 0 %}
+                            {% for cautionaryAdvice in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdCautionaryadvice() %}
+                                <span class="label">{{ cautionaryAdvice.getNameCautionaryadvice() }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                {% endif %}
+
+                {% if filters.showDangerNotes %}
+                    <td>
+                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangernote()|length > 0 %}
+                            {% for dangerNote in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdDangernote() %}
+                                <span class="label">{{ dangerNote.getNameDangernote() }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                {% endif %}
+
+                {% if filters.showProductTypes %}
+                    <td>
+                        {% if oneTracability.getIdStoragecard().getIdChimicalproduct().getIdType()|length > 0  %}
+                            {% for type in oneTracability.getIdStoragecard().getIdChimicalproduct().getIdType() %}
+                                <span class="label">{{ type.getNameType() }}</span>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <p>Ce document est un historique d'utilisation des produits chimiques généré automatiquement.</p>
+        <p>© {{ "now"|date("Y") }} - Khemeia</p>
+    </div>
+</div>
+</body>
+</html>
