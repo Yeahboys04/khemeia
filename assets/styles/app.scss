@@ -1,0 +1,33 @@
+// Import Bootstrap
+@import "~bootstrap/dist/css/bootstrap.min.css";
+
+// Import Font Awesome
+@import "~@fortawesome/fontawesome-free/css/all.min.css";
+
+// Import AdminLTE
+@import "~admin-lte/dist/css/AdminLTE.min.css";
+@import "~admin-lte/dist/css/skins/_all-skins.min.css";
+
+// Import base styles
+@import "google_fonts";
+@import "general";
+@import "responsive";
+
+
+
+// datapicker
+
+
+// Import component styles
+@import "components/header";
+@import "./components/georessources";
+
+// Optionally import page-specific styles as needed
+// @import "pages/home";
+// @import "pages/login";
+// @import "pages/storagecard";
+//@import "pages/remove_product";
+
+
+// Print styles should be imported last
+// @import "print";

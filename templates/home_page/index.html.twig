@@ -1,9 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/home_page_style.css') }}">
-{% endblock %}
+    {% block page_stylesheets %}
+        {{ encore_entry_link_tags('home') }}
+    {% endblock %}
 
 {% block title %}
 Khemeia | Accueil

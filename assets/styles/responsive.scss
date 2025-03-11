@@ -1,0 +1,37 @@
+@media screen and (max-device-width: 800px) {
+    #home_page p {
+        font-size: 3em;
+        line-height: 70px;
+    }
+    .login {
+        justify-content: inherit !important;
+        justify-items: inherit !important;
+        display: inherit !important;
+    }
+    .sidebar, .content-wrapper {
+        padding-top: 130px;
+    }
+    .row {
+
+    }
+    .table thead {
+        display: none;
+    }
+    .table tr{
+        display: block;
+        margin-bottom: 40px;
+    }
+    .table td {
+        display: block;
+        text-align: right;
+        min-height: 2em;
+    }
+    .table td:before {
+        content: attr(data-title);
+        float: left;
+        font-weight: bold;
+    }
+    .inner {
+        min-height: 130px;
+    }
+}

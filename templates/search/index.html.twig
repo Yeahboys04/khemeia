@@ -1,12 +1,10 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <!-- Select2 -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
-    <link rel="stylesheet" href="{{ asset('assets/css/remove_product.css') }}">
+
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('remove_product') }}
 {% endblock %}
+
 
 {% block title %}
     Khemeia | Consultation
@@ -19,7 +17,7 @@
                 <h3 class="search-title">Recherche d'un produit à consulter</h3>
             </div>
 
-            <form role="form" action="{{ path('search')}}" method="post">
+            <form role="form" action="{{ path('search') }}" method="post">
                 <div class="row">
                     <div class="col-md-12">
                         <div class="search-all-field">
@@ -118,7 +116,8 @@
                                     <th>Quantité en stock</th>
                                     <th>Fournisseur</th>
                                     <th>Emplacement</th>
-                                    {% if site is null %}<th>Site</th>{% endif %}
+                                    {% if site is null %}
+                                        <th>Site</th>{% endif %}
                                     <th class="no-print">Actions</th>
                                 </tr>
                                 </thead>
@@ -126,7 +125,8 @@
                                 {% for oneProduct in storagecards %}
                                     {% if oneProduct.getIsarchived() == false %}
                                         <tr>
-                                            <td data-title="Identifiant unique" class="sorting_1">{{ oneProduct.getIdStoragecard() }}</td>
+                                            <td data-title="Identifiant unique"
+                                                class="sorting_1">{{ oneProduct.getIdStoragecard() }}</td>
                                             <td data-title="Nom du produit">{{ oneProduct.getIdChimicalproduct() }}</td>
                                             <td data-title="Formule brute">{{ oneProduct.getIdChimicalproduct().getFormula() }}</td>
                                             <td data-title="N° de CAS">{{ oneProduct.getIdChimicalproduct().getCasnumber() }}</td>
@@ -144,7 +144,8 @@
                                             <td class="no-print">
                                                 <div class="btn-action-group">
                                                     {# Consultation accessible pour tout le monde #}
-                                                    <a href="{{ path('read', {id: oneProduct.getIdStoragecard()}) }}" class="btn btn-info btn-sm" title="Consultation">
+                                                    <a href="{{ path('read', {id: oneProduct.getIdStoragecard()}) }}"
+                                                       class="btn btn-info btn-sm" title="Consultation">
                                                         <i class="fa fa-file-text"></i>
                                                     </a>
 
@@ -159,25 +160,29 @@
                                                                 {# ET Si le produit est épuisé #}
                                                                 {% if oneProduct.getStockquantity() is same as (0) %}
                                                                     {# On empeche le retrait #}
-                                                                    <button class="btn btn-primary btn-sm" title="Retrait" disabled>
+                                                                    <button class="btn btn-primary btn-sm"
+                                                                            title="Retrait" disabled>
                                                                         <i class="fa fa-flask"></i>
                                                                     </button>
                                                                 {% else %}
                                                                     {# Sinon on autorise le retrait #}
-                                                                    <a href="{{ path('remove_quantity', {id: oneProduct.getIdStoragecard()}) }}" class="btn btn-primary btn-sm" title="Retrait">
+                                                                    <a href="{{ path('remove_quantity', {id: oneProduct.getIdStoragecard()}) }}"
+                                                                       class="btn btn-primary btn-sm" title="Retrait">
                                                                         <i class="fa fa-flask"></i>
                                                                     </a>
                                                                 {% endif %}
                                                             {% else %}
                                                                 {# On empeche le retrait #}
-                                                                <button class="btn btn-primary btn-sm" title="Retrait" disabled>
+                                                                <button class="btn btn-primary btn-sm" title="Retrait"
+                                                                        disabled>
                                                                     <i class="fa fa-flask"></i>
                                                                 </button>
                                                             {% endif %}
                                                         {% endif %}
                                                         {# Si l'utilisateur est responsable, on montre l'historique de déplacement du produit #}
-                                                        {% if app.user.getIdStatus.getNameStatus() == 'responsable'%}
-                                                            <a href="{{ path('moved_history', {id: oneProduct.getIdStoragecard()}) }}" class="btn btn-purple btn-sm" title="Historique">
+                                                        {% if app.user.getIdStatus.getNameStatus() == 'responsable' %}
+                                                            <a href="{{ path('moved_history', {id: oneProduct.getIdStoragecard()}) }}"
+                                                               class="btn btn-purple btn-sm" title="Historique">
                                                                 <i class="fa fa-folder-open"></i>
                                                             </a>
                                                         {% endif %}
@@ -185,13 +190,16 @@
 
                                                     {# Si l'utilisateur est administrateur, il a tous les droits #}
                                                     {% if app.user.getIdStatus.getNameStatus() == 'administrateur' %}
-                                                        <a href="{{ path('remove_quantity', {id: oneProduct.getIdStoragecard()}) }}" class="btn btn-primary btn-sm" title="Retrait">
+                                                        <a href="{{ path('remove_quantity', {id: oneProduct.getIdStoragecard()}) }}"
+                                                           class="btn btn-primary btn-sm" title="Retrait">
                                                             <i class="fa fa-flask"></i>
                                                         </a>
-                                                        <a href="{{ path('moved_history', {id: oneProduct.getIdStoragecard()}) }}" class="btn btn-purple btn-sm" title="Historique">
+                                                        <a href="{{ path('moved_history', {id: oneProduct.getIdStoragecard()}) }}"
+                                                           class="btn btn-purple btn-sm" title="Historique">
                                                             <i class="fa fa-folder-open"></i>
                                                         </a>
-                                                        <a href="{{ path('admin_storage_modify', {id: oneProduct.getIdStoragecard()}) }}" class="btn btn-success btn-sm" title="Modifier">
+                                                        <a href="{{ path('admin_storage_modify', {id: oneProduct.getIdStoragecard()}) }}"
+                                                           class="btn btn-success btn-sm" title="Modifier">
                                                             <i class="fa fa-pencil"></i>
                                                         </a>
                                                     {% endif %}
@@ -222,9 +230,6 @@
     </section>
 {% endblock %}
 
-{% block javascripts %}
-    <!-- Select2 -->
-    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
-    <!-- Page script -->
-    <script src="{{ asset('assets/js/remove_product.js') }}"></script>
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('remove_product') }}
 {% endblock %}

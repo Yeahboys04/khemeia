@@ -1,8 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+{% block page_stylesheets %}
+
 {% endblock %}
 
 {% block title %}
@@ -116,7 +115,7 @@ Khemeia | Consultation
                     <label>Certificat d'analyse</label>
                     <p>
                         <a href="{{ asset('uploads/Certificats_d_analyse/' ~ storagecard.getIdAnalysisfile().getNameAnalysisfile()) }}" class="btn btn-block btn-social btn-pdf">
-                            <i class="fa fa-file-pdf-o"></i> Voir le certificat d'analyse
+                            <i class="fa-solid fa-file-pdf"></i> Voir le certificat d'analyse
                         </a>
                     </p>
                 </div>
@@ -248,12 +247,6 @@ Khemeia | Consultation
 </section>
 {% endblock %}
 
-{% block javascripts %}
-    <!-- Page script -->
-    <script type="text/javascript">
-        let printButton = document.getElementById("btnPrint");
-        printButton.addEventListener('click', () => {
-            window.print();
-        })
-    </script>
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('printBtn') }}
 {% endblock %}

@@ -1,10 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <!-- Datepicker -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+{% block page_stylesheets %}
+
 {% endblock %}
 
 {% block title %}
@@ -370,34 +367,8 @@
     </section>
 {% endblock %}
 
-{% block javascripts %}
+{% block page_javascripts %}
+
+    {{ encore_entry_script_tags('edit_product') }}
     <!-- Select2 -->
-    <script src="{{ asset('assets/js/form.js') }}"></script>
-    <!-- Page script -->
-    <script type="text/javascript">
-        let printButton = document.getElementById("btnPrint");
-        printButton.addEventListener('click', () => {
-            window.print();
-        });
-    </script>
-
-    <!-- bootstrap datepicker -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
-    <!-- Language script -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
-
-    <!-- Code javaScript qui paramètre le widget des dates -->
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $('.datepicker').datepicker({
-                "format": "dd/mm/yyyy",
-                "language": "fr",
-                "keyboardNavigation": false,
-                "setDate": new Date(),
-                "autoclose": true,
-                "clearBtn": true,
-                "todayHighlight": true
-            });
-        });
-    </script>
 {% endblock %}
