@@ -1,0 +1,331 @@
+// Variables
+$primary-color: #f39c12;
+$secondary-color: #f39c12;
+$success-color: #00a65a;
+$info-color: #00c0ef;
+$warning-color: #f39c12;
+$danger-color: #dd4b39;
+$light-gray: #f4f4f4;
+$medium-gray: #d2d6de;
+$dark-gray: #444;
+$white: #fff;
+$box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+$border-radius: 3px;
+$transition-time: 0.3s;
+
+// Mixins
+@mixin transition($property: all, $time: $transition-time, $easing: ease) {
+  transition: $property $time $easing;
+}
+
+@mixin box-shadow($shadow: $box-shadow) {
+  box-shadow: $shadow;
+}
+
+// Styles spécifiques à la page d'inventaire
+.inventory-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.inventory-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 15px;
+  margin-bottom: 20px;
+}
+
+.search-input-wrapper {
+  position: relative;
+  flex-grow: 1;
+  max-width: 400px;
+
+  i {
+    position: absolute;
+    left: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #aaa;
+  }
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 15px 10px 40px;
+  border: 1px solid $medium-gray;
+  border-radius: $border-radius;
+  font-size: 14px;
+  @include transition;
+
+  &:focus {
+    border-color: $primary-color;
+    @include box-shadow(0 0 8px rgba($primary-color, 0.2));
+    outline: none;
+  }
+}
+
+.table-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  white-space: nowrap;
+}
+
+.page-size-select {
+  padding: 6px 12px;
+  border: 1px solid $medium-gray;
+  border-radius: $border-radius;
+  @include transition;
+
+  &:focus {
+    border-color: $primary-color;
+    outline: none;
+  }
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  margin-bottom: 20px;
+
+  th {
+    background-color: $light-gray;
+    color: $dark-gray;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 12px;
+    letter-spacing: 0.5px;
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 2px solid $medium-gray;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    cursor: pointer;
+    @include transition(background-color);
+
+    &:hover {
+      background-color: darken($light-gray, 5%);
+    }
+
+    &.sorted-asc::after {
+      content: " ▲";
+      font-size: 12px;
+      color: $primary-color;
+    }
+
+    &.sorted-desc::after {
+      content: " ▼";
+      font-size: 12px;
+      color: $primary-color;
+    }
+  }
+
+  td {
+    padding: 12px 8px;
+    border-bottom: 1px solid $light-gray;
+    vertical-align: middle;
+  }
+
+  tr {
+    &:hover td {
+      background-color: #f8f9fa;
+    }
+
+    &:last-child td {
+      border-bottom: none;
+    }
+  }
+}
+
+.badge-purity {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.badge-success {
+  background-color: rgba($success-color, 0.2);
+  color: darken($success-color, 10%);
+}
+
+.badge-warning {
+  background-color: rgba($warning-color, 0.2);
+  color: darken($warning-color, 10%);
+}
+
+.badge-danger {
+  background-color: rgba($danger-color, 0.2);
+  color: darken($danger-color, 10%);
+}
+
+.action-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.pagination-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.pagination {
+  margin: 0;
+
+  > li {
+    > a {
+      min-width: 38px;
+      text-align: center;
+      @include transition;
+    }
+
+    &.active > a {
+      background-color: $primary-color;
+      border-color: $primary-color;
+      color: $white;
+      z-index: 3;
+    }
+  }
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 50px 20px;
+  text-align: center;
+
+  i {
+    font-size: 48px;
+    color: #ddd;
+    margin-bottom: 15px;
+  }
+
+  h3 {
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  p {
+    color: lighten($dark-gray, 20%);
+    margin-bottom: 15px;
+  }
+}
+
+.loading-overlay {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.7);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+
+  &.active {
+    display: flex;
+  }
+}
+
+.loading-spinner {
+  border: 4px solid rgba($primary-color, 0.2);
+  border-radius: 50%;
+  border-top: 4px solid $primary-color;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+// Animation pour les lignes mises à jour
+@keyframes highlightRow {
+  0% { background-color: rgba($primary-color, 0.2); }
+  100% { background-color: transparent; }
+}
+
+.highlight-animation {
+  animation: highlightRow 2s ease;
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .inventory-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .search-input-wrapper {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 10px;
+  }
+
+  .table-controls {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .action-buttons {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    width: 100%;
+  }
+
+  .pagination-container {
+    flex-direction: column;
+    gap: 15px;
+    align-items: flex-start;
+  }
+}
+
+// Styles pour l'impression
+@media print {
+  .content-header,
+  .main-header,
+  .main-sidebar,
+  .main-footer,
+  .box-tools,
+  .action-buttons,
+  .pagination-container,
+  .inventory-controls {
+    display: none !important;
+  }
+
+  .box {
+    border: none !important;
+    box-shadow: none !important;
+  }
+
+  .box-header {
+    border-bottom: 2px solid #333 !important;
+  }
+
+  .inventory-table th {
+    background-color: $light-gray !important;
+    color: #000 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .badge-purity {
+    border: 1px solid #ccc !important;
+    color: #000 !important;
+  }
+}

@@ -1,195 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/storagecard.css') }}">
-    <style>
-        /* Corrections spécifiques pour améliorer la lisibilité */
-        .form-control, .custom-select select {
-            height: auto;
-            padding: 12px 16px;
-            line-height: 1.6;
-        }
-
-        .form-label {
-            font-size: 16px;
-            margin-bottom: 8px;
-            font-weight: 600;
-        }
-
-        /* Correction pour la visibilité des textes */
-        .form-control, .custom-select select, .checkbox-label, .radio-label {
-            font-size: 16px;
-        }
-
-        /* Style simplifié pour les cartes */
-        .export-option {
-            border: 2px solid #e0e0e0;
-            background-color: #ffffff;
-            padding: 20px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .export-option:hover {
-            border-color: var(--primary);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
-        }
-
-        .export-option.active {
-            border-color: var(--primary);
-            background-color: #fcf5e8;
-        }
-
-        .export-option h3 {
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            margin-bottom: 15px;
-        }
-
-        .export-option h3 i {
-            margin-right: 10px;
-            color: var(--primary);
-            font-size: 24px;
-        }
-
-        .export-description {
-            margin-bottom: 15px;
-            color: var(--gray);
-        }
-
-        /* Styles pour les checkbox et radio */
-        .checkbox-wrapper {
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-        }
-
-        .checkbox-wrapper input[type="checkbox"] {
-            margin-right: 10px;
-            width: 20px;
-            height: 20px;
-        }
-
-        .checkbox-label {
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-        }
-
-        .checkbox-label i {
-            margin-right: 8px;
-            color: var(--primary);
-        }
-
-        /* Section Fields */
-        .fields-section {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .field-item {
-            flex: 0 0 calc(33.333% - 15px);
-            border: 1px solid #e0e0e0;
-            padding: 15px;
-            border-radius: 8px;
-            background-color: #ffffff;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-        }
-
-        .field-item:hover {
-            border-color: var(--primary-light);
-            background-color: #f9f9f9;
-        }
-
-        .field-item input {
-            margin-right: 10px;
-        }
-
-        @media (max-width: 992px) {
-            .field-item {
-                flex: 0 0 calc(50% - 15px);
-            }
-        }
-
-        @media (max-width: 576px) {
-            .field-item {
-                flex: 0 0 100%;
-            }
-        }
-
-        /* Boutons d'action */
-        .action-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 1px solid #e0e0e0;
-        }
-
-        .action-button {
-            padding: 12px 24px;
-            border-radius: 8px;
-            font-weight: 600;
-            font-size: 16px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            border: none;
-        }
-
-        .action-button i {
-            margin-right: 8px;
-        }
-
-        .action-button.primary {
-            background-color: var(--primary);
-            color: white;
-        }
-
-        .action-button.primary:hover {
-            background-color: var(--primary-dark);
-            transform: translateY(-2px);
-        }
-
-        .action-button.secondary {
-            background-color: #f3f4f6;
-            color: var(--dark);
-        }
-
-        .action-button.secondary:hover {
-            background-color: #e5e7eb;
-        }
-
-        .select2-container {
-            width: 100% !important;
-        }
-
-        .select2-container--default .select2-selection--single {
-            height: 48px;
-            padding: 10px 15px;
-            font-size: 16px;
-            line-height: 1.6;
-            border: 2px solid #e0e0e0;
-            border-radius: 8px;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__arrow {
-            height: 48px;
-        }
-
-        .select2-container--default .select2-selection--single .select2-selection__rendered {
-            line-height: 28px;
-            padding-left: 0;
-        }
-    </style>
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('export_csv') }}
 {% endblock %}
 
 {% block title %}
@@ -197,258 +9,207 @@
 {% endblock %}
 
 {% block body %}
-    <section class="content-header">
-        <h1>
-            Exportation CSV
-            <small>Personnalisation de l'export</small>
-        </h1>
-    </section>
 
-    <div class="storage-container">
-        {{ form_start(form, {'attr': {'id': 'export-form'}}) }}
+    <section class="content">
+        <div class="storage-container">
+            {{ form_start(form, {'attr': {'id': 'export-form'}}) }}
 
-        <!-- Option 1: Export par défaut -->
-        <div class="export-option" id="default-export-option">
-            <h3><i class="fa fa-file-export"></i> Export standard pour GPUC</h3>
-            <div class="export-description">
-                Utilise le format d'exportation préconfiguré pour GPUC avec les champs standards : numéro CAS, quantité, emplacement.
-            </div>
-            <div class="checkbox-wrapper">
-                <input type="checkbox" id="use-default-export" checked>
-                <label for="use-default-export" class="checkbox-label">Utiliser l'export par défaut GPUC</label>
-            </div>
-
-            <div class="hidden">
-                {{ form_widget(form.defaultExport) }}
-            </div>
-        </div>
-
-        <!-- Options personnalisées -->
-        <div id="custom-export-container" style="display: none;">
-            <div class="export-option">
-                <h3><i class="fa fa-filter"></i> Filtres</h3>
+            <!-- Option 1: Export par défaut -->
+            <div class="export-option active" id="default-export-option">
+                <h3><i class="fa fa-file-export"></i> Export standard pour GPUC</h3>
                 <div class="export-description">
-                    Définissez les critères pour filtrer les produits à inclure dans l'export.
+                    Utilise le format d'exportation préconfiguré pour GPUC avec les champs standards : numéro CAS, quantité, emplacement.
+                </div>
+                <div class="checkbox-wrapper">
+                    <input type="checkbox" id="use-default-export" checked>
+                    <label for="use-default-export" class="checkbox-label">Utiliser l'export par défaut GPUC</label>
                 </div>
 
-                <div class="checkbox-wrapper mt-3 mb-3">
-                    {{ form_widget(form.allSites) }}
-                    <label for="{{ form.allSites.vars.id }}" class="checkbox-label">
-                        <i class="fa fa-globe"></i> Exporter les données de tous les sites
-                    </label>
+                <div class="hidden">
+                    {{ form_widget(form.defaultExport) }}
                 </div>
+            </div>
 
-                <div id="site-selector-container">
+            <!-- Options personnalisées -->
+            <div id="custom-export-container" style="display: none;">
+                <div class="export-option">
+                    <h3><i class="fa fa-filter"></i> Filtres</h3>
+                    <div class="export-description">
+                        Définissez les critères pour filtrer les produits à inclure dans l'export.
+                    </div>
+
+                    <div class="checkbox-wrapper mt-3 mb-3">
+                        {{ form_widget(form.allSites) }}
+                        <label for="{{ form.allSites.vars.id }}" class="checkbox-label">
+                            <i class="fa fa-globe"></i> Exporter les données de tous les sites
+                        </label>
+                    </div>
+
+                    <div id="site-selector-container">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group visible">
+                                    {{ form_label(form.site, 'Site', {'label_attr': {'class': 'form-label'}}) }}
+                                    <div class="native-select-container">
+                                        {{ form_widget(form.site, {'attr': {'class': 'form-control native-select'}}) }}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group visible">
+                                    {{ form_label(form.product, 'Produit chimique (facultatif)', {'label_attr': {'class': 'form-label'}}) }}
+                                    <div class="native-select-container" id="product-dropdown-container">
+                                        {{ form_widget(form.product, {'attr': {'class': 'form-control native-select product-select'}}) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group visible">
-                                {{ form_label(form.site, 'Site', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.site, {'attr': {'class': 'form-control'}}) }}
+                                {{ form_label(form.stockFilter, 'État du stock', {'label_attr': {'class': 'form-label'}}) }}
+                                <div class="native-select-container">
+                                    {{ form_widget(form.stockFilter, {'attr': {'class': 'form-control native-select'}}) }}
+                                </div>
                             </div>
                         </div>
 
                         <div class="col-md-6">
                             <div class="form-group visible">
-                                {{ form_label(form.product, 'Produit chimique (facultatif)', {'label_attr': {'class': 'form-label'}}) }}
-                                {{ form_widget(form.product, {'attr': {'class': 'form-control select2'}}) }}
+                                {{ form_label(form.expirationFilter, 'Date d\'expiration', {'label_attr': {'class': 'form-label'}}) }}
+                                <div class="native-select-container">
+                                    {{ form_widget(form.expirationFilter, {'attr': {'class': 'form-control native-select'}}) }}
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group visible">
-                            {{ form_label(form.stockFilter, 'État du stock', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.stockFilter, {'attr': {'class': 'form-control'}}) }}
-                        </div>
+                    <div class="checkbox-wrapper mt-3">
+                        {{ form_widget(form.includeArchived) }}
+                        <label for="{{ form.includeArchived.vars.id }}" class="checkbox-label">
+                            <i class="fa fa-archive"></i> Inclure les produits archivés
+                        </label>
                     </div>
 
-                    <div class="col-md-6">
-                        <div class="form-group visible">
-                            {{ form_label(form.expirationFilter, 'Date d\'expiration', {'label_attr': {'class': 'form-label'}}) }}
-                            {{ form_widget(form.expirationFilter, {'attr': {'class': 'form-control'}}) }}
-                        </div>
+                    <div class="checkbox-wrapper">
+                        {{ form_widget(form.includeHeaders) }}
+                        <label for="{{ form.includeHeaders.vars.id }}" class="checkbox-label">
+                            <i class="fa fa-table"></i> Inclure les en-têtes de colonnes dans le fichier CSV
+                        </label>
                     </div>
                 </div>
 
-                <div class="checkbox-wrapper mt-3">
-                    {{ form_widget(form.includeArchived) }}
-                    <label for="{{ form.includeArchived.vars.id }}" class="checkbox-label">
-                        <i class="fa fa-archive"></i> Inclure les produits archivés
-                    </label>
-                </div>
+                <div class="export-option">
+                    <h3><i class="fa fa-list"></i> Champs à inclure dans l'export</h3>
+                    <div class="export-description">
+                        Sélectionnez les informations que vous souhaitez exporter pour chaque produit.
+                    </div>
 
-                <div class="checkbox-wrapper">
-                    {{ form_widget(form.includeHeaders) }}
-                    <label for="{{ form.includeHeaders.vars.id }}" class="checkbox-label">
-                        <i class="fa fa-table"></i> Inclure les en-têtes de colonnes dans le fichier CSV
-                    </label>
+                    <div class="fields-section">
+                        <div class="field-item">
+                            {{ form_widget(form.includeCasNumber) }}
+                            <label for="{{ form.includeCasNumber.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-fingerprint"></i> Numéro CAS
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeProductName) }}
+                            <label for="{{ form.includeProductName.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-flask"></i> Nom du produit
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeQuantity) }}
+                            <label for="{{ form.includeQuantity.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-balance-scale"></i> Quantité
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeCapacity) }}
+                            <label for="{{ form.includeCapacity.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-tachometer-alt"></i> Capacité
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeLocation) }}
+                            <label for="{{ form.includeLocation.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-map-marker-alt"></i> Emplacement (Stock, Armoire, Étagère)
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeSite) }}
+                            <label for="{{ form.includeSite.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-building"></i> Site
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeExpiration) }}
+                            <label for="{{ form.includeExpiration.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-calendar-alt"></i> Date d'expiration
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeReference) }}
+                            <label for="{{ form.includeReference.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-tag"></i> Référence
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeSupplier) }}
+                            <label for="{{ form.includeSupplier.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-truck"></i> Fournisseur
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includePurity) }}
+                            <label for="{{ form.includePurity.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-vial"></i> Pureté
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeOpenDate) }}
+                            <label for="{{ form.includeOpenDate.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-box-open"></i> Date d'ouverture
+                            </label>
+                        </div>
+
+                        <div class="field-item">
+                            {{ form_widget(form.includeSerialNumber) }}
+                            <label for="{{ form.includeSerialNumber.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-barcode"></i> N° de série
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
-            <div class="export-option">
-                <h3><i class="fa fa-list"></i> Champs à inclure dans l'export</h3>
-                <div class="export-description">
-                    Sélectionnez les informations que vous souhaitez exporter pour chaque produit.
-                </div>
-
-                <div class="fields-section">
-                    <div class="field-item">
-                        {{ form_widget(form.includeCasNumber) }}
-                        <label for="{{ form.includeCasNumber.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-fingerprint"></i> Numéro CAS
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeProductName) }}
-                        <label for="{{ form.includeProductName.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-flask"></i> Nom du produit
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeQuantity) }}
-                        <label for="{{ form.includeQuantity.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-balance-scale"></i> Quantité
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeCapacity) }}
-                        <label for="{{ form.includeCapacity.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-tachometer-alt"></i> Capacité
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeLocation) }}
-                        <label for="{{ form.includeLocation.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-map-marker-alt"></i> Emplacement (Stock, Armoire, Étagère)
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeSite) }}
-                        <label for="{{ form.includeSite.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-building"></i> Site
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeExpiration) }}
-                        <label for="{{ form.includeExpiration.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-calendar-alt"></i> Date d'expiration
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeReference) }}
-                        <label for="{{ form.includeReference.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-tag"></i> Référence
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeSupplier) }}
-                        <label for="{{ form.includeSupplier.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-truck"></i> Fournisseur
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includePurity) }}
-                        <label for="{{ form.includePurity.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-vial"></i> Pureté
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeOpenDate) }}
-                        <label for="{{ form.includeOpenDate.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-box-open"></i> Date d'ouverture
-                        </label>
-                    </div>
-
-                    <div class="field-item">
-                        {{ form_widget(form.includeSerialNumber) }}
-                        <label for="{{ form.includeSerialNumber.vars.id }}" class="checkbox-label">
-                            <i class="fa fa-barcode"></i> N° de série
-                        </label>
-                    </div>
-                </div>
+            <div class="action-buttons">
+                <a href="{{ path('inventory') }}" class="action-button secondary">
+                    <i class="fa fa-arrow-left"></i> Retour
+                </a>
+                <button type="submit" class="action-button primary">
+                    <i class="fa fa-file-download"></i> Générer l'export
+                </button>
             </div>
-        </div>
 
-        <div class="action-buttons">
-            <a href="{{ path('inventory') }}" class="action-button secondary">
-                <i class="fa fa-arrow-left"></i> Retour
-            </a>
-            <button type="submit" class="action-button primary">
-                <i class="fa fa-file-download"></i> Générer l'export
-            </button>
+            {{ form_end(form) }}
         </div>
-
-        {{ form_end(form) }}
-    </div>
+    </section>
 {% endblock %}
 
-{% block javascripts %}
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const defaultExportCheckbox = document.getElementById('use-default-export');
-            const formDefaultExport = document.getElementById('{{ form.defaultExport.vars.id }}');
-            const customExportContainer = document.getElementById('custom-export-container');
-            const defaultExportOption = document.getElementById('default-export-option');
-
-            // Fonction pour basculer l'affichage
-            function toggleExportOptions() {
-                if (defaultExportCheckbox.checked) {
-                    formDefaultExport.checked = true;
-                    customExportContainer.style.display = 'none';
-                    defaultExportOption.classList.add('active');
-                } else {
-                    formDefaultExport.checked = false;
-                    customExportContainer.style.display = 'block';
-                    defaultExportOption.classList.remove('active');
-                }
-            }
-
-            // État initial
-            toggleExportOptions();
-
-            // Écouter les changements
-            defaultExportCheckbox.addEventListener('change', toggleExportOptions);
-
-            // Gestion de l'option "tous les sites"
-            const allSitesCheckbox = document.getElementById('{{ form.allSites.vars.id }}');
-            const siteSelector = document.getElementById('site-selector-container');
-            const siteSelect = document.querySelector('#site-selector-container select');
-
-            function toggleSiteSelector() {
-                if (allSitesCheckbox.checked) {
-                    siteSelect.disabled = true;
-                    siteSelector.style.opacity = '0.5';
-                } else {
-                    siteSelect.disabled = false;
-                    siteSelector.style.opacity = '1';
-                }
-            }
-
-            // État initial
-            toggleSiteSelector();
-
-            // Écouter les changements
-            allSitesCheckbox.addEventListener('change', toggleSiteSelector);
-
-            // Initialiser Select2 si disponible
-            if (typeof $.fn.select2 !== 'undefined') {
-                $('.select2').select2({
-                    placeholder: 'Sélectionnez un produit',
-                    allowClear: true
-                });
-            }
-        });
-    </script>
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('export_csv') }}
 {% endblock %}

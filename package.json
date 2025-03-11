@@ -29,6 +29,8 @@
     "dependencies": {
         "admin-lte": "^2.4.18",
         "bootstrap-datepicker": "^1.10.0",
+        "datatables.net": "^2.2.2",
+        "datatables.net-bs": "^2.2.2",
         "ionicons": "^7.4.0"
     }
 }

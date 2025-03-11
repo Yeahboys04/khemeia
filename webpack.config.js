@@ -28,6 +28,8 @@ Encore
     .addEntry('edit_product', './assets/edit_product.js')
     .addEntry('printBtn', './assets/js/components/printBtn.js')
     .addEntry('dateWidgetConfig', './assets/js/components/dateWidgetConfig.js')
+    .addEntry('inventory', './assets/js/pages/inventory.js')
+    .addEntry('export_csv', './assets/js/pages/export_csv.js')
 
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     // .enableStimulusBridge('./assets/controllers.json')

@@ -1,160 +1,174 @@
 {% extends 'base.html.twig' %}
-{% block stylesheets %}
-    <!-- Datepicker -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
-    <!-- Select2 -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
-{% endblock %}
 
 {% block title %}
-Khemeia | Inventaire
+    Khemeia | Inventaire
+{% endblock %}
+
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('inventory') }}
 {% endblock %}
 
 {% block body %}
-<div class="panel box box-warning">
-    <div class="box-header with-border">
-        <h4 class="box-title">
-            Inventaire des produits du site {{ site }}
-        </h4>
-    </div>
 
-    <div class="box-body">
-        <div class="row">
-            <div class="col-xs-12">
-                <div class="box">
-                    <div class="box-header">
-                        <h3 class="box-title">Liste des fiches de stockage</h3>
-                    </div><!-- /.box-header -->
+    <section class="content">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">Liste des fiches de stockage</h3>
 
-                    <div class="box-body">
-                        <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-                            <div class="row">
-                                <div class="col-sm-12">
-                                    <table id="example2" class="table table-bordered table-hover dataTable">
-                                        <thead>
-                                            <tr role="row">
-                                                <th>Identifiant unique</th>
-                                                <th>Nom du produit</th>
-                                                <th>Lieu de stockage</th>
-                                                <th>Numéro de série</th>
-                                                <th>Quantité en stock<br>(en ml ou g)</th>
-                                                <th>Capacité totale<br>(en ml ou g)</th>
-                                                <th>Pureté</th>
-                                                <th>Fournisseur</th>
-                                                <th>Date d'ouverture</th>
-                                                <th>Date de péremption</th>
-                                                <th></th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {# S'il y a des fiches de stockage #}
-                                            {% if storagecards is defined %}
-                                                {% if storagecards is not null %}
-                                                    {# Pour chaque fiche de stockage dans la liste
-                                                    On boucle pour créer de nouvelles lignes
-                                                    dans le tableau sous le même format#}
-                                                    {% for oneStoragecard in storagecards %}
-                                                        <tr>
-                                                            <td data-title="Identifiant unique" class="sorting_1">{{ oneStoragecard.getIdStoragecard() }}</td>
-                                                            <td data-title="Nom du produit">{{ oneStoragecard.getIdChimicalproduct() }}</td>
-                                                            <td data-title="Lieu de stockage">{{ oneStoragecard.getIdShelvingunit().getLocalName() }}</td>
-                                                            <td data-title="Numéro de série">{{ oneStoragecard.getSerialnumber() }}</td>
-                                                            <td data-title="Quantité en stock">{{ oneStoragecard.getStockquantity() }}</td>
-                                                            <td data-title="Capacité totale">{{ oneStoragecard.getCapacity() }}</td>
-                                                            <td data-title="Pureté">{{ oneStoragecard.getPurity() }}</td>
-                                                            <td data-title="Fournisseur">{{ oneStoragecard.getIdSupplier() }}</td>
-                                                            {% if oneStoragecard.getOpendate() %}
-                                                                <td data-title="Date d'ouverture">{{ oneStoragecard.getOpendate().format('d/m/Y') }}</td>
-                                                            {% else %}
-                                                                <td data-title="Aucune date d'ouverture"></td>
-                                                            {% endif %}
+                <div class="box-tools pull-right">
+                    <button type="button" class="btn btn-box-tool" data-widget="collapse">
+                        <i class="fa fa-minus"></i>
+                    </button>
+                </div>
+            </div>
 
-                                                            {% if oneStoragecard.getExpirationdate() %}
-                                                                <td data-title="Date de péremption">{{ oneStoragecard.getExpirationdate().format('d/m/Y') }}</td>
-                                                            {% else %}
-                                                                <td data-title="Aucune date de péremption"></td>
-                                                            {% endif %}
-                                                            <td style="min-width: 230px;">
-                                                                <a href="{{ path('read', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-aqua no-print" title="Consultation">
-                                                                    <i class="fa  fa-file-text"></i>
-                                                                </a>
-                                                                <a href="{{ path('inventory_modify', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-success no-print" title="Modifier">
-                                                                    <i class="fa fa-pencil"></i>
-                                                                </a>
-                                                                <a href="{{ path('moved_history', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-purple no-print" title="Historique">
-                                                                    <i class="fa fa-folder-open"></i>
-                                                                </a>
-                                                                <a href="{{ path('inventory_storage_copy', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-maroon no-print" title="Dupliquer">
-                                                                    <i class="fa  fa-copy"></i>
-                                                                </a>
-                                                                <a href="{{ path('inventory_archived', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-danger no-print" title="Archiver">
-                                                                    <i class="fa fa-archive"></i>
-                                                                </a>
-                                                                
-                                                            </td>
-                                                        </tr>
-                                                    {% endfor %}
-                                                {% endif %}
+            <div class="box-body">
+                <div class="inventory-controls">
+                    <div class="search-input-wrapper">
+                        <i class="fa fa-search"></i>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Rechercher un produit...">
+                    </div>
+
+                    <div class="table-controls">
+                        <span>Afficher</span>
+                        <select id="pageSizeSelect" class="page-size-select">
+                            <option value="10">10</option>
+                            <option value="25">25</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                        <span>résultats par page</span>
+                    </div>
+                </div>
+
+                <div class="loading-overlay" id="loadingIndicator">
+                    <div class="loading-spinner"></div>
+                </div>
+
+                <div class="table-responsive">
+                    <table id="inventoryTable" class="inventory-table table table-hover">
+                        <thead>
+                        <tr>
+                            <th data-sort="id">Identifiant unique</th>
+                            <th data-sort="produit">Nom du produit</th>
+                            <th data-sort="lieu">Lieu de stockage</th>
+                            <th data-sort="serie">Numéro de série</th>
+                            <th data-sort="quantite">Quantité en stock<br>(en ml ou g)</th>
+                            <th data-sort="capacite">Capacité totale<br>(en ml ou g)</th>
+                            <th data-sort="purete">Pureté</th>
+                            <th data-sort="fournisseur">Fournisseur</th>
+                            <th data-sort="ouverture">Date d'ouverture</th>
+                            <th data-sort="peremption">Date de péremption</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {# S'il y a des fiches de stockage #}
+                        {% if storagecards is defined %}
+                            {% if storagecards is not null and storagecards|length > 0 %}
+                                {# Pour chaque fiche de stockage dans la liste #}
+                                {% for oneStoragecard in storagecards %}
+                                    <tr data-id="{{ oneStoragecard.getIdStoragecard() }}">
+                                        <td data-title="Identifiant unique">{{ oneStoragecard.getIdStoragecard() }}</td>
+                                        <td data-title="Nom du produit">{{ oneStoragecard.getIdChimicalproduct() }}</td>
+                                        <td data-title="Lieu de stockage">{{ oneStoragecard.getIdShelvingunit().getLocalName() }}</td>
+                                        <td data-title="Numéro de série">{{ oneStoragecard.getSerialnumber() }}</td>
+                                        <td data-title="Quantité en stock">{{ oneStoragecard.getStockquantity() }}</td>
+                                        <td data-title="Capacité totale">{{ oneStoragecard.getCapacity() }}</td>
+                                        <td data-title="Pureté">
+                                            {% set purity = oneStoragecard.getPurity() %}
+
+                                            {% if purity is empty or purity == '' %}
+                                                <span class="badge badge-default">Non spécifié</span>
+
+                                                {# Vérifier si c'est un nombre simple avec pourcentage (format standard) #}
+                                            {% elseif purity matches '/^\\d+(\\.\\d+)?%%?$/' %}
+                                                {# Extraire la valeur numérique #}
+                                                {% set numericValue = purity|replace({'%': ''}) %}
+                                                {% set purityValue = numericValue|number_format(0, '.', '') %}
+
+                                                <span class="badge badge-purity
+                                                    {% if purityValue >= 90 %}badge-success
+                                                    {% elseif purityValue >= 70 %}badge-warning
+                                                    {% else %}badge-danger{% endif %}">
+                                                    {{ purityValue }}%
+                                                </span>
+
+                                                {# Pour les formats spéciaux comme >=97% ou 98 % #}
+                                            {% else %}
+                                                {# Nettoyage minimal : garantir un seul % et pas d'espace avant le % #}
+                                                {% set cleanPurity = purity|replace({'%%': '%'}) %}
+                                                {% set cleanPurity = cleanPurity|replace({' %': '%'}) %}
+
+                                                <span>{{ cleanPurity }}</span>
                                             {% endif %}
-                                        </tbody>
-                                    </table>
-                                </div><!-- /.col -->
-                            </div><!-- /.row -->
-                        </div><!-- /.example2_wrapper -->
-                    </div><!-- /.box-body -->
-                </div><!-- /.box -->
-            </div><!-- /.col -->
-        </div><!-- /.row -->
-    </div><!-- /.box-body -->
-</div>
+                                        </td>
+                                        <td data-title="Fournisseur">{{ oneStoragecard.getIdSupplier() }}</td>
+                                        {% if oneStoragecard.getOpendate() %}
+                                            <td data-title="Date d'ouverture">{{ oneStoragecard.getOpendate().format('d/m/Y') }}</td>
+                                        {% else %}
+                                            <td data-title="Aucune date d'ouverture">--</td>
+                                        {% endif %}
+
+                                        {% if oneStoragecard.getExpirationdate() %}
+                                            <td data-title="Date de péremption">{{ oneStoragecard.getExpirationdate().format('d/m/Y') }}</td>
+                                        {% else %}
+                                            <td data-title="Aucune date de péremption">--</td>
+                                        {% endif %}
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{{ path('read', {id: oneStoragecard.getIdStoragecard()}) }}"
+                                                   class="btn btn-info btn-sm" title="Consultation">
+                                                    <i class="fa fa-file-text"></i>
+                                                </a>
+                                                <a href="{{ path('inventory_modify', {id: oneStoragecard.getIdStoragecard()}) }}"
+                                                   class="btn btn-success btn-sm" title="Modifier">
+                                                    <i class="fa fa-pencil"></i>
+                                                </a>
+                                                <a href="{{ path('moved_history', {id: oneStoragecard.getIdStoragecard()}) }}"
+                                                   class="btn btn-primary btn-sm" title="Historique">
+                                                    <i class="fa fa-folder-open"></i>
+                                                </a>
+                                                <a href="{{ path('inventory_storage_copy', {id: oneStoragecard.getIdStoragecard()}) }}"
+                                                   class="btn btn-warning btn-sm" title="Dupliquer">
+                                                    <i class="fa fa-copy"></i>
+                                                </a>
+                                                <a href="{{ path('inventory_archived', {id: oneStoragecard.getIdStoragecard()}) }}"
+                                                   class="btn btn-danger btn-sm archive-btn" title="Archiver">
+                                                    <i class="fa fa-archive"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="11">
+                                        <div class="empty-state">
+                                            <i class="fa fa-database"></i>
+                                            <h3>Aucune fiche de stockage trouvée</h3>
+                                            <p>Aucune donnée n'est disponible pour le moment dans cet inventaire.</p>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="pagination-container">
+                    <div class="page-info" id="pageInfo">
+                        Affichage de <span id="startRecord">1</span> à <span id="endRecord">10</span> sur <span
+                                id="totalRecords">0</span> entrées
+                    </div>
+                    <ul class="pagination" id="pagination"></ul>
+                </div>
+            </div>
+        </div>
+    </section>
 {% endblock %}
 
-{% block javascripts %}
-    <!-- bootstrap datepicker -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
-    <!-- Language script -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
-
-    <!-- Code javaScript qui paramètre le widget des dates -->
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $('.datepicker').datepicker({
-            "format": "dd/mm/yyyy",
-            "language": "fr",
-            "keyboardNavigation": false,
-            "setDate": new Date(),
-            "autoclose": true,
-            "clearBtn": true,
-            "todayHighlight": true
-            });
-        });
-    </script>
-    <!-- Select2 -->
-    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
-    <!-- DataTables -->
-    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
-    <!-- Page script -->
-    <script>
-        $(document).ready(function () {
-            //Initialize Select2 Elements
-            $('.select2').select2()
-            //Initialize #example2 Elements
-            $('#example2').DataTable({
-                'paging'      : true,
-                'lengthChange': false,
-                'searching'   : true,
-                'ordering'    : true,
-                'info'        : true,
-                'autoWidth'   : false,
-                'scrollX'     : true,  // Ajouter cette ligne pour activer le défilement horizontal
-                'language': {
-                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
-                }
-            })
-        });
-    </script>
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('inventory') }}
 {% endblock %}

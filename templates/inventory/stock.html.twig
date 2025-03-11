@@ -1,17 +1,296 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <!-- Datepicker -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
-    <!-- Select2 -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+{% block page_stylesheets %}
+    <style>
+        /* Variables de couleurs et design */
+        :root {
+            --primary: #3c8dbc;
+            --primary-dark: #2b7aab;
+            --primary-light: #5aa9d6;
+            --dark: #333333;
+            --gray: #6c757d;
+            --light-gray: #e0e0e0;
+            --success: #00a65a;
+            --warning: #f39c12;
+            --danger: #dd4b39;
+            --navy: #001f3f;
+            --purple: #605ca8;
+            --maroon: #d81b60;
+            --aqua: #00c0ef;
+        }
+
+        /* Styles pour le tableau d'inventaire */
+        .inventory-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .inventory-table th,
+        .inventory-table td {
+            padding: 12px 8px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .inventory-table th {
+            background-color: #f4f4f4;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .inventory-table th:hover {
+            background-color: #e8e8e8;
+        }
+
+        .inventory-table th.sorted-asc::after {
+            content: " ▲";
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        .inventory-table th.sorted-desc::after {
+            content: " ▼";
+            font-size: 12px;
+            color: var(--primary);
+        }
+
+        .inventory-table tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+
+        .inventory-table tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        /* Contrôles de table */
+        .inventory-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .search-container {
+            position: relative;
+            flex-grow: 1;
+            max-width: 400px;
+        }
+
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #aaa;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 15px 10px 40px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 8px rgba(60, 141, 188, 0.2);
+        }
+
+        .page-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            white-space: nowrap;
+        }
+
+        .page-size-select {
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        /* Table wrapper pour le défilement horizontal */
+        .table-responsive {
+            overflow-x: auto;
+            width: 100%;
+        }
+
+        /* Pagination */
+        .pagination-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 20px;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .pagination li {
+            margin-right: 5px;
+        }
+
+        .pagination a {
+            display: inline-block;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            text-decoration: none;
+            color: var(--dark);
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .pagination a.active {
+            background-color: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+
+        .pagination a:hover:not(.active):not(.disabled) {
+            background-color: #f5f5f5;
+            border-color: #ccc;
+        }
+
+        .pagination a.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Boutons d'action */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 5px;
+            padding: 6px 10px;
+            border-radius: 3px;
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn i {
+            font-size: 14px;
+        }
+
+        .bg-aqua {
+            background-color: var(--aqua);
+        }
+
+        .bg-navy {
+            background-color: var(--navy);
+        }
+
+        .bg-purple {
+            background-color: var(--purple);
+        }
+
+        .bg-maroon {
+            background-color: var(--maroon);
+        }
+
+        /* Indicateur de chargement */
+        .loading-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(255, 255, 255, 0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(60, 141, 188, 0.2);
+            border-radius: 50%;
+            border-top: 4px solid var(--primary);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* État vide */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 50px 20px;
+            text-align: center;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            color: #ddd;
+            margin-bottom: 15px;
+        }
+
+        .empty-state h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+        }
+
+        /* Layout responsive */
+        @media (max-width: 768px) {
+            .inventory-controls {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .search-container {
+                width: 100%;
+                max-width: 100%;
+                margin-bottom: 10px;
+            }
+
+            .page-controls {
+                width: 100%;
+            }
+        }
+    </style>
 {% endblock %}
 
 {% block title %}
-Khemeia | Inventaire
+    Khemeia | Inventaire
 {% endblock %}
 
 {% block body %}
@@ -28,115 +307,104 @@ Khemeia | Inventaire
                     <div class="box">
                         <div class="box-header">
                             <h3 class="box-title">Liste des fiches de stockage</h3>
-                        </div><!-- /.box-header -->
+                        </div>
 
                         <div class="box-body">
-                            <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-                                <div class="row">
-                                    <div class="col-sm-12">
-                                        <table id="example2" class="table table-bordered table-hover dataTable">
-                                            <thead>
-                                                <tr role="row">
-                                                    <th>Identifiant unique</th>
-                                                    <th>Nom du produit</th>
-                                                    <th>Lieu de stockage</th>
-                                                    <th>Numéro de série</th>
-                                                    <th>Quantité en stock<br>(en ml ou g)</th>
-                                                    <th>Capacité totale<br>(en ml ou g)</th>
-                                                    <th>Fournisseur</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {# S'il y a des fiches de stockage #}
-                                                {% if storagecards is defined %}
-                                                    {% if storagecards is not null %}
-                                                        {# Pour chaque fiche de stockage dans la liste
-                                                        On boucle pour créer de nouvelles lignes
-                                                        dans le tableau sous le même format#}
-                                                        {% for oneStoragecard in storagecards %}
-                                                            <tr role="row" class="odd">
-                                                                <td data-title="Identifiant unique" class="sorting_1">{{ oneStoragecard.getIdStoragecard() }}</td>
-                                                                <td data-title="Lieu de stockage">{{ oneStoragecard.getIdChimicalproduct() }}</td>
-                                                                <td data-title="Numéro de série">{{ oneStoragecard.getIdShelvingunit().getLocalName() }}</td>
-                                                                <td data-title="Quantité en stock">{{ oneStoragecard.getSerialnumber() }}</td>
-                                                                <td data-title="Capacité totale">{{ oneStoragecard.getStockquantity() }}</td>
-                                                                <td data-title="Fournisseur">{{ oneStoragecard.getCapacity() }}</td>
-                                                                <td>{{ oneStoragecard.getIdSupplier() }}</td>
-                                                                
-                                                                <td style="min-width: 180px;">
-                                                                    <a href="{{ path('read', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-aqua no-print" title="Consultation">
-                                                                        <i class="fa  fa-file-text"></i>
-                                                                    </a>
-                                                                    <a href="{{ path('remove_quantity', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-navy no-print" title="Archiver">
-                                                                        <i class="fa fa-flask"></i>
-                                                                    </a>
-                                                                    <a href="{{ path('moved_history', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-purple no-print" title="Historique">
-                                                                        <i class="fa fa-folder-open"></i>
-                                                                    </a>
-                                                                    <a href="{{ path('inventory_storage_copy', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-maroon no-print" title="Dupliquer">
-                                                                        <i class="fa  fa-copy"></i>
-                                                                    </a>
-                                                                </td>
-                                                            </tr>
-                                                        {% endfor %}
-                                                    {% endif %}
-                                                {% endif %}
-                                            </tbody>
-                                        </table>
-                                    </div><!-- /.col -->
-                                </div><!-- /.row -->
+                            <div class="inventory-controls">
+                                <div class="search-container">
+                                    <i class="fa fa-search"></i>
+                                    <input type="text" id="searchInput" class="search-input" placeholder="Rechercher...">
+                                </div>
+                                <div class="page-controls">
+                                    <span>Afficher</span>
+                                    <select id="pageSizeSelect" class="page-size-select">
+                                        <option value="10">10</option>
+                                        <option value="25">25</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                    </select>
+                                    <span>résultats par page</span>
+                                </div>
                             </div>
-                        </div><!-- /.box-body -->
-                    </div><!-- /.box -->
-                </div><!-- /.col -->
-            </div><!-- /.row -->
-        </div><!-- /.box-body -->
+
+                            <div class="loading-overlay" id="loadingIndicator">
+                                <div class="loading-spinner"></div>
+                            </div>
+
+                            <div class="table-responsive">
+                                <table id="inventoryTable" class="inventory-table table table-bordered table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th data-sort="id">Identifiant unique</th>
+                                        <th data-sort="produit">Nom du produit</th>
+                                        <th data-sort="lieu">Lieu de stockage</th>
+                                        <th data-sort="serie">Numéro de série</th>
+                                        <th data-sort="quantite">Quantité en stock<br>(en ml ou g)</th>
+                                        <th data-sort="capacite">Capacité totale<br>(en ml ou g)</th>
+                                        <th data-sort="fournisseur">Fournisseur</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {# S'il y a des fiches de stockage #}
+                                    {% if storagecards is defined %}
+                                        {% if storagecards is not null %}
+                                            {# Pour chaque fiche de stockage dans la liste #}
+                                            {% for oneStoragecard in storagecards %}
+                                                <tr data-id="{{ oneStoragecard.getIdStoragecard() }}">
+                                                    <td data-title="Identifiant unique">{{ oneStoragecard.getIdStoragecard() }}</td>
+                                                    <td data-title="Nom du produit">{{ oneStoragecard.getIdChimicalproduct() }}</td>
+                                                    <td data-title="Lieu de stockage">{{ oneStoragecard.getIdShelvingunit().getLocalName() }}</td>
+                                                    <td data-title="Numéro de série">{{ oneStoragecard.getSerialnumber() }}</td>
+                                                    <td data-title="Quantité en stock">{{ oneStoragecard.getStockquantity() }}</td>
+                                                    <td data-title="Capacité totale">{{ oneStoragecard.getCapacity() }}</td>
+                                                    <td data-title="Fournisseur">{{ oneStoragecard.getIdSupplier() }}</td>
+                                                    <td style="min-width: 180px;">
+                                                        <a href="{{ path('read', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-aqua" title="Consultation">
+                                                            <i class="fa fa-file-text"></i>
+                                                        </a>
+                                                        <a href="{{ path('remove_quantity', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-navy" title="Prélever">
+                                                            <i class="fa fa-flask"></i>
+                                                        </a>
+                                                        <a href="{{ path('moved_history', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-purple" title="Historique">
+                                                            <i class="fa fa-folder-open"></i>
+                                                        </a>
+                                                        <a href="{{ path('inventory_storage_copy', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-maroon" title="Dupliquer">
+                                                            <i class="fa fa-copy"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        {% else %}
+                                            <tr>
+                                                <td colspan="8">
+                                                    <div class="empty-state">
+                                                        <i class="fa fa-database"></i>
+                                                        <h3>Aucune fiche de stockage trouvée</h3>
+                                                        <p>Aucune donnée n'est disponible pour le moment dans cet inventaire.</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endif %}
+                                    {% endif %}
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="pagination-container">
+                                <div class="page-info">
+                                    Affichage de <span id="startRecord">1</span> à <span id="endRecord">10</span> sur <span id="totalRecords">0</span> entrées
+                                </div>
+                                <ul class="pagination" id="pagination"></ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 {% endblock %}
 
-{% block javascripts %}
-    <!-- bootstrap datepicker -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
-    <!-- Language script -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
-
-    <!-- Code javaScript qui paramètre le widget des dates -->
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $('.datepicker').datepicker({
-            "format": "dd/mm/yyyy",
-            "language": "fr",
-            "keyboardNavigation": false,
-            "setDate": new Date(),
-            "autoclose": true,
-            "clearBtn": true,
-            "todayHighlight": true
-            });
-        });
-    </script>
-    <!-- Select2 -->
-    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
-    <!-- DataTables -->
-    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
-    <!-- Page script -->
-    <script>
-        $(document).ready(function () {
-            //Initialize Select2 Elements
-            $('.select2').select2()
-            //Initialize #example2 Elements
-            $('#example2').DataTable({
-            'paging'      : true,
-            'lengthChange': false,
-            'searching'   : true,
-            'ordering'    : true,
-            'info'        : true,
-            'autoWidth'   : false,
-            'language': {
-            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
-        }
-            })
-        });
-    </script>
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('inventory') }}
 {% endblock %}
