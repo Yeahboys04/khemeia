@@ -3,21 +3,10 @@
     <head>
         <meta charset="UTF-8">
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
-        
-        <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap/dist/css/bootstrap.min.css') }}">
-        <!-- Font Awesome -->
-        <link rel="stylesheet" href="{{ asset('assets/bower_components/font-awesome/css/font-awesome.min.css') }}">
-        <!-- Ionicons -->
-        <link rel="stylesheet" href="{{ asset('assets/bower_components/Ionicons/css/ionicons.min.css') }}">
-        <!-- Theme style -->
-        <link rel="stylesheet" href="{{ asset('assets/dist/css/AdminLTE.min.css') }}">
-        <!-- AdminLTE Skins. We have chosen the skin-purple for this starter
-                page. However, you can choose any other skin. Make sure you
-                apply the skin class to the body tag so the changes take effect. -->
-        <link rel="stylesheet" href="{{ asset('assets/dist/css/skins/georessources.css') }}">
-        <!-- Google Font -->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
-        <link rel="stylesheet" href="{{ asset('assets/css/header_style.css') }}">
+
+        {% block stylesheets %}
+            {{ encore_entry_link_tags('app') }}
+        {% endblock %}
 
         <title>Khemeia</title>
     </head>
@@ -30,7 +19,7 @@
             <header class="main-header">
                 <div id="header">
                     <a href="{{ path('home_page') }}" class="logo">
-                        <img src="{{ asset('assets/images/logo_rvb.png') }}" class="user-image"/>
+                        <img src="{{ asset('build/images/logo_rvb.png') }}" class="user-image"/>
                     </a>
                     
                 </div>
@@ -88,11 +77,9 @@
             
 
            <!-- jQuery 3 -->
-            <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
-            <script src="{{ asset('assets/bower_components/jquery/dist/jquery.min.js') }}"></script>
-            <script src="{{ asset('assets/bower_components/bootstrap/dist/js/bootstrap.min.js') }}"></script>
-            <script src="{{ asset('assets/dist/js/adminlte.min.js') }}"></script>
-            {% block javascripts %}{% endblock %}
+            {% block javascripts %}
+                {{ encore_entry_script_tags('app') }}
+            {% endblock %}
 
         </div>
     </body>
