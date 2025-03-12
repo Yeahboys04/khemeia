@@ -1,2 +1,278 @@
-@import 'select2/dist/css/select2.css';
-@import 'datatables.net-bs/css/dataTables.bootstrap.css';
+.khemeia-datatable-wrapper {
+  width: 100%;
+  margin-bottom: 20px;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+  font-size: 14px;
+
+  * {
+    box-sizing: border-box;
+  }
+
+  &-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  &-container {
+    width: 100%;
+    overflow-x: auto;
+  }
+
+  &-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+}
+
+// Recherche
+.khemeia-datatable-search {
+  display: flex;
+  align-items: center;
+
+  label {
+    margin-right: 8px;
+    white-space: nowrap;
+  }
+
+  &-input {
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    width: 200px;
+
+    &:focus {
+      border-color: #f39c12; // Couleur jaune Khemeia
+      outline: none;
+      box-shadow: 0 0 0 0.2rem rgba(243, 156, 18, 0.25);
+    }
+  }
+}
+
+// Sélecteur du nombre par page
+.khemeia-datatable-length {
+  display: flex;
+  align-items: center;
+
+  label {
+    margin-right: 8px;
+    white-space: nowrap;
+  }
+
+  &-select {
+    padding: 5px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin-right: 8px;
+
+    &:focus {
+      border-color: #f39c12; // Couleur jaune Khemeia
+      outline: none;
+    }
+  }
+}
+
+// Tableau
+.khemeia-datatable {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: #fff;
+
+  th, td {
+    padding: 12px 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+  }
+
+  thead th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+    border-top: 1px solid #ddd;
+
+    &.khemeia-datatable-sortable {
+      cursor: pointer;
+
+      &:hover {
+        background-color: #f0f0f0;
+      }
+    }
+  }
+
+  tbody tr {
+    &:hover {
+      background-color: #f5f5f5;
+    }
+  }
+
+  &-th-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  &-sort-icon {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    position: relative;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      right: 5px;
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+    }
+
+    &::before {
+      top: 4px;
+      border-bottom: 5px solid #ccc;
+    }
+
+    &::after {
+      bottom: 4px;
+      border-top: 5px solid #ccc;
+    }
+  }
+
+  .khemeia-datatable-sorted-asc .khemeia-datatable-sort-icon::before {
+    border-bottom-color: #f39c12; // Couleur jaune Khemeia
+  }
+
+  .khemeia-datatable-sorted-desc .khemeia-datatable-sort-icon::after {
+    border-top-color: #f39c12; // Couleur jaune Khemeia
+  }
+
+  &-empty {
+    text-align: center;
+    padding: 20px !important;
+    color: #999;
+  }
+}
+
+// Info de pagination
+.khemeia-datatable-info {
+  color: #666;
+}
+
+// Pagination
+.khemeia-datatable-pagination {
+  ul {
+    display: flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .khemeia-datatable-page {
+    &-item {
+      margin: 0 2px;
+
+      &.active {
+        .khemeia-datatable-page-link {
+          background-color: #f39c12; // Couleur jaune Khemeia
+          color: white;
+          border-color: #f39c12;
+        }
+      }
+
+      &.disabled {
+        .khemeia-datatable-page-link {
+          color: #ccc;
+          cursor: not-allowed;
+          background-color: #f8f9fa;
+        }
+      }
+    }
+
+    &-link {
+      display: block;
+      padding: 6px 12px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      color: #333;
+      text-decoration: none;
+      border-radius: 4px;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background-color: #f5f5f5;
+      }
+    }
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .khemeia-datatable-wrapper {
+    &-header, &-footer {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .khemeia-datatable-search, .khemeia-datatable-length {
+      width: 100%;
+      margin-bottom: 10px;
+    }
+
+    .khemeia-datatable-search-input {
+      width: 100%;
+    }
+
+    .khemeia-datatable-info {
+      margin-bottom: 10px;
+    }
+
+    .khemeia-datatable-pagination {
+      width: 100%;
+      overflow-x: auto;
+    }
+  }
+
+  // Tableau responsive
+  .khemeia-datatable {
+    thead {
+      display: none;
+    }
+
+    tbody, tr, td {
+      display: block;
+      width: 100%;
+    }
+
+    tr {
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+    }
+
+    td {
+      text-align: right;
+      padding-left: 50%;
+      position: relative;
+      border-bottom: 1px solid #eee;
+
+      &:before {
+        content: attr(data-title);
+        position: absolute;
+        left: 8px;
+        top: 12px;
+        font-weight: bold;
+        text-align: left;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+    }
+  }
+}

@@ -31,6 +31,12 @@ Encore
     .addEntry('inventory', './assets/js/pages/inventory.js')
     .addEntry('export_csv', './assets/js/pages/export_csv.js')
 
+
+    .addEntry('datepicker', './assets/js/components/datepicker.js')
+    .addEntry('select', './assets/js/components/select.js')
+    .addEntry('datatable', './assets/js/components/datatable.js')
+    .addStyleEntry('global', './assets/styles/global.scss')
+
     // enables the Symfony UX Stimulus bridge (used in assets/bootstrap.js)
     // .enableStimulusBridge('./assets/controllers.json')
 

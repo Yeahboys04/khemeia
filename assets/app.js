@@ -11,12 +11,6 @@ import './styles/app.scss';
 // start the Stimulus application
 // import './bootstrap';
 
-// Import jQuery and expose it to global scope (for legacy code)
-import $ from 'jquery';
-global.$ = global.jQuery = $;
-
-
-
 // Import Bootstrap
 import 'bootstrap';
 

@@ -1,9 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <!-- Select2 -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('select') }}
 {% endblock %}
 
 {% block title %}
@@ -105,13 +103,5 @@ Khemeia | Création d'une fiche produit
 {% endblock %}
 
 {% block javascripts %}
-    <!-- Select2 -->
-    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
-    <!-- Page script -->
-    <script>
-        $(document).ready(function () {
-            //Initialize Select2 Elements
-            $('.select2').select2()
-        });
-    </script>
+    {{ encore_entry_script_tags('select') }}
 {% endblock %}

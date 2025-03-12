@@ -12,8 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const stockUnitsSelect = document.getElementById('storagecard_resp_stockUnit');
     const capacityUnitsSelect = document.getElementById('storagecard_resp_capacityUnit');
     const fileInputs = document.querySelectorAll('.file-upload input');
-    const progressFill = document.querySelector('.progress-fill');
-    const progressText = document.querySelector('.progress-text');
     const sections = document.querySelectorAll('.form-section');
 
     // Initialize tooltips
@@ -179,43 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    /**
-     * Update the progress bar based on form completion
-     */
-    function updateProgressBar() {
-        // Count required fields
-        const requiredFields = form.querySelectorAll('[required]');
-        const totalRequired = requiredFields.length;
-        let filledCount = 0;
 
-        // Check each required field
-        requiredFields.forEach(field => {
-            if (field.type === 'radio' || field.type === 'checkbox') {
-                // For radio buttons and checkboxes, check if any in the group is checked
-                const name = field.name;
-                if (document.querySelector(`input[name="${name}"]:checked`)) {
-                    filledCount++;
-                }
-            } else if (field.value.trim() !== '') {
-                filledCount++;
-            }
-        });
-
-        // Calculate percentage and update the progress bar
-        const percent = Math.round((filledCount / totalRequired) * 100);
-        progressFill.style.width = `${percent}%`;
-        progressText.textContent = `${percent}%`;
-
-        // Add color classes based on progress
-        progressFill.className = 'progress-fill';
-        if (percent < 30) {
-            progressFill.classList.add('bg-danger');
-        } else if (percent < 70) {
-            progressFill.classList.add('bg-warning');
-        } else {
-            progressFill.classList.add('bg-success');
-        }
-    }
 
     /**
      * Show visual feedback for fields with validation errors
@@ -269,7 +231,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 }
 
-                updateProgressBar();
             });
         });
     }
@@ -613,12 +574,6 @@ document.addEventListener('DOMContentLoaded', function() {
             // Initial setup for unit options
             updateUnitOptions();
 
-            // Watch for form changes to update progress
-            form.addEventListener('change', updateProgressBar);
-            form.addEventListener('input', updateProgressBar);
-
-            // Initial progress calculation
-            updateProgressBar();
 
         } catch (error) {
             console.error('Error initializing form:', error);
