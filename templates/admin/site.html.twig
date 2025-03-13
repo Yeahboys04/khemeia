@@ -1,9 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('datatable') }}
 {% endblock %}
 
 {% block body %}
@@ -168,29 +166,6 @@
     </div><!-- /.row -->
 {% endblock %}
 
-{% block javascripts %}
-<!-- bootstrap datepicker -->
-<script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
-<!-- Language script -->
-<script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
-<!-- DataTables -->
-    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
-    <!-- Page script -->
-    <script>
-        $(document).ready(function () {
-            //Initialize #example2 Elements
-            $('#example2').DataTable({
-            'paging'      : true,
-            'lengthChange': false,
-            'searching'   : true,
-            'ordering'    : true,
-            'info'        : true,
-            'autoWidth'   : false,
-            'language': {
-            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
-        }
-            })
-        });
-    </script>
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('datatable') }}
 {% endblock %}

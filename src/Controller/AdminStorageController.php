@@ -6,6 +6,7 @@ use App\Entity\Analysisfile;
 use App\Entity\Movedhistory;
 use App\Entity\Securityfile;
 use App\Entity\Storagecard;
+use App\Form\StoragecardRespType;
 use App\Form\StoragecardType;
 use App\Service\FileUploader;
 use App\Service\Utility;
@@ -36,7 +37,7 @@ class AdminStorageController extends AbstractController
             $storagecards = $repositoryStoragecard->findAll();
             $storagecard = new Storagecard();
 
-            $form = $this->createForm(StoragecardType::class, $storagecard, [
+            $form = $this->createForm(StoragecardRespType::class, $storagecard, [
                 'method' => 'POST',]);
             $form->handleRequest($request);
 
@@ -152,7 +153,7 @@ class AdminStorageController extends AbstractController
 
             if ($previousStoragecard != null || !empty($previousStoragecard) ){
 
-                $form = $this->createForm(StoragecardType::class, $previousStoragecard, [
+                $form = $this->createForm(StoragecardRespType::class, $previousStoragecard, [
                     'method' => 'POST',
                 ]);
 
@@ -274,7 +275,7 @@ class AdminStorageController extends AbstractController
 
             if ($storagecard != null || !empty($storagecard) ){
 
-                $form = $this->createForm(StoragecardType::class, $storagecard, [
+                $form = $this->createForm(StoragecardRespType::class, $storagecard, [
                     'method' => 'POST',
                 ]);
 

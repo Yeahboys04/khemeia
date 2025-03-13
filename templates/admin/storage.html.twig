@@ -1,17 +1,15 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <!-- Datepicker -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
-    <!-- Select2 -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('datatable') }}
+    {{ encore_entry_link_tags('global') }}
+    {{ encore_entry_link_tags('select') }}
+    {{ encore_entry_link_tags('datepicker') }}
+    {{ encore_entry_link_tags('storagecard') }}
 {% endblock %}
 
 {% block title %}
-Khemeia | Création d'une fiche de stockage
+    Khemeia | {% if action == 'create' %}Création{% elseif action == 'modify' %}Modification{% elseif action == 'remove' %}Suppression{% endif %} d'une fiche de stockage
 {% endblock %}
 
 {% block body %}
@@ -32,261 +30,418 @@ Khemeia | Création d'une fiche de stockage
                 <li class=""><a href="{{ path('admin_dangernote') }}">Gestion des mentions de danger</a></li>
                 <li class=""><a href="{{ path('admin_property') }}">Gestion des propriétaires</a></li>
                 <li class=""><a href="{{ path('admin_file') }}">Gestion des fichiers</a></li>
-
             </ul>
+
             <div class="tab-content">
                 <div class="tab-pane active" id="tab_1">
                     <div class="box-body">
                         {# Selon que l'on veut créer, modifier ou supprimer une fiche produit,
                             on paramètre la méthode qui reçoit le formulaire avec la bonne route
                             ainsi que le bon texte du bouton de soumission du formulaire#}
-                        {% if action == 'modify' %} 
-                        <form role="form" action="{{ path('admin_storage_modify', {id: id}) }}" method="post" enctype="multipart/form-data">
+                        {% if action == 'modify' %}
+                        <form id="storage-form" role="form" action="{{ path('admin_storage_modify', {id: id}) }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
+                            {% elseif action == 'remove' %}
+                            <form id="storage-form" role="form" action="{{ path('admin_storage_remove', {id: id}) }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
+                                {% else %}
+                                <form id="storage-form" role="form" action="{{ path('admin_storage')}}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
+                                    {% endif %}
 
-                        {% elseif action == 'remove' %}
-                        <form role="form" action="{{ path('admin_storage_remove', {id: id}) }}" method="post" enctype="multipart/form-data">
+                                    <!-- Product identification section -->
+                                    <div class="form-section">
+                                        <div class="section-header">
+                                            <i class="fas fa-flask"></i>
+                                            <h3>Identification du produit</h3>
+                                        </div>
 
-                        {% else %}
-                        <form role="form" action="{{ path('admin_storage')}}" method="post" enctype="multipart/form-data" >
-                        {% endif %}
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-tag"></i> Produit chimique concerné
+                                                <span class="text-red">*</span>
+                                                <i class="fas fa-info-circle ml-1 text-primary" data-bs-toggle="tooltip" title="Sélectionnez le produit chimique associé à cette fiche"></i>
+                                            </label>
+                                            {{ form_widget(form.idChimicalproduct, {'attr': {
+                                                'class': 'form-control select2',
+                                                'style': "width: 100%;",
+                                                'required': 'required',
+                                                'data-placeholder': "Rechercher un produit chimique",
+                                                'tabindex': "-1"
+                                            }}) }}
+                                        </div>
 
-                            <!-- select -->
-                            <div class="form-group">
-                                <label>Produit chimique concerné</label><span class="text-red"> *</span>
-                                
-                                {{ form_widget(form.idChimicalproduct, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'required':'required',
-                                 'data-placeholder':"Selectionnez un produit chimique",
-                                 'tabindex':"-1"}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Emplacement</label><span class="text-red"> *</span>
-                                {{ form_widget(form.idShelvingunit, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'required':'required',
-                                'data-placeholder':'Selectionez l\'emplacement de ce produit',
-                                'tabindex':"-1"}}) }}
-                            </div>
-
-                            <!-- text input -->
-                            <div class="form-group">
-                                <label>Quantité en stock </label> (en g ou ml)
-                                {{ form_widget(form.stockquantity, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez une quantité'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Capacité totale </label> (en g ou ml)
-                                {{ form_widget(form.capacity, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez une capacité'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Pureté</label>
-                                {{ form_widget(form.purity, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez la pureté du produit'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Température de stockage</label> en °C
-                                {{ form_widget(form.temperature, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez la température de stockage du produit'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Numéro de série</label>
-                                {{ form_widget(form.serialnumber, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez un numéro de série'}}) }}
-                            </div>
-
-                            <!-- datepicker -->
-                            <div class="form-group">
-                                <label>{{ form_label(form.opendate) }}</label>
-
-                                <div class="input-group date">
-                                    <div class="input-group-addon">
-                                    <i class="fa fa-calendar"></i>
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-map-marker-alt"></i> Emplacement
+                                                <span class="text-red">*</span>
+                                            </label>
+                                            {{ form_widget(form.idShelvingunit, {'attr': {
+                                                'class': 'form-control select2',
+                                                'style': "width: 100%;",
+                                                'required': 'required',
+                                                'data-placeholder': "Sélectionner l'emplacement de ce produit",
+                                                'tabindex': "-1"
+                                            }}) }}
+                                        </div>
                                     </div>
-                                    {{ form_widget(form.opendate, {'attr': {'class': 'form-control pull-right datepicker',
-                                    'data-date-language':'fr'}}) }}
-                                </div>
-                            </div>
 
-                            <!-- datepicker -->
-                            <div class="form-group">
-                                <label>{{ form_label(form.expirationdate) }}</label>
+                                    <!-- Physical properties section -->
+                                    <div class="form-section">
+                                        <div class="section-header">
+                                            <i class="fas fa-vial"></i>
+                                            <h3>Propriétés physiques</h3>
+                                        </div>
 
-                                <div class="input-group date">
-                                    <div class="input-group-addon">
-                                    <i class="fa fa-calendar"></i>
+                                        <div class="form-group">
+                                            <label class="form-label">État physique du produit <span class="text-red">*</span></label>
+                                            <div class="state-selector">
+                                                {% for choice in form.stateType %}
+                                                    <div class="state-option">
+                                                        {{ form_widget(choice, {'attr': {'class': 'state-option-input'}}) }}
+                                                        <label for="{{ choice.vars.id }}">
+                                                            <i class="fas {% if choice.vars.value == 'solid' %}fa-cube{% else %}fa-tint{% endif %} icon"></i>
+                                                            <span>{{ choice.vars.label }}</span>
+                                                        </label>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-balance-scale"></i> Quantité en stock
+                                                <span class="text-red">*</span>
+                                            </label>
+                                            <div class="quantity-group">
+                                                {{ form_widget(form.stockquantity, {'attr': {
+                                                    'class': 'form-control quantity-input',
+                                                    'placeholder': 'Quantité',
+                                                    'required': 'required'
+                                                }}) }}
+                                                {{ form_widget(form.stockUnit, {'attr': {
+                                                    'class': 'form-control unit-selector',
+                                                    'data-minimum-results-for-search': 'Infinity'
+                                                }}) }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-flask"></i> Capacité totale
+                                                <span class="text-red">*</span>
+                                            </label>
+                                            <div class="quantity-group">
+                                                {{ form_widget(form.capacity, {'attr': {
+                                                    'class': 'form-control quantity-input',
+                                                    'placeholder': 'Capacité',
+                                                    'required': 'required'
+                                                }}) }}
+                                                {{ form_widget(form.capacityUnit, {'attr': {
+                                                    'class': 'form-control unit-selector',
+                                                    'data-minimum-results-for-search': 'Infinity'
+                                                }}) }}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-percentage"></i> Pureté
+                                            </label>
+                                            {{ form_widget(form.purity, {'attr': {
+                                                'class': 'form-control',
+                                                'placeholder': 'Pureté du produit (ex: 99.5%)'
+                                            }}) }}
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-thermometer-half"></i> Température de stockage (°C)
+                                            </label>
+                                            {{ form_widget(form.temperature, {'attr': {
+                                                'class': 'form-control',
+                                                'placeholder': 'Température recommandée'
+                                            }}) }}
+                                        </div>
                                     </div>
-                                    {{ form_widget(form.expirationdate, {'attr': {'class': 'form-control pull-right datepicker',
-                                    'data-date-language':'fr'}}) }}
-                                </div>
-                            </div>
 
-                            <div class="form-group">
-                                <label>Faut-il archiver ce produit?</label><span class="text-red"> *</span>
-                                <div class="radio-style">
-                                    {{ form_widget(form.isarchived, {'label_attr': {'class': 'radio-label'}},) }}
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Voulez-vous cacher l'emplacement exact de ce flacon?</label><span class="text-red"> *</span>
-                                <div class="radio-style">
-                                    {{ form_widget(form.isrisked, {'label_attr': {'class': 'radio-label'}},) }}
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Propriétaire du flacon</label>
-                                {{ form_widget(form.idProperty, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                'data-placeholder':'Selectionez le propriétaire de ce produit',
-                                'tabindex':"-1"}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Fiche de prudence </label> (fichier PDF)
-                                {{ form_widget(form.uploadedSecurityFile, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Certificat d'analyse </label> (fichier PDF)
-                                {{ form_widget(form.uploadedAnalysisFile, {'attr': {'class': 'form-control'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Fournisseur</label>
-                                {{ form_widget(form.idSupplier, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                'data-placeholder': 'Selectionnez le fournisseur de ce produit',
-                                'tabindex':"-1"}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Référence du produit chez le fournisseur</label>
-                                {{ form_widget(form.reference, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez la référence fournisseur du produit'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Voulez-vous publier directement ce produit et le rendre consultable ou le placer en analyse?</label><span class="text-red"> *</span>
-                                <div class="radio-style">
-                                    {{ form_widget(form.ispublished, {'label_attr': {'class': 'radio-label'}},) }}
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Commentaires</label>
-                                {{ form_widget(form.commentary, {'attr': {'class': 'form-control',
-                                    'placeholder': 'Entrez les informations complémentaires que vous souhaitez'}}) }}
-                            </div>
-                                
-                                {{ form_rest(form) }}
-                            {% if action == 'create' %}
-                                <div class="box-footer">
-                                    <button type="submit" class="btn btn-warning">Ajouter</button>
-                                </div>
-                            {% endif %}
-
-                            {% if action == 'modify' %}
-                                <div class="box-footer">
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fa fa-edit"></i>
-                                        Modifier
-                                    </button>
-                                </div>
-                            {% endif %}
-
-                            {% if action == 'remove' %}
-                                <div class="box-footer">
-                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modal-default">
-                                        <i class="fa fa-trash"></i>
-                                        Supprimer
-                                    </button>
-                                </div>
-                            {% endif %}
-
-                            <!-- NON AFFICHÉ - modal - boite de dialogue pour confirmer la suppression -->
-                            <div class="modal fade" id="modal-default" style="display: none;">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">×</span></button>
-                                            <h4 class="modal-title">Confirmation</h4>
+                                    <!-- Identification and tracking section -->
+                                    <div class="form-section">
+                                        <div class="section-header">
+                                            <i class="fas fa-barcode"></i>
+                                            <h3>Identification et suivi</h3>
                                         </div>
-                                        <div class="modal-body">
-                                            <p>Êtes-vous sûr de vouloir supprimer cette fiche de stockage?</p>
-                                        </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Non</button>
-                                            <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Oui</button>
-                                        </div>
-                                    </div><!-- /.modal-content -->
-                                </div><!-- /.modal-dialog -->
-                            </div>
-                        </form> 
-                        <div class="row">
-                            <div class="col-xs-12">
-                                <div class="box">
-                                    <div class="box-header">
-                                        <h3 class="box-title">Liste des fiches de stockage</h3>
-                                    </div><!-- /.box-header -->
 
-                                    <div class="box-body">
-                                        <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-                                            <div class="row">
-                                                <div class="col-sm-12">
-                                                    <table id="example2" class="table table-bordered table-hover dataTable">
-                                                        <thead>
-                                                            <tr role="row">
-                                                                <th>Identifiant unique</th>
-                                                                <th>Nom du produit</th>
-                                                                <th>Lieu de stockage</th>
-                                                                <th>Numéro de série</th>
-                                                                <th></th>
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {# S'il y a des fiches de stockage #}
-                                                            {% if storagecards is defined %}
-                                                                {% if storagecards is not null %}
-                                                                    {# Pour chaque fiche de stockage dans la liste
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-fingerprint"></i> Numéro de série
+                                            </label>
+                                            {{ form_widget(form.serialnumber, {'attr': {
+                                                'class': 'form-control',
+                                                'placeholder': 'Numéro de série ou lot'
+                                            }}) }}
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-calendar-alt"></i> {{ form_label(form.opendate) }}
+                                            </label>
+                                            <div class="date-input">
+                                                {{ form_widget(form.opendate, {'attr': {
+                                                    'class': 'form-control datepicker',
+                                                    'data-date-language': 'fr',
+                                                    'placeholder': 'JJ/MM/AAAA'
+                                                }}) }}
+                                                <i class="fas fa-calendar"></i>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-hourglass-end"></i> {{ form_label(form.expirationdate) }}
+                                            </label>
+                                            <div class="date-input">
+                                                {{ form_widget(form.expirationdate, {'attr': {
+                                                    'class': 'form-control datepicker',
+                                                    'data-date-language': 'fr',
+                                                    'placeholder': 'JJ/MM/AAAA'
+                                                }}) }}
+                                                <i class="fas fa-calendar"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Status & visibility section -->
+                                    <div class="form-section">
+                                        <div class="section-header">
+                                            <i class="fas fa-eye"></i>
+                                            <h3>Statut et visibilité</h3>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Faut-il archiver ce produit ? <span class="text-red">*</span></label>
+                                            <div class="radio-group">
+                                                {% for choice in form.isarchived %}
+                                                    <div class="radio-card">
+                                                        {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}}) }}
+                                                        <label for="{{ choice.vars.id }}">
+                                                            <i class="fas {% if choice.vars.value == false %}fa-box-open{% else %}fa-archive{% endif %}"></i>
+                                                            {{ choice.vars.label }}
+                                                        </label>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Voulez-vous cacher l'emplacement exact ? <span class="text-red">*</span></label>
+                                            <div class="radio-group">
+                                                {% for choice in form.isrisked %}
+                                                    <div class="radio-card">
+                                                        {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}}) }}
+                                                        <label for="{{ choice.vars.id }}">
+                                                            <i class="fas {% if choice.vars.value == false %}fa-eye{% else %}fa-eye-slash{% endif %}"></i>
+                                                            {{ choice.vars.label }}
+                                                        </label>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">Statut de publication <span class="text-red">*</span></label>
+                                            <div class="radio-group">
+                                                {% for choice in form.ispublished %}
+                                                    <div class="radio-card">
+                                                        {{ form_widget(choice, {'attr': {'class': 'radio-card-input'}}) }}
+                                                        <label for="{{ choice.vars.id }}">
+                                                            <i class="fas {% if choice.vars.value == true %}fa-check-circle{% else %}fa-microscope{% endif %}"></i>
+                                                            {{ choice.vars.label }}
+                                                        </label>
+                                                    </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Additional information section -->
+                                    <div class="form-section">
+                                        <div class="section-header">
+                                            <i class="fas fa-info-circle"></i>
+                                            <h3>Informations complémentaires</h3>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-user"></i> Propriétaire du flacon
+                                            </label>
+                                            {{ form_widget(form.idProperty, {'attr': {
+                                                'class': 'form-control select2',
+                                                'style': "width: 100%;",
+                                                'data-placeholder': 'Sélectionner le propriétaire'
+                                            }}) }}
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-file-pdf"></i> Fiche de prudence
+                                            </label>
+                                            <div class="file-upload">
+                                                {{ form_widget(form.uploadedSecurityFile, {'attr': {'class': 'file-input'}}) }}
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                <div class="file-prompt">
+                                                    <p>Déposez votre fichier PDF ici ou cliquez pour parcourir</p>
+                                                    <p class="text-muted">Taille maximale: 1 Mo</p>
+                                                </div>
+                                                <div class="file-selected">
+                                                    Fichier sélectionné: <span class="file-name"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-file-alt"></i> Certificat d'analyse
+                                            </label>
+                                            <div class="file-upload">
+                                                {{ form_widget(form.uploadedAnalysisFile, {'attr': {'class': 'file-input'}}) }}
+                                                <i class="fas fa-cloud-upload-alt"></i>
+                                                <div class="file-prompt">
+                                                    <p>Déposez votre fichier PDF ici ou cliquez pour parcourir</p>
+                                                    <p class="text-muted">Taille maximale: 1 Mo</p>
+                                                </div>
+                                                <div class="file-selected">
+                                                    Fichier sélectionné: <span class="file-name"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-building"></i> Fournisseur
+                                            </label>
+                                            {{ form_widget(form.idSupplier, {'attr': {
+                                                'class': 'form-control select2',
+                                                'style': "width: 100%;",
+                                                'data-placeholder': 'Sélectionner le fournisseur'
+                                            }}) }}
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-hashtag"></i> Référence fournisseur
+                                            </label>
+                                            {{ form_widget(form.reference, {'attr': {
+                                                'class': 'form-control',
+                                                'placeholder': 'Référence du produit chez le fournisseur'
+                                            }}) }}
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label class="form-label">
+                                                <i class="fas fa-comment-alt"></i> Commentaires
+                                            </label>
+                                            {{ form_widget(form.commentary, {'attr': {
+                                                'class': 'form-control',
+                                                'placeholder': 'Informations complémentaires',
+                                                'rows': '4'
+                                            }}) }}
+                                        </div>
+                                    </div>
+
+                                    {{ form_rest(form) }}
+
+                                    <div class="form-footer">
+                                        {% if action == 'create' %}
+                                            <button type="submit" class="btn btn-warning btn-lg">
+                                                <i class="fas fa-save"></i> Ajouter
+                                            </button>
+                                        {% elseif action == 'modify' %}
+                                            <button type="submit" class="btn btn-success btn-lg">
+                                                <i class="fas fa-edit"></i> Modifier
+                                            </button>
+                                        {% elseif action == 'remove' %}
+                                            <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#modal-default">
+                                                <i class="fas fa-trash"></i> Supprimer
+                                            </button>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- NON AFFICHÉ - modal - boite de dialogue pour confirmer la suppression -->
+                                    <div class="modal fade" id="modal-default" style="display: none;">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">×</span></button>
+                                                    <h4 class="modal-title">Confirmation</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Êtes-vous sûr de vouloir supprimer cette fiche de stockage?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Non</button>
+                                                    <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Oui</button>
+                                                </div>
+                                            </div><!-- /.modal-content -->
+                                        </div><!-- /.modal-dialog -->
+                                    </div>
+                                </form>
+
+                                <!-- Tableau des fiches de stockage -->
+                                <div class="row mt-4">
+                                    <div class="col-xs-12">
+                                        <div class="box">
+                                            <div class="box-header">
+                                                <h3 class="box-title">Liste des fiches de stockage</h3>
+                                            </div><!-- /.box-header -->
+
+                                            <div class="box-body">
+                                                <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                                                    <div class="row">
+                                                        <div class="col-sm-12">
+                                                            <table id="example2" class="table table-bordered table-hover dataTable">
+                                                                <thead>
+                                                                <tr role="row">
+                                                                    <th>Identifiant unique</th>
+                                                                    <th>Nom du produit</th>
+                                                                    <th>Lieu de stockage</th>
+                                                                    <th>Numéro de série</th>
+                                                                    <th>Actions</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                {# S'il y a des fiches de stockage #}
+                                                                {% if storagecards is defined %}
+                                                                    {% if storagecards is not null %}
+                                                                        {# Pour chaque fiche de stockage dans la liste
                                                                     On boucle pour créer de nouvelles lignes
                                                                     dans le tableau sous le même format#}
-                                                                    {% for oneStoragecard in storagecards %}
-                                                                        <tr role="row" class="odd">
-                                                                            <td data-title="Identifiant unique" class="sorting_1">{{ oneStoragecard.getIdStoragecard() }}</td>
-                                                                            <td data-title="Nom du produit" class="sorting_1">{{ oneStoragecard.getIdChimicalproduct() }}</td>
-                                                                            <td data-title="Lieu de stockage" class="sorting_1">{{ oneStoragecard.getIdShelvingunit() }}</td>
-                                                                            <td data-title="Numéro de série" class="sorting_1">{{ oneStoragecard.getSerialnumber() }}</td>
-                                                                            
-                                                                            <td>
-                                                                                <a href="{{ path('admin_storage_modify', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-success">
-                                                                                    <i class="fa fa-edit"></i> Modifier
-                                                                                </a>
-                                                                                <a href="{{ path('admin_storage_remove', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-danger">
-                                                                                    <i class="fa fa-trash"></i> Supprimer
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                                    {% endfor %}
+                                                                        {% for oneStoragecard in storagecards %}
+                                                                            <tr role="row" class="odd">
+                                                                                <td data-title="Identifiant unique" class="sorting_1">{{ oneStoragecard.getIdStoragecard() }}</td>
+                                                                                <td data-title="Nom du produit" class="sorting_1">{{ oneStoragecard.getIdChimicalproduct() }}</td>
+                                                                                <td data-title="Lieu de stockage" class="sorting_1">{{ oneStoragecard.getIdShelvingunit() }}</td>
+                                                                                <td data-title="Numéro de série" class="sorting_1">{{ oneStoragecard.getSerialnumber() }}</td>
+
+                                                                                <td>
+                                                                                    <a href="{{ path('admin_storage_modify', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-success">
+                                                                                        <i class="fas fa-edit"></i> Modifier
+                                                                                    </a>
+                                                                                    <a href="{{ path('admin_storage_remove', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-danger">
+                                                                                        <i class="fas fa-trash"></i> Supprimer
+                                                                                    </a>
+                                                                                </td>
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    {% endif %}
                                                                 {% endif %}
-                                                            {% endif %}
-                                                        </tbody>
-                                                    </table>
-                                                </div><!-- /.col -->
-                                            </div><!-- /.row -->
-                                        </div>
-                                    </div><!-- /.box-body -->
-                                </div><!-- /.box -->
-                            </div><!-- /.col -->
-                        </div><!-- /.row -->
+                                                                </tbody>
+                                                            </table>
+                                                        </div><!-- /.col -->
+                                                    </div><!-- /.row -->
+                                                </div>
+                                            </div><!-- /.box-body -->
+                                        </div><!-- /.box -->
+                                    </div><!-- /.col -->
+                                </div><!-- /.row -->
                     </div><!-- /.box-body -->
                 </div><!-- /.tab-pane -->
             </div><!-- /.tab-content -->
@@ -294,48 +449,9 @@ Khemeia | Création d'une fiche de stockage
     </div>
 {% endblock %}
 
-{% block javascripts %}
-    <!-- bootstrap datepicker -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
-    <!-- Language script -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
-
-    <!-- Code javaScript qui paramètre le widget des dates -->
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $('.datepicker').datepicker({
-            "format": "dd/mm/yyyy",
-            "language": "fr",
-            "keyboardNavigation": false,
-            "setDate": new Date(),
-            "autoclose": true,
-            "clearBtn": true,
-            "todayHighlight": true
-            });
-        });
-    </script>
-    <!-- Select2 -->
-    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
-    <!-- DataTables -->
-    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
-    <!-- Page script -->
-    <script>
-        $(document).ready(function () {
-            //Initialize Select2 Elements
-            $('.select2').select2()
-            //Initialize #example2 Elements
-            $('#example2').DataTable({
-            'paging'      : true,
-            'lengthChange': false,
-            'searching'   : true,
-            'ordering'    : true,
-            'info'        : true,
-            'autoWidth'   : false,
-            'language': {
-            "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
-        }
-            })
-        });
-    </script>
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('datatable') }}
+    {{ encore_entry_script_tags('select') }}
+    {{ encore_entry_script_tags('datepicker') }}
+    {{ encore_entry_script_tags('storagecard') }}
 {% endblock %}
