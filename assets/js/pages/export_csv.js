@@ -95,66 +95,7 @@ class ExportManager {
             }
         }
 
-        // Afficher un indicateur de chargement
-        this.showLoadingIndicator();
         return true;
-    }
-
-    showLoadingIndicator() {
-        // Créer un overlay de chargement
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.className = 'loading-overlay';
-        loadingOverlay.style.cssText = `
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(255, 255, 255, 0.8);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-        `;
-
-        const loadingContent = document.createElement('div');
-        loadingContent.style.cssText = `
-            text-align: center;
-        `;
-
-        const spinner = document.createElement('div');
-        spinner.style.cssText = `
-            border: 6px solid #f3f3f3;
-            border-top: 6px solid #3c8dbc;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            margin: 0 auto 20px;
-            animation: spin 1s linear infinite;
-        `;
-
-        const loadingText = document.createElement('p');
-        loadingText.textContent = 'Préparation de l\'export CSV...';
-        loadingText.style.cssText = `
-            font-size: 18px;
-            color: #333;
-            font-weight: 600;
-        `;
-
-        // Ajouter l'animation de rotation
-        const styleElement = document.createElement('style');
-        styleElement.textContent = `
-            @keyframes spin {
-                0% { transform: rotate(0deg); }
-                100% { transform: rotate(360deg); }
-            }
-        `;
-
-        document.head.appendChild(styleElement);
-        loadingContent.appendChild(spinner);
-        loadingContent.appendChild(loadingText);
-        loadingOverlay.appendChild(loadingContent);
-        document.body.appendChild(loadingOverlay);
     }
 
     enhanceSelects() {

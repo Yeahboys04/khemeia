@@ -1,12 +1,8 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <!-- Select2 -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <!-- DataTables -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/datatables.net-bs/css/dataTables.bootstrap.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('global') }}
+    {{ encore_entry_link_tags('datatable') }}
 {% endblock %}
 
 {% block title %}
@@ -77,30 +73,7 @@ Khemeia | Consultation
 </section>
 {% endblock %}
 
-{% block javascripts %}
-    <!-- DataTables -->
-    <script src="{{ asset('assets/bower_components/datatables.net/js/jquery.dataTables.min.js') }}"></script>
-    <script src="{{ asset('assets/bower_components/datatables.net-bs/js/dataTables.bootstrap.min.js') }}"></script>
-    <!-- Page script -->
-    <script type="text/javascript">
-        $(document).ready(function () {
-            //Initialize #example2 Elements
-            $('#example2').DataTable({
-                'paging'      : true,
-                'lengthChange': false,
-                'searching'   : true,
-                'ordering'    : true,
-                'info'        : true,
-                'autoWidth'   : false,
-                'language': {
-                    "url": "https://cdn.datatables.net/plug-ins/1.10.21/i18n/French.json"
-                }
-            })
-        });
-
-        let printButton = document.getElementById("btnPrint");
-        printButton.addEventListener('click', () => {
-            window.print();
-        })
-    </script>
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('datatable') }}
+    {{ encore_entry_script_tags('printBtn') }}
 {% endblock %}

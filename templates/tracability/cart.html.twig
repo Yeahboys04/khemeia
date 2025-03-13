@@ -1,11 +1,7 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <!-- Select2 -->
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/select2/dist/css/select2.min.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/general_style.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/remove_product.css') }}">
-    <link rel="stylesheet" href="{{ asset('assets/css/print.css') }}" type="text/css" media="print">
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('remove_product') }}
 {% endblock %}
 
 {% block title %}
@@ -180,7 +176,5 @@
 {% endblock %}
 
 {% block javascripts %}
-    <!-- Select2 -->
-    <script src="{{ asset('assets/bower_components/select2/dist/js/select2.full.min.js') }}"></script>
-    <script src="{{ asset('assets/js/remove_product.js') }}"></script>
+    {{ encore_entry_script_tags('remove_product') }}
 {% endblock %}

@@ -1,3 +1,5 @@
+import "../components/select";
+import "../../styles/components/select.scss";
 document.addEventListener('DOMContentLoaded', function() {
     // Mise en cache des sélecteurs DOM - minimise les requêtes DOM
     const productSearchField = document.querySelector('.product-search-field');
@@ -10,29 +12,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const casSearch = document.querySelector('#search_casSearch');
     const printButton = document.getElementById("btnPrint");
     const resultsTable = document.querySelector('.results-table');
-
-    // Initialisation de Select2 une seule fois avec toutes les options
-    if (window.jQuery && $.fn.select2) {
-        $('.select2').select2({
-            width: '100%',
-            placeholder: function() {
-                return $(this).data('placeholder');
-            },
-            allowClear: true,
-            language: {
-                noResults: () => "Aucun résultat trouvé",
-                searching: () => "Recherche en cours..."
-            }
-        }).parent().addClass('modern-select2');
-
-        // Utilisation de la délégation d'événements pour de meilleures performances
-        $(document).on('select2:open', '.select2', function() {
-            setTimeout(() => document.querySelector('.select2-search__field')?.focus(), 100);
-        });
-    }
-
-    // Bouton d'impression - utilise le chaînage optionnel pour la sécurité
-    printButton?.addEventListener('click', () => window.print());
 
     // Application des styles de transition une seule fois
     if (productSearchField && casSearchField) {

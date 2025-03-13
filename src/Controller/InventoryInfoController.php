@@ -123,37 +123,50 @@ class InventoryInfoController extends AbstractController
         $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
         $site = $tokenStorage->getToken()->getUser()->getIdSite()->getIdSite();
 
-        // La méthode getExportQuery retourne une Query qui est utilisée pour récupérer
-        // tous les objets (lignes du fichier csv) dont vous avez besoin. La méthode iterate
-        // est utilisée pour limiter la consommation de mémoire
-
+        // Récupérer les données
         $results = $repositoryStoragecard->loadStorageCardBySiteForCSV($site)->iterate();
-        //vérifier que le fichier existe déja
-        $path = $this->getParameter('csv_directory')."/export.csv";
-        if (file_exists($path)){
-            //S'il existe déja, on le supprime / remplace?
-            unlink($path);
 
+        // Créer un nom de fichier unique avec timestamp
+        $filename = 'export_' . date('Y-m-d_H-i-s') . '.csv';
+        $path = $this->getParameter('csv_directory') . "/" . $filename;
+
+        if (file_exists($path)) {
+            unlink($path);
         }
+
         $handle = fopen($path, 'x+');
 
-        while (false !== ($rows = $results->next())) {
-            foreach($rows as $row){
-                fputcsv($handle, $row);
-            }
-            // ajoute une ligne au fichier csv. Vous devrez implémenter la méthode toArray()
-            // pour transformer votre objet en tableau
+        // Ajouter le BOM UTF-8 pour assurer la compatibilité avec les accents
+        fputs($handle, "\xEF\xBB\xBF");
 
-            // utilisé pour limiter la consommation de mémoire
-            //$entityManager->clear($row[0]);
+
+        // Écrire les données
+        while (false !== ($rows = $results->next())) {
+            foreach($rows as $row) {
+                // S'assurer que chaque valeur est encodée correctement en UTF-8
+                $encodedRow = array_map(function($value) {
+                    if (is_string($value)) {
+                        return mb_detect_encoding($value, 'UTF-8', true) ?
+                            $value :
+                            utf8_encode($value);
+                    }
+                    return $value;
+                }, $row);
+
+                fputcsv($handle, $encodedRow, ',', '"', '\\');
+            }
+            // Libérer la mémoire
+            $entityManager->clear();
         }
 
         fclose($handle);
 
-        //$response->headers->set('Content-Type', 'application/force-download');
-        //$response->headers->set('Content-Disposition','attachment; filename="export.csv"');
+        // Configurer la réponse pour forcer le téléchargement
+        $response = $this->file($path, $filename);
+        $response->headers->set('Content-Type', 'text/csv; charset=UTF-8');
+        $response->headers->set('Content-Disposition', 'attachment; filename="' . $filename . '"');
 
-        return $this->file($path);
+        return $response;
     }
 
     #[Route('inventory/pdf', name: 'inventory_pdf')]

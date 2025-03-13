@@ -1,7 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block stylesheets %}
-    <link rel="stylesheet" href="{{ asset('assets/bower_components/bootstrap-datepicker/dist/css/bootstrap-datepicker.min.css') }}">
+{% block page_stylesheets %}
 {% endblock %}
 
 {% block body %}
@@ -46,24 +45,6 @@
     </div>
 {% endblock %}
 
-{% block javascripts %}
-    <!-- bootstrap datepicker -->
-    <!-- Language script -->
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/bootstrap-datepicker.js') }}"></script>
-    <script src="{{ asset('assets/bower_components/bootstrap-datepicker/js/locales/bootstrap-datepicker.fr.js') }}"></script>
+{% block page_javascripts %}
 
-    <!-- Script -->
-    <script type="text/javascript">
-        $(document).ready(function(){
-            $('.datepicker').datepicker({
-                "format": "dd/mm/yyyy",
-                "language": "fr",
-                "keyboardNavigation": false,
-                "setDate": new Date(),
-                "autoclose": true,
-                "clearBtn": true,
-                "todayHighlight": true
-            });
-        });
-    </script>
 {% endblock %}

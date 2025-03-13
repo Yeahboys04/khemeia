@@ -30,6 +30,7 @@ Encore
     .addEntry('dateWidgetConfig', './assets/js/components/dateWidgetConfig.js')
     .addEntry('inventory', './assets/js/pages/inventory.js')
     .addEntry('export_csv', './assets/js/pages/export_csv.js')
+    .addEntry('export_pdf', './assets/export_pdf.js')
 
 
     .addEntry('datepicker', './assets/js/components/datepicker.js')
