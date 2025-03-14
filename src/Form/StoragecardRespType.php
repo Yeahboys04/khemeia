@@ -2,6 +2,7 @@
 
 namespace App\Form;
 
+use App\Entity\Chimicalproduct;
 use App\Entity\Shelvingunit;
 use App\Entity\Storagecard;
 use Doctrine\ORM\EntityRepository;
@@ -137,7 +138,21 @@ class StoragecardRespType extends AbstractType
                 'expanded' => true,
                 'multiple' => false,
             ))
-            ->add('idChimicalproduct')
+            ->add('idChimicalproduct',EntityType::class,[
+                'class' => Chimicalproduct::class,
+                'query_builder' => function (EntityRepository $er) {
+                    return $er->createQueryBuilder('qb')
+                        ->orderBy('qb.nameChimicalproduct', 'ASC');
+                },
+                'choice_label' => function ($chimicalproduct) {
+                    if($chimicalproduct->getCasnumber() !== null){
+                        return $chimicalproduct . ' (' . $chimicalproduct->getCasnumber() . ')';
+                    } else {
+                        return $chimicalproduct;
+                    }
+                },
+
+            ])
             ->add('uploadedSecurityFile', FileType::class, [
                 'label' => 'Fiche de prudence (fichier PDF)',
                 'required' => false,
