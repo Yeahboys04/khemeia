@@ -1,107 +1,156 @@
 {% extends 'base.html.twig' %}
 
 {% block page_stylesheets %}
-    {{ encore_entry_link_tags('select') }}
+    {{ encore_entry_link_tags('tom-select-search') }}
 {% endblock %}
 
 {% block title %}
-Khemeia | Création d'une fiche produit
+    Khemeia | Création d'une fiche produit
 {% endblock %}
 
 {% block body %}
-    <div class="panel box box-warning">
-        <div class="box-header with-border">
-            <h4 class="box-title">
-                Création d'un produit chimique
-            </h4>
-        </div>
-        <div class="nav-tabs-custom">
-            <div class="tab-content">
-                <div class="tab-pane active" id="tab_1">
-                    <div class="box-body">
-                        <form role="form" action="{{ path('inventory_product')}}" method="post" >
+    <div class="container py-4">
+        <div class="product-form-container">
+            <div class="form-header">
+                <h4>
+                    <i class="fas fa-flask"></i> Création d'un produit chimique
+                </h4>
+            </div>
 
-                            <!-- text input -->
-                            <div class="form-group">
-                                <label>Nom du produit</label><span class="text-red"> *</span>
-                                {{ form_widget(form.nameChimicalproduct, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez un nom de produit'}}) }}
+            <div class="form-body">
+                <div class="form-instruction">
+                    <h5><i class="fas fa-info-circle"></i> Comment utiliser ce formulaire</h5>
+                    <p>Ce formulaire vous permet de créer une nouvelle fiche produit dans la base de données. Commencez par vérifier si le produit existe déjà en tapant son nom. Les champs marqués d'un astérisque (*) sont obligatoires.</p>
+                </div>
+
+                <form role="form" action="{{ path('inventory_product')}}" method="post">
+
+                    <!-- Section 1: Informations de base -->
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <div class="step-indicator">1</div>
+                            <span>Identification du produit</span>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label required-field">Nom du produit</label>
+                            {{ form_widget(form.nameChimicalproduct, {
+                                'attr': {
+                                    'class': 'form-control product-search',
+                                    'placeholder': 'Entrez un nom de produit',
+                                    'autocomplete': 'off'
+                                }
+                            }) }}
+                            <small class="form-text text-muted mt-2">
+                                <i class="fas fa-search"></i> Commencez à taper pour rechercher un produit existant ou créez-en un nouveau
+                            </small>
+                            <div class="product-exists-warning">
+                                <i class="fas fa-exclamation-triangle"></i> Ce produit existe déjà dans la base de données.
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Solvant</label>
-                                {{ form_widget(form.solvent, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez un nom de solvant'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Formule chimique</label>
-                                {{ form_widget(form.formula, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez la formule chimique. Ex: CH2-I2'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>N° de CAS</label>
-                                {{ form_widget(form.casnumber, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez le n° de CAS'}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Ce produit est-il CMR?</label><span class="text-red"> *</span>
-                                <div class="radio-style">
-                                    {{ form_widget(form.iscmr, {'label_attr': {'class': 'radio-label'}},) }}
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <label class="form-label">Formule chimique</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"></span>
+                                        {{ form_widget(form.formula, {'attr': {'class': 'form-control',
+                                            'placeholder': 'Ex: CH2-I2'}}) }}
+                                    </div>
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group mb-4">
+                                    <label class="form-label">N° de CAS</label>
+                                    <div class="input-group">
+                                        <span class="input-group-text"></span>
+                                        {{ form_widget(form.casnumber, {'attr': {'class': 'form-control',
+                                            'placeholder': 'Ex: 75-09-2'}}) }}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Symbole de danger</label>
-                                
-                                {{ form_widget(form.idDangersymbol, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'data-placeholder':"Selectionnez un ou plusieurs symboles de danger",
-                                 'tabindex':"-1"}}) }}
+                        <div class="form-group mb-4">
+                            <label class="form-label">Solvant</label>
+                            <div class="input-group">
+                                <span class="input-group-text"></span>
+                                {{ form_widget(form.solvent, {'attr': {'class': 'form-control',
+                                    'placeholder': 'Ex: Eau, Éthanol, etc.'}}) }}
                             </div>
+                        </div>
+                    </div>
 
-                            <div class="form-group">
-                                <label>Conseils de prudence</label>
-                                
-                                {{ form_widget(form.idCautionaryadvice, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'data-placeholder':"Selectionnez un ou plusieurs conseils de prudence",
-                                 'tabindex':"-1"}}) }}
-                            </div>
+                    <!-- Section 2: Classification de danger -->
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <div class="step-indicator">2</div>
+                            <span>Classification des dangers</span>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Mention de danger</label>
-                                
-                                {{ form_widget(form.idDangernote, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'data-placeholder':"Selectionnez une ou plusieurs mentions de danger",
-                                 'tabindex':"-1"}}) }}
+                        <div class="form-group mb-4">
+                            <label class="form-label required-field">Ce produit est-il CMR?</label>
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-question-circle help-icon" data-bs-toggle="tooltip" title="CMR : Cancérogène, Mutagène, Reprotoxique"></i>
                             </div>
+                            <div class="radio-style">
+                                {{ form_widget(form.iscmr, {'label_attr': {'class': 'radio-label'}},) }}
+                            </div>
+                            <div class="cmr-warning" id="cmrWarning">
+                                <i class="fas fa-exclamation-triangle"></i> Les produits CMR nécessitent une attention particulière. Le symbole SGH08 et le type "Sensibilisant, cancérogène, mutagène, reprotoxique" seront automatiquement ajoutés.
+                            </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label>Type de produit</label>
-                                
-                                {{ form_widget(form.idType, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'data-placeholder':"Selectionnez un ou plusieurs types de produits",
-                                 'tabindex':"-1"}}) }}
-                            </div>
-                                
-                            {{ form_rest(form) }}
-                            
-                            <div class="box-footer">
-                                <button type="submit" class="btn btn-warning">Ajouter</button>
-                            </div>
-                        </form> 
-                    </div><!-- /.box-body -->
-                </div><!-- /.tab-pane -->
-            </div><!-- /.tab-content -->
+                        <div class="form-group mb-4">
+                            <label class="form-label">Symbole de danger</label>
+                            {{ form_widget(form.idDangersymbol, {'attr': {'class': 'tom-select',
+                                'data-placeholder': 'Selectionnez un ou plusieurs symboles de danger'}}) }}
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label">Mention de danger</label>
+                            {{ form_widget(form.idDangernote, {'attr': {'class': 'tom-select',
+                                'data-placeholder': 'Selectionnez une ou plusieurs mentions de danger'}}) }}
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label">Conseils de prudence</label>
+                            {{ form_widget(form.idCautionaryadvice, {'attr': {'class': 'tom-select',
+                                'data-placeholder': 'Selectionnez un ou plusieurs conseils de prudence'}}) }}
+                        </div>
+                    </div>
+
+                    <!-- Section 3: Catégorisation -->
+                    <div class="form-section">
+                        <div class="form-section-title">
+                            <div class="step-indicator">3</div>
+                            <span>Catégorisation</span>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label class="form-label">Type de produit</label>
+                            {{ form_widget(form.idType, {'attr': {'class': 'tom-select',
+                                'data-placeholder': 'Selectionnez un ou plusieurs types de produits'}}) }}
+                        </div>
+
+                        {{ form_rest(form) }}
+                    </div>
+
+                    <div class="d-flex justify-content-end mt-4">
+                        <button type="button" class="btn btn-outline-secondary" onclick="window.history.back()">
+                            <i class="fas fa-arrow-left"></i> Annuler
+                        </button>
+                        <button type="submit" class="btn btn-submit">
+                            <i class="fas fa-save"></i> Créer le produit
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 {% endblock %}
 
 {% block page_javascripts %}
-    {{ encore_entry_script_tags('select') }}
+    {{ encore_entry_script_tags('tom-select-search') }}
 {% endblock %}

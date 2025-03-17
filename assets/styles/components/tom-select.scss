@@ -1,0 +1,50 @@
+/* assets/css/tom-select-custom.css */
+
+/* Style général */
+.ts-wrapper {
+  width: 100%;
+  border-radius: 3px;
+}
+
+/* Style quand le select est focus */
+.ts-wrapper.focus .ts-control {
+  border-color: #f39c12;
+  box-shadow: 0 0 0 0.2rem rgba(243, 156, 18, 0.25);
+}
+
+/* Style des éléments sélectionnés */
+.ts-wrapper .item {
+  background-color: #f39c12;
+  color: white;
+  border-radius: 3px;
+  padding: 2px 8px;
+}
+
+/* Style du bouton de suppression */
+.ts-wrapper .item .remove {
+  color: white;
+  border-left: 1px solid rgba(255, 255, 255, 0.3);
+  padding-left: 6px;
+  margin-left: 6px;
+}
+
+/* Style des options dans le dropdown */
+.ts-dropdown .option {
+  padding: 8px 12px;
+}
+
+.ts-dropdown .option.active {
+  background-color: rgba(243, 156, 18, 0.1);
+  color: #333;
+}
+
+/* Style de l'option activée */
+.ts-dropdown .option.selected {
+  background-color: rgba(243, 156, 18, 0.2);
+  color: #333;
+}
+
+/* Style du placeholder */
+.ts-control > input::placeholder {
+  color: #999;
+}

@@ -16,6 +16,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -97,6 +98,40 @@ class InventoryController extends AbstractController
         ]);
     }
 
+    #[Route('/api/search/products', name: 'api_search_products', methods: ['GET'])]
+    public function searchProducts(Request $request, EntityManagerInterface $entityManager): JsonResponse
+    {
+        // Récupérer le terme de recherche
+        $term = $request->query->get('q', '');
+
+        if (empty($term) || strlen($term) < 2) {
+            return new JsonResponse([]);
+        }
+
+        // Rechercher dans la base de données
+        $repository = $entityManager->getRepository(Chimicalproduct::class);
+        $products = $repository->createQueryBuilder('p')
+            ->where('p.nameChimicalproduct LIKE :term')
+            ->setParameter('term', '%' . $term . '%')
+            ->orderBy('p.nameChimicalproduct', 'ASC')
+            ->setMaxResults(10)
+            ->getQuery()
+            ->getResult();
+
+        // Formatter les résultats
+        $results = [];
+        foreach ($products as $product) {
+            $results[] = [
+                'id' => $product->getIdChimicalproduct(),
+                'text' => $product->getNameChimicalproduct(),
+                'formula' => $product->getFormula(),
+                'casnumber' => $product->getCasnumber(),
+                'exists' => true
+            ];
+        }
+
+        return new JsonResponse($results);
+    }
     #[Route('/inventory/storagecard', name: 'inventory_storage')]
     public function createStoragecard(
         Request $request,

@@ -13,6 +13,7 @@ import './styles/app.scss';
 
 // Import Bootstrap
 import 'bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 // Import Font Awesome
 import '@fortawesome/fontawesome-free/css/all.min.css';

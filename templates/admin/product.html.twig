@@ -2,11 +2,11 @@
 
 {% block page_stylesheets %}
     {{ encore_entry_link_tags('datatable') }}
-    {{ encore_entry_link_tags('select') }}
+    {{ encore_entry_link_tags('admin-product-search') }}
 {% endblock %}
 
 {% block title %}
-Khemeia | Création d'une fiche produit
+    Khemeia | Gestion des produits chimiques
 {% endblock %}
 
 {% block body %}
@@ -35,178 +35,197 @@ Khemeia | Création d'une fiche produit
                         {# Selon que l'on veut créer, modifier ou supprimer un entrepot,
                             on paramètre la méthode qui reçoit le formulaire avec la bonne route
                             ainsi que le bon texte du bouton de soumission du formulaire#}
-                        {% if action == 'modify' %} 
+                        {% if action == 'modify' %}
                         <form role="form" action="{{ path('admin_product_modify', {id: id}) }}" method="post" >
 
-                        {% elseif action == 'remove' %}
-                        <form role="form" action="{{ path('admin_product_remove', {id: id}) }}" method="post" >
+                            {% elseif action == 'remove' %}
+                            <form role="form" action="{{ path('admin_product_remove', {id: id}) }}" method="post" >
 
-                        {% else %}
-                        <form role="form" action="{{ path('admin_product')}}" method="post" >
-                        {% endif %}
+                                {% else %}
+                                <form role="form" action="{{ path('admin_product')}}" method="post" >
+                                    {% endif %}
 
-                            <!-- text input -->
-                            <div class="form-group">
-                                <label>Nom du produit</label><span class="text-red"> *</span>
-                                {{ form_widget(form.nameChimicalproduct, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez un nom de produit'}}) }}
-                            </div>
+                                    <!-- text input avec recherche -->
+                                    <div class="form-group">
+                                        <label>Nom du produit</label><span class="text-red"> *</span>
+                                        {{ form_widget(form.nameChimicalproduct, {'attr': {'class': 'form-control',
+                                            'placeholder': 'Entrez un nom de produit',
+                                            'autocomplete': 'off'}}) }}
+                                        <small class="help-block">Commencez à taper pour rechercher un produit existant ou créez-en un nouveau</small>
+                                    </div>
 
-                            <div class="form-group">
-                                <label>Solvant</label>
-                                {{ form_widget(form.solvent, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez un nom de solvant'}}) }}
-                            </div>
+                                    <div class="form-group">
+                                        <label>Solvant</label>
+                                        {{ form_widget(form.solvent, {'attr': {'class': 'form-control',
+                                            'placeholder': 'Entrez un nom de solvant'}}) }}
+                                    </div>
 
-                            <div class="form-group">
-                                <label>Formule chimique</label>
-                                {{ form_widget(form.formula, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez la formule chimique. Ex: CH2-I2'}}) }}
-                            </div>
+                                    <div class="form-group">
+                                        <label>Formule chimique</label>
+                                        {{ form_widget(form.formula, {'attr': {'class': 'form-control',
+                                            'placeholder': 'Entrez la formule chimique. Ex: CH2-I2'}}) }}
+                                    </div>
 
-                            <div class="form-group">
-                                <label>N° de CAS</label>
-                                {{ form_widget(form.casnumber, {'attr': {'class': 'form-control',
-                                'placeholder': 'Entrez le n° de CAS'}}) }}
-                            </div>
+                                    <div class="form-group">
+                                        <label>N° de CAS</label>
+                                        {{ form_widget(form.casnumber, {'attr': {'class': 'form-control',
+                                            'placeholder': 'Entrez le n° de CAS'}}) }}
+                                    </div>
 
-                            <div class="form-group">
-                                <label>Ce produit est-il CMR?</label><span class="text-red"> *</span>
-                                <div class="radio-style">
-                                    {{ form_widget(form.iscmr, {'label_attr': {'class': 'radio-label'}},) }}
-                                </div>
-                            </div>
-
-                            <div class="form-group">
-                                <label>Symbole de danger</label>
-                                
-                                {{ form_widget(form.idDangersymbol, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'data-placeholder':"Selectionnez un ou plusieurs symboles de danger",
-                                 'tabindex':"-1"}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Conseils de prudence</label>
-                                
-                                {{ form_widget(form.idCautionaryadvice, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'data-placeholder':"Selectionnez un ou plusieurs conseils de prudence",
-                                 'tabindex':"-1"}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Mention de danger</label>
-                                
-                                {{ form_widget(form.idDangernote, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'data-placeholder':"Selectionnez une ou plusieurs mentions de danger",
-                                 'tabindex':"-1"}}) }}
-                            </div>
-
-                            <div class="form-group">
-                                <label>Type de produit</label>
-                                
-                                {{ form_widget(form.idType, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
-                                 'style':"width: 100%;",
-                                 'data-placeholder':"Selectionnez un ou plusieurs types de produits",
-                                 'tabindex':"-1"}}) }}
-                            </div>
-                                
-                                {{ form_rest(form) }}
-                            {% if action == 'create' %}
-                                <div class="box-footer">
-                                    <button type="submit" class="btn btn-warning">Ajouter</button>
-                                </div>
-                            {% endif %}
-
-                            {% if action == 'modify' %}
-                                <div class="box-footer">
-                                    <button type="submit" class="btn btn-success">
-                                        <i class="fa fa-edit"></i>
-                                        Modifier
-                                    </button>
-                                </div>
-                            {% endif %}
-
-                            {% if action == 'remove' %}
-                                <div class="box-footer">
-                                    <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modal-default">
-                                        <i class="fa fa-trash"></i>
-                                        Supprimer
-                                    </button>
-                                </div>
-                            {% endif %}
-
-                            <!-- NON AFFICHÉ - modal - boite de dialogue pour confirmer la suppression -->
-                            <div class="modal fade" id="modal-default" style="display: none;">
-                                <div class="modal-dialog">
-                                    <div class="modal-content">
-                                        <div class="modal-header">
-                                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                            <span aria-hidden="true">×</span></button>
-                                            <h4 class="modal-title">Confirmation</h4>
+                                    <div class="form-group">
+                                        <label>Ce produit est-il CMR?</label><span class="text-red"> *</span>
+                                        <div class="radio-style">
+                                            {{ form_widget(form.iscmr, {'label_attr': {'class': 'radio-label'}},) }}
                                         </div>
-                                        <div class="modal-body">
-                                            <p>Êtes-vous sûr de vouloir supprimer ce produit?</p>
+                                        <div class="cmr-info callout callout-info" id="cmrInfo" style="display: none; margin-top: 10px;">
+                                            Le symbole SGH08 et le type "Sensibilisant, cancérogène, mutagène, reprotoxique" seront automatiquement ajoutés.
                                         </div>
-                                        <div class="modal-footer">
-                                            <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Non</button>
-                                            <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Oui</button>
-                                        </div>
-                                    </div><!-- /.modal-content -->
-                                </div><!-- /.modal-dialog -->
-                            </div>
-                        </form> 
-                        <div class="row">
-                            <div class="col-xs-12">
-                                <div class="box">
-                                    <div class="box-header">
-                                        <h3 class="box-title">Liste des fiches produits</h3>
-                                    </div><!-- /.box-header -->
+                                    </div>
 
-                                    <div class="box-body">
-                                        <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
-                                            <div class="row">
-                                                <div class="col-sm-12">
-                                                    <table id="example2" class="table table-bordered table-hover dataTable">
-                                                        <thead>
-                                                            <tr role="row">
-                                                                <th>Nom du produit</th>
-                                                                <th></th>                                                                
-                                                            </tr>
-                                                        </thead>
-                                                        <tbody>
-                                                            {# S'il y a des entrepôts #}
-                                                            {% if products is defined %}
-                                                                {% if products is not null %}
-                                                                    {# Pour chaque  entrepôt dans la liste
+                                    <div class="form-group">
+                                        <label>Symbole de danger</label>
+
+                                        {{ form_widget(form.idDangersymbol, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                            'style':"width: 100%;",
+                                            'data-placeholder':"Selectionnez un ou plusieurs symboles de danger",
+                                            'tabindex':"-1"}}) }}
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Conseils de prudence</label>
+
+                                        {{ form_widget(form.idCautionaryadvice, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                            'style':"width: 100%;",
+                                            'data-placeholder':"Selectionnez un ou plusieurs conseils de prudence",
+                                            'tabindex':"-1"}}) }}
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Mention de danger</label>
+
+                                        {{ form_widget(form.idDangernote, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                            'style':"width: 100%;",
+                                            'data-placeholder':"Selectionnez une ou plusieurs mentions de danger",
+                                            'tabindex':"-1"}}) }}
+                                    </div>
+
+                                    <div class="form-group">
+                                        <label>Type de produit</label>
+
+                                        {{ form_widget(form.idType, {'attr': {'class': 'form-control select2 select2-hidden-accessible form-style' ,
+                                            'style':"width: 100%;",
+                                            'data-placeholder':"Selectionnez un ou plusieurs types de produits",
+                                            'tabindex':"-1"}}) }}
+                                    </div>
+
+                                    {{ form_rest(form) }}
+                                    {% if action == 'create' %}
+                                        <div class="box-footer">
+                                            <button type="submit" class="btn btn-warning">Ajouter</button>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if action == 'modify' %}
+                                        <div class="box-footer">
+                                            <button type="submit" class="btn btn-success">
+                                                <i class="fa fa-edit"></i>
+                                                Modifier
+                                            </button>
+                                        </div>
+                                    {% endif %}
+
+                                    {% if action == 'remove' %}
+                                        <div class="box-footer">
+                                            <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#modal-default">
+                                                <i class="fa fa-trash"></i>
+                                                Supprimer
+                                            </button>
+                                        </div>
+                                    {% endif %}
+
+                                    <!-- NON AFFICHÉ - modal - boite de dialogue pour confirmer la suppression -->
+                                    <div class="modal fade" id="modal-default" style="display: none;">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                        <span aria-hidden="true">×</span></button>
+                                                    <h4 class="modal-title">Confirmation</h4>
+                                                </div>
+                                                <div class="modal-body">
+                                                    <p>Êtes-vous sûr de vouloir supprimer ce produit?</p>
+                                                </div>
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">Non</button>
+                                                    <button type="submit" class="btn btn-danger"><i class="fa fa-trash"></i> Oui</button>
+                                                </div>
+                                            </div><!-- /.modal-content -->
+                                        </div><!-- /.modal-dialog -->
+                                    </div>
+                                </form>
+                                <div class="row">
+                                    <div class="col-xs-12">
+                                        <div class="box">
+                                            <div class="box-header">
+                                                <h3 class="box-title">Liste des fiches produits</h3>
+                                            </div><!-- /.box-header -->
+
+                                            <div class="box-body">
+                                                <div id="example2_wrapper" class="dataTables_wrapper form-inline dt-bootstrap">
+                                                    <div class="row">
+                                                        <div class="col-sm-12">
+                                                            <table id="example2" class="table table-bordered table-hover dataTable">
+                                                                <thead>
+                                                                <tr role="row">
+                                                                    <th>Identifiant unique</th>
+                                                                    <th>Nom du produit</th>
+                                                                    <th>Formule</th>
+                                                                    <th>N° CAS</th>
+                                                                    <th>CMR</th>
+                                                                    <th></th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                {# S'il y a des produits #}
+                                                                {% if products is defined %}
+                                                                    {% if products is not null %}
+                                                                        {# Pour chaque produit dans la liste
                                                                     On boucle pour créer de nouvelles lignes
                                                                     dans le tableau sous le même format#}
-                                                                    {% for oneProduct in products %}
-                                                                        <tr role="row" class="odd">
-                                                                            <td data-title="Nom du produit" class="sorting_1">{{ oneProduct.getNameChimicalproduct() }}</td>
-                                                                            <td>
-                                                                                <a href="{{ path('admin_product_modify', {id: oneProduct.getIdChimicalproduct()}) }}" class="btn btn-success">
-                                                                                    <i class="fa fa-edit"></i> Modifier
-                                                                                </a>
-                                                                                <a href="{{ path('admin_product_remove', {id: oneProduct.getIdChimicalproduct()}) }}" class="btn btn-danger">
-                                                                                    <i class="fa fa-trash"></i> Supprimer
-                                                                                </a>
-                                                                            </td>
-                                                                        </tr>
-                                                                    {% endfor %}
+                                                                        {% for oneProduct in products %}
+                                                                            <tr role="row" class="odd">
+                                                                                <td data-title="Identifiant unique" class="sorting_1">{{ oneProduct.getIdChimicalproduct() }}</td>
+                                                                                <td data-title="Nom du produit" class="">{{ oneProduct.getNameChimicalproduct() }}</td>
+                                                                                <td data-title="Formule">{{ oneProduct.getFormula() }}</td>
+                                                                                <td data-title="N° CAS">{{ oneProduct.getCasnumber() }}</td>
+                                                                                <td data-title="CMR">
+                                                                                    {% if oneProduct.getIscmr() %}
+                                                                                        <span class="label label-danger">Oui</span>
+                                                                                    {% else %}
+                                                                                        <span class="label label-default">Non</span>
+                                                                                    {% endif %}
+                                                                                </td>
+                                                                                <td>
+                                                                                    <a href="{{ path('admin_product_modify', {id: oneProduct.getIdChimicalproduct()}) }}" class="btn btn-success">
+                                                                                        <i class="fa fa-edit"></i> Modifier
+                                                                                    </a>
+                                                                                    <a href="{{ path('admin_product_remove', {id: oneProduct.getIdChimicalproduct()}) }}" class="btn btn-danger">
+                                                                                        <i class="fa fa-trash"></i> Supprimer
+                                                                                    </a>
+                                                                                </td>
+                                                                            </tr>
+                                                                        {% endfor %}
+                                                                    {% endif %}
                                                                 {% endif %}
-                                                            {% endif %}
-                                                        </tbody>
-                                                    </table>
-                                                </div><!-- /.col -->
-                                            </div><!-- /.row -->
-                                        </div>
-                                    </div><!-- /.box-body -->
-                                </div><!-- /.box -->
-                            </div><!-- /.col -->
-                        </div><!-- /.row -->
+                                                                </tbody>
+                                                            </table>
+                                                        </div><!-- /.col -->
+                                                    </div><!-- /.row -->
+                                                </div>
+                                            </div><!-- /.box-body -->
+                                        </div><!-- /.box -->
+                                    </div><!-- /.col -->
+                                </div><!-- /.row -->
                     </div><!-- /.box-body -->
                 </div><!-- /.tab-pane -->
             </div><!-- /.tab-content -->
@@ -216,5 +235,5 @@ Khemeia | Création d'une fiche produit
 
 {% block page_javascripts %}
     {{ encore_entry_script_tags('datatable') }}
-    {{ encore_entry_script_tags('select') }}
+    {{ encore_entry_script_tags('admin-product-search') }}
 {% endblock %}
