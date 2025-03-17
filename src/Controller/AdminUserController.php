@@ -33,8 +33,8 @@ class AdminUserController extends AbstractController
             //Initialise le repository pour la base de données
             $repository = $entityManager->getRepository(User::class);
 
-            //Cherche tous les utilisateurs
-            $users = $repository->findAll();
+            //Cherche tous les utilisateurs actifs
+            $users = $repository->findAllActive();
 
             //Initialise le formulaire
             $user = new User();
@@ -49,6 +49,17 @@ class AdminUserController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
                 //on récupère les données
                 $user = $form->getData();
+
+                // Vérifier si un utilisateur archivé existe avec le même login ou email
+                $archivedUser = $repository->findArchivedUser($user->getUsername(), $user->getMail());
+                if ($archivedUser) {
+                    $this->addFlash('warning',
+                        'Un compte utilisateur archivé existe déjà avec ce login ou cet email. ' .
+                        'Veuillez désarchiver l\'utilisateur existant au lieu d\'en créer un nouveau.');
+
+                    return $this->redirectToRoute('admin_user_archived');
+                }
+
                 //on crypte le mot de passe
                 $user->setPassword(
                     $passwordHasher->hashPassword(
@@ -111,7 +122,7 @@ class AdminUserController extends AbstractController
         try {
             $repository = $entityManager->getRepository(User::class);
 
-            $users = $repository->findAll();
+            $users = $repository->findAllActive();
 
             $previousUser = $repository->find($id);
 
@@ -211,7 +222,7 @@ class AdminUserController extends AbstractController
         try {
             $repository = $entityManager->getRepository(User::class);
 
-            $users = $repository->findAll();
+            $users = $repository->findAllActive();
 
             $user = $repository->find($id);
 
@@ -262,5 +273,77 @@ class AdminUserController extends AbstractController
             'users' => $users,
             'id' => $id
         ]);
+    }
+
+    /**
+     * Archiver un utilisateur
+     */
+    #[Route('/admin/users/archive/{id}', name: 'admin_user_archive')]
+    public function archive(
+        EntityManagerInterface $entityManager,
+                               $id
+    ): Response {
+        try {
+            $repository = $entityManager->getRepository(User::class);
+            $user = $repository->find($id);
+
+            if ($user !== null) {
+                $user->archive();
+                $entityManager->flush();
+                $this->addFlash('success', 'L\'utilisateur a été archivé avec succès.');
+            } else {
+                $this->addFlash('error', 'Utilisateur introuvable.');
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue lors de l\'archivage de l\'utilisateur.');
+        }
+
+        return $this->redirectToRoute('admin_user');
+    }
+
+    /**
+     * Afficher les utilisateurs archivés
+     */
+    #[Route('/admin/users/archived', name: 'admin_user_archived')]
+    public function showArchived(
+        EntityManagerInterface $entityManager
+    ): Response {
+        try {
+            $repository = $entityManager->getRepository(User::class);
+            $archivedUsers = $repository->findAllArchived();
+
+            return $this->render('admin/user_archived.html.twig', [
+                'archivedUsers' => $archivedUsers,
+            ]);
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue lors de la récupération des utilisateurs archivés.');
+            return $this->redirectToRoute('admin_user');
+        }
+    }
+
+    /**
+     * Désarchiver un utilisateur
+     */
+    #[Route('/admin/users/unarchive/{id}', name: 'admin_user_unarchive')]
+    public function unarchive(
+        EntityManagerInterface $entityManager,
+                               $id
+    ): Response {
+        try {
+            $repository = $entityManager->getRepository(User::class);
+            $user = $repository->find($id);
+
+            if ($user !== null) {
+                $user->unarchive();
+                $entityManager->flush();
+                $this->addFlash('success', 'L\'utilisateur a été désarchivé avec succès.');
+            } else {
+                $this->addFlash('error', 'Utilisateur introuvable.');
+            }
+        } catch (\Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue lors de la désarchivation de l\'utilisateur.');
+        }
+
+        return $this->redirectToRoute('admin_user_archived');
     }
 }

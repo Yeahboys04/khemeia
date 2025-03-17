@@ -1,0 +1,68 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Utilisateurs archivés{% endblock %}
+
+{% block body %}
+    <div class="container mt-4">
+        <h1>Gestion des utilisateurs archivés</h1>
+
+        <div class="mb-3">
+            <a href="{{ path('admin_user') }}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Retour aux utilisateurs actifs
+            </a>
+        </div>
+
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {% if archivedUsers is empty %}
+            <div class="alert alert-info">
+                Aucun utilisateur archivé.
+            </div>
+        {% else %}
+            <div class="table-responsive">
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th>Login</th>
+                        <th>Nom et prénom</th>
+                        <th>Email</th>
+                        <th>Site</th>
+                        <th>Statut</th>
+                        <th>Date d'archivage</th>
+                        <th>Actions</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for user in archivedUsers %}
+                        <tr>
+                            <td>{{ user.username }}</td>
+                            <td>{{ user.fullname }}</td>
+                            <td>{{ user.mail }}</td>
+                            <td>{{ user.idSite }}</td>
+                            <td>{{ user.idStatus }}</td>
+                            <td>{{ user.archivedDate ? user.archivedDate|date('d/m/Y H:i') : '' }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{{ path('admin_user_unarchive', {'id': user.idUser}) }}"
+                                       class="btn btn-success btn-sm"
+                                       data-bs-toggle="tooltip"
+                                       data-bs-placement="top"
+                                       title="Désarchiver">
+                                        <i class="fas fa-undo"></i> Désarchiver
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+{% endblock %}

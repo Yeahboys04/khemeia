@@ -1,0 +1,314 @@
+// assets/scss/admin_users.scss
+
+// Import de Flatpickr CSS
+@import 'flatpickr/dist/flatpickr.css';
+
+// Import de Vanilla-DataTables CSS
+@import 'vanilla-datatables/dist/vanilla-dataTables.min.css';
+
+// Variables
+$primary: #0d6efd;
+$secondary: #6c757d;
+$light: #f8f9fa;
+$danger: #dc3545;
+$warning: #ffc107;
+$success: #28a745;
+
+// Styles généraux
+body {
+  font-family: var(--bs-body-font-family);
+  background-color: #fafafa;
+}
+
+.card {
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  margin-bottom: 1rem;
+
+  .card-header {
+    background-color: white;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+
+    h5 {
+      font-weight: 600;
+      margin-bottom: 0;
+    }
+  }
+
+  .card-footer {
+    background-color: #fafafa;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding: 0.75rem 1rem;
+  }
+}
+
+// Table styles
+.table {
+  margin-bottom: 0;
+
+  thead {
+    th {
+      border-top: none;
+      border-bottom: 2px solid $primary;
+      font-weight: 600;
+      padding: 0.75rem;
+
+      &[data-sort] {
+        cursor: pointer;
+        position: relative;
+
+        &:after {
+          content: "⇅";
+          position: absolute;
+          right: 8px;
+          opacity: 0.5;
+          font-size: 0.75rem;
+        }
+
+        &.asc:after {
+          content: "⇧";
+          opacity: 1;
+        }
+
+        &.desc:after {
+          content: "⇩";
+          opacity: 1;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      &:hover {
+        background-color: rgba($primary, 0.03);
+      }
+
+      td {
+        vertical-align: middle;
+        padding: 0.75rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      }
+    }
+  }
+}
+
+// Badge styles
+.badge {
+  font-weight: 500;
+  padding: 0.35em 0.65em;
+  border-radius: 4px;
+
+  &.bg-light {
+    background-color: #f8f9fa !important;
+    border: 1px solid #e9ecef;
+    color: #212529;
+  }
+
+  &.bg-primary.bg-opacity-10 {
+    background-color: rgba($primary, 0.1) !important;
+    color: $primary;
+    border: 1px solid rgba($primary, 0.2);
+  }
+}
+
+// Form styles
+.form-control, .form-select {
+  border-radius: 4px;
+  border-color: #dee2e6;
+
+  &:focus {
+    border-color: $primary;
+    box-shadow: 0 0 0 0.2rem rgba($primary, 0.15);
+  }
+}
+
+.form-label {
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+// Date picker
+.datepicker {
+  background-color: white !important;
+}
+
+.flatpickr-calendar {
+  box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
+  border: none;
+
+  .flatpickr-months {
+    .flatpickr-month {
+      color: $primary;
+    }
+
+    .flatpickr-prev-month, .flatpickr-next-month {
+      fill: $primary;
+    }
+  }
+
+  .flatpickr-day {
+    &.selected {
+      background: $primary;
+      border-color: $primary;
+
+      &:hover {
+        background: darken($primary, 5%);
+        border-color: darken($primary, 5%);
+      }
+    }
+
+    &:hover {
+      background: rgba($primary, 0.1);
+    }
+
+    &.today {
+      border-color: $primary;
+    }
+  }
+}
+
+// DataTable overrides - Direct approche sans @extend
+.dataTable-wrapper {
+  margin-bottom: 0;
+
+  .dataTable-container {
+    border: none;
+  }
+
+  .dataTable-top {
+    padding: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .dataTable-bottom {
+    padding: 0.75rem 0 0 0;
+    border-top: none;
+  }
+
+  .dataTable-pagination {
+    .dataTable-pagination-list {
+      margin: 0;
+      display: flex;
+
+      li {
+        margin: 0 0.125rem;
+
+        a {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          min-width: 32px;
+          height: 32px;
+          padding: 0 0.5rem;
+          color: $primary;
+          border: 1px solid #dee2e6;
+          border-radius: 4px;
+          font-size: 0.875rem;
+
+          &:hover {
+            background-color: rgba($primary, 0.1);
+            color: $primary;
+          }
+        }
+
+        &.active a {
+          background-color: $primary;
+          color: white;
+          border-color: $primary;
+
+          &:hover {
+            background-color: darken($primary, 5%);
+          }
+        }
+
+        &.disabled a {
+          color: #adb5bd;
+          pointer-events: none;
+          background-color: #f8f9fa;
+        }
+      }
+    }
+  }
+
+  .dataTable-info {
+    margin: 0;
+    padding: 0;
+    font-size: 0.875rem;
+    color: #6c757d;
+  }
+}
+
+// Bouton styles
+.btn-group-sm > .btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.875rem;
+  border-radius: 0.2rem;
+}
+
+// Input group
+.input-group {
+  .input-group-text {
+    background-color: white;
+    border-right: 0;
+  }
+
+  input.form-control {
+    border-left: 0;
+
+    &:focus {
+      border-color: #dee2e6;
+      border-left: 0;
+      box-shadow: none;
+    }
+  }
+}
+
+// Dropdown menu
+.dropdown-menu {
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+
+  .dropdown-item {
+    padding: 0.5rem 1rem;
+
+    &:hover {
+      background-color: rgba($primary, 0.05);
+    }
+
+    i {
+      width: 1rem;
+      text-align: center;
+      margin-right: 0.5rem;
+    }
+  }
+}
+
+// Alerte styles
+.alert {
+  border-radius: 4px;
+
+  i {
+    margin-right: 0.5rem;
+  }
+}
+
+// Responsive
+@media (max-width: 768px) {
+  .btn-group-sm > .btn {
+    padding: 0.375rem 0.75rem;
+  }
+
+  .card-header {
+    .d-flex {
+      flex-direction: column;
+      align-items: flex-start !important;
+
+      .input-group, .dropdown {
+        margin-top: 0.5rem;
+        width: 100%;
+      }
+    }
+  }
+}

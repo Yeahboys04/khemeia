@@ -91,4 +91,71 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Récupère tous les utilisateurs actifs (non archivés)
+     *
+     * @return User[]
+     */
+    public function findAllActive(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.isArchived = :archived')
+            ->setParameter('archived', false)
+            ->orderBy('u.username', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Récupère tous les utilisateurs archivés
+     *
+     * @return User[]
+     */
+    public function findAllArchived(): array
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.isArchived = :archived')
+            ->setParameter('archived', true)
+            ->orderBy('u.archivedDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Vérifie si un utilisateur existe déjà avec le même username ou email
+     * Inclut les utilisateurs archivés
+     *
+     * @param string $username Le nom d'utilisateur à vérifier
+     * @param string $email L'email à vérifier
+     * @return User|null L'utilisateur trouvé ou null
+     */
+    public function findExistingUserIncludingArchived(string $username, string $email): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->where('u.username = :username OR u.mail = :email')
+            ->setParameter('username', $username)
+            ->setParameter('email', $email)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
+
+    /**
+     * Vérifie si un utilisateur archivé existe avec le même username ou email
+     *
+     * @param string $username Le nom d'utilisateur à vérifier
+     * @param string $email L'email à vérifier
+     * @return User|null L'utilisateur archivé trouvé ou null
+     */
+    public function findArchivedUser(string $username, string $email): ?User
+    {
+        return $this->createQueryBuilder('u')
+            ->where('(u.username = :username OR u.mail = :email)')
+            ->andWhere('u.isArchived = :archived')
+            ->setParameter('username', $username)
+            ->setParameter('email', $email)
+            ->setParameter('archived', true)
+            ->getQuery()
+            ->getOneOrNullResult();
+    }
 }

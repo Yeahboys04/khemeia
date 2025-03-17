@@ -47,6 +47,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(name: 'endRightDate', type: 'date', nullable: true, options: ['default' => null])]
     private ?\DateTimeInterface $endrightdate = null;
 
+    #[ORM\Column(name: 'is_archived', type: 'boolean', nullable: false, options: ['default' => false])]
+    private bool $isArchived = false;
+
+    #[ORM\Column(name: 'archived_date', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $archivedDate = null;
+
     #[ORM\ManyToOne(targetEntity: Site::class)]
     #[ORM\JoinColumn(name: 'id_site', referencedColumnName: 'id_site')]
     private ?Site $idSite = null;
@@ -72,6 +78,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __construct()
     {
         $this->idStoragecard = new ArrayCollection();
+        $this->isArchived = false;
     }
 
     public function getIdUser(): ?string
@@ -164,6 +171,46 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setEndrightdate(?\DateTimeInterface $endrightdate): self
     {
         $this->endrightdate = $endrightdate;
+
+        return $this;
+    }
+
+    public function getIsArchived(): bool
+    {
+        return $this->isArchived;
+    }
+
+    public function setIsArchived(bool $isArchived): self
+    {
+        $this->isArchived = $isArchived;
+
+        return $this;
+    }
+
+    public function getArchivedDate(): ?\DateTimeInterface
+    {
+        return $this->archivedDate;
+    }
+
+    public function setArchivedDate(?\DateTimeInterface $archivedDate): self
+    {
+        $this->archivedDate = $archivedDate;
+
+        return $this;
+    }
+
+    public function archive(): self
+    {
+        $this->isArchived = true;
+        $this->archivedDate = new \DateTime();
+
+        return $this;
+    }
+
+    public function unarchive(): self
+    {
+        $this->isArchived = false;
+        $this->archivedDate = null;
 
         return $this;
     }

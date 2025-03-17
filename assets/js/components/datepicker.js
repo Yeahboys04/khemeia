@@ -244,7 +244,7 @@ class DatePicker {
         const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
 
         // Assurer que le conteneur est bien positionné
-        this.container.style.position = 'absolute';
+        this.container.style.position = 'unset  ';
 
 
 

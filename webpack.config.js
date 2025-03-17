@@ -34,7 +34,7 @@ Encore
     .addEntry('tom-select', './assets/js/components/tom-select.js')
     .addEntry('tom-select-search', './assets/js/product-search.js')
     .addEntry('admin-product-search', './assets/js/admin-product-search.js')
-
+    .addEntry('user', './assets/js/pages/users.js')
 
     .addEntry('datepicker', './assets/js/components/datepicker.js')
     .addEntry('select', './assets/js/components/select.js')
