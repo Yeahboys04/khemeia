@@ -14,6 +14,8 @@ use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\FormEvents;
+use Symfony\Component\Form\FormEvent;
 
 /**
  * Class UserType qui paramètre un formulaire d'utilisateur
@@ -60,10 +62,10 @@ class UserType extends AbstractType
                     'class' => 'form-label fw-bold'
                 ]
             ])
-            ->add('password', PasswordType::class, [
+            ->add('plainPassword', PasswordType::class, [
                 'label' => 'Mot de passe',
-                'empty_data' => $options['emptyPassword'],
                 'required' => $options['requirePassword'],
+                'mapped' => false, // Ne pas mapper directement à l'entité
                 'attr' => [
                     'class' => 'form-control rounded-lg',
                     'placeholder' => $options['requirePassword'] ? 'Entrez le mot de passe' : 'Laissez vide pour conserver',

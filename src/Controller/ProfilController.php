@@ -52,10 +52,10 @@ class ProfilController extends AbstractController
                 else{
                     $user = $form->getData();
                     //On récupère la valeur du mot de passe dans le formulaire
-                    $formPassword = $form->get('password')->getData();
+                    $plainPassword = $form->get('plainPassword')->getData();
                     //S'il est null ou vide,
                     //on récupère ce qui était dans la base de donnée
-                    if ($formPassword == null || empty($formPassword)){
+                    if ($plainPassword == null || empty($plainPassword)){
                         $user->setPassword($oldUserPassword);
                     }
                     //Sinon, on lui attribut ce qui a été saisi
@@ -63,7 +63,7 @@ class ProfilController extends AbstractController
                         $user->setPassword(
                             $passwordHasher->hashPassword(
                                 $user,
-                                $formPassword
+                                $plainPassword
                             )
                         );
                     }

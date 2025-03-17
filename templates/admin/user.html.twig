@@ -83,9 +83,9 @@
                             </div>
 
                             <div class="mb-3">
-                                {{ form_label(form.password) }}
+                                {{ form_label(form.plainPassword) }}
                                 <div class="input-group">
-                                    {{ form_widget(form.password) }}
+                                    {{ form_widget(form.plainPassword) }}
                                 </div>
                                 {% if action == 'modify' %}
                                     <div class="form-text text-muted">
@@ -93,7 +93,7 @@
                                     </div>
                                 {% endif %}
                                 <div class="invalid-feedback">
-                                    {{ form_errors(form.password) }}
+                                    {{ form_errors(form.plainPassword) }}
                                 </div>
                             </div>
                         </div>

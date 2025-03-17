@@ -15,7 +15,7 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
- * Controlle la page de gestion des utilisateurs
+ * Contrôle la page de gestion des utilisateurs
  */
 class AdminUserController extends AbstractController
 {
@@ -60,13 +60,15 @@ class AdminUserController extends AbstractController
                     return $this->redirectToRoute('admin_user_archived');
                 }
 
-                //on crypte le mot de passe
+                // Récupérer et hasher le mot de passe
+                $plainPassword = $form->get('plainPassword')->getData();
                 $user->setPassword(
                     $passwordHasher->hashPassword(
                         $user,
-                        $form->get('password')->getData()
+                        $plainPassword
                     )
                 );
+
                 $errors = $validator->validate($user);
                 if (count($errors) > 0) {
                     return $this->redirectToRoute('admin_user', [
@@ -124,77 +126,51 @@ class AdminUserController extends AbstractController
 
             $users = $repository->findAllActive();
 
-            $previousUser = $repository->find($id);
+            $user = $repository->find($id);
 
-            if ($previousUser != null || !empty($previousUser) ){
-                $passwordIsRequired = false;
-                $previousPassword = $previousUser->getPassword();
-                //Si le mot de passe est null, on envoi un champs vide
-                if ($previousPassword == null){
-                    $form = $this->createForm(UserType::class, $previousUser, [
-                        'method' => 'POST',
-                        'requirePassword' => $passwordIsRequired,
-                        'emptyPassword' => '',
-                    ]);
-                }
-                //Sinon on envoi le mot de passe précédent
-                else{
-                    $form = $this->createForm(UserType::class, $previousUser, [
-                        'method' => 'POST',
-                        'requirePassword' => $passwordIsRequired,
-                        'emptyPassword' => $previousPassword,
-                    ]);
-                }
+            if ($user != null || !empty($user)) {
+                // Configurer le formulaire sans exiger le mot de passe
+                $form = $this->createForm(UserType::class, $user, [
+                    'method' => 'POST',
+                    'requirePassword' => false,
+                ]);
 
                 $form->handleRequest($request);
 
-                if ($form->isSubmitted()) {
-                    $user = $form->getData();
-                    //On récupère la valeur du mot de passe dans le formulaire
-                    $formPassword = $form->get('password')->getData();
-                    //S'il est null ou vide,
-                    //on récupère ce qui était dans la base de donnée
-                    if ($formPassword == null || empty($formPassword)){
-                        $user->setPassword($previousPassword);
-                    }
-                    //Sinon, on lui attribut ce qui a été saisi
-                    else {
+                if ($form->isSubmitted() && $form->isValid()) {
+                    // Récupérer la valeur du mot de passe dans le formulaire
+                    $plainPassword = $form->get('plainPassword')->getData();
+
+                    // Si un nouveau mot de passe est fourni, le hasher et le définir
+                    if (!empty($plainPassword)) {
                         $user->setPassword(
                             $passwordHasher->hashPassword(
                                 $user,
-                                $formPassword
+                                $plainPassword
                             )
                         );
                     }
-                    $errors = $validator->validate($user);
-                    if (count($errors) > 0) {
-                        return $this->redirectToRoute('admin_user', [
-                            'errors' => $errors
-                        ]);
-                    }
+                    // Sinon, on ne touche pas au mot de passe existant
 
+                    // Enregistrer les modifications
                     $entityManager->flush();
-                    $this->addFlash('success',
-                        'L\'utilisateur a été modifié avec succès.');
+                    $this->addFlash('success', 'L\'utilisateur a été modifié avec succès.');
 
                     return $this->redirectToRoute('admin_user');
                 }
-            }
-            else {
+            } else {
                 $this->addFlash('error',
                     'Attention, une erreur est survenue. L\'utilisateur '
                     .' N° \' ' .$id. ' \' n\'existe pas.');
 
                 return $this->redirectToRoute('admin_user');
             }
-        }
-        catch (UniqueConstraintViolationException $ucve){
+        } catch (UniqueConstraintViolationException $ucve) {
             $this->addFlash('error',
                 "Un utilisateur possède déjà ce login ou mail. "
                 ."L'utilisateur n'a pas pu être modifié.");
-            return $this->redirectToRoute('admin_user_modify');
-        }
-        catch (\Exception $e) {
+            return $this->redirectToRoute('admin_user_modify', ['id' => $id]);
+        } catch (\Exception $e) {
             $this->addFlash('error',
                 'Attention, une erreur est survenue. L\'utilisateur '
                 .'n\'a pas pu être modifié. Contactez votre administrateur.');
@@ -209,6 +185,8 @@ class AdminUserController extends AbstractController
             'id' => $id
         ]);
     }
+
+    // Les autres méthodes restent inchangées
 
     /**
      * Supprimer un utilisateur
