@@ -1,66 +1,74 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
-        {% block stylesheets %}
-            {{ encore_entry_link_tags('app') }}
-            {% block page_stylesheets %}{% endblock %}
-        {% endblock %}
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+    {% block stylesheets %}
+        {{ encore_entry_link_tags('app') }}
+        {% block page_stylesheets %}{% endblock %}
+    {% endblock %}
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 
-        <title>{% block title %}Khemeia{% endblock %}</title>
+    <title>{% block title %}Khemeia{% endblock %}</title>
 
-    </head>
-    <body class="hold-transition skin-blue sidebar-mini">
-        <div class="wrapper">
-            {{ include('header.html.twig') }}
-            <div class="content-wrapper home_page" style="min-height: 836px;">
+</head>
+<body class="hold-transition skin-blue sidebar-mini">
+<div class="wrapper">
+    {{ include('header.html.twig') }}
+    <div class="content-wrapper home_page" style="min-height: 836px;">
 
-                {% for message in app.flashes('error') %}
-                    <div class="box-body">
-                        <div class="alert alert-danger alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                            <h4><i class="icon fa fa-ban"></i> Alerte!</h4>
-                            <p>{{ message }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-
-                {% if errors is defined %}
-                    {% for error in errors %}
-                        <div class="box-body">
-                            <div class="alert alert-danger alert-dismissible">
-                                <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                                <h4><i class="icon fa fa-ban"></i> Alerte!</h4>
-                                <p>{{ error.message }}</p>
-                            </div>
-                        </div>
-                    {% endfor %}
-                {% endif %}
-
-                {% for message in app.flashes('success') %}
-                    <div class="box-body">
-                        <div class="alert alert-success alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                            <h4><i class="icon fa fa-check"></i> Bravo!</h4>
-                            <p>{{ message }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-
-                {% block body %}{% endblock %}
+        {% for message in app.flashes('error') %}
+            <div class="box-body">
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h4><i class="icon fa fa-ban"></i> Alerte!</h4>
+                    <p>{{ message }}</p>
+                </div>
             </div>
-            {{ include('footer.html.twig') }}
+        {% endfor %}
 
-            {% block javascripts %}
-                {{ encore_entry_script_tags('app') }}
+        {% if errors is defined %}
+            {% for error in errors %}
+                <div class="box-body">
+                    <div class="alert alert-danger alert-dismissible">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                        <h4><i class="icon fa fa-ban"></i> Alerte!</h4>
+                        <p>{{ error.message }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        {% endif %}
 
-                {% block page_javascripts %}{% endblock %}
-            {% endblock %}
+        {% for message in app.flashes('success') %}
+            <div class="box-body">
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h4><i class="icon fa fa-check"></i> Bravo!</h4>
+                    <p>{{ message }}</p>
+                </div>
+            </div>
+        {% endfor %}
 
-        </div>
-    </body>
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="alert alert-{{ label }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {% block body %}{% endblock %}
+    </div>
+    {{ include('footer.html.twig') }}
+
+    {% block javascripts %}
+        {{ encore_entry_script_tags('app') }}
+
+        {% block page_javascripts %}{% endblock %}
+    {% endblock %}
+
+</div>
+</body>
 </html>
-

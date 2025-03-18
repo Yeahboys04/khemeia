@@ -204,15 +204,15 @@
                                 </td>
                                 <td class="align-middle">{{ user.idSite }}</td>
                                 <td class="align-middle">
-                                    <span class="badge bg-{% if user.idStatus == 'Administrateur' %}primary{% elseif user.idStatus == 'Utilisateur' %}success{% else %}secondary{% endif %} rounded-pill">
-                                        {{ user.idStatus }}
-                                    </span>
+                                	<span class="badge bg-{% if user.idStatus == 'Administrateur' %}primary{% elseif user.idStatus == 'Utilisateur' %}success{% else %}secondary{% endif %} rounded-pill">
+                                    	{{ user.idStatus }}
+                                	</span>
                                 </td>
                                 <td class="align-middle">
                                     {% if user.endrightdate %}
                                         <span class="{% if date(user.endrightdate) < date() %}text-danger{% endif %}">
-                                            {{ user.endrightdate|date('d/m/Y') }}
-                                        </span>
+                                        	{{ user.endrightdate|date('d/m/Y') }}
+                                    	</span>
                                     {% else %}
                                         <span class="text-muted">--</span>
                                     {% endif %}

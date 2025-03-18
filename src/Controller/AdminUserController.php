@@ -45,6 +45,7 @@ class AdminUserController extends AbstractController
             ]);
 
             $form->handleRequest($request);
+
             //Si le formulaire est soumis et valide
             if ($form->isSubmitted() && $form->isValid()) {
                 //on récupère les données
@@ -137,7 +138,22 @@ class AdminUserController extends AbstractController
 
                 $form->handleRequest($request);
 
-                if ($form->isSubmitted() && $form->isValid()) {
+                if ($form->isSubmitted()) {
+                    // Si le formulaire est soumis mais pas valide, afficher les erreurs
+                    if (!$form->isValid()) {
+                        // Mais on continue quand même si l'utilisateur vient de CAS
+                        $isCasUser = ($user->getPassword() === '' || $user->getPassword() === null);
+                        if (!$isCasUser) {
+                            // Si ce n'est pas un utilisateur CAS, afficher les erreurs
+                            $this->addFlash('warning', 'Le formulaire contient des erreurs.');
+                            // Afficher des messages d'erreur plus spécifiques si nécessaire
+                            foreach ($form->getErrors(true, true) as $error) {
+                                $this->addFlash('warning', $error->getMessage());
+                            }
+                            return $this->redirectToRoute('admin_user_modify', ['id' => $id]);
+                        }
+                    }
+
                     // Récupérer la valeur du mot de passe dans le formulaire
                     $plainPassword = $form->get('plainPassword')->getData();
 
@@ -153,6 +169,7 @@ class AdminUserController extends AbstractController
                     // Sinon, on ne touche pas au mot de passe existant
 
                     // Enregistrer les modifications
+
                     $entityManager->flush();
                     $this->addFlash('success', 'L\'utilisateur a été modifié avec succès.');
 

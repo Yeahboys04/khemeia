@@ -1,102 +1,104 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="UTF-8">
-        <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+<head>
+    <meta charset="UTF-8">
+    <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
 
-        {{ encore_entry_link_tags('app') }}
-        {{ encore_entry_script_tags('login') }}
+    {{ encore_entry_link_tags('app') }}
+    {{ encore_entry_script_tags('login') }}
+    <!-- Google Font -->
+    <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
 
-        <link rel="stylesheet" href="{{ asset('assets/css/login_style.css') }}">
-        <!-- Google Font -->
-        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,700,300italic,400italic,600italic">
+    <title>Khemeia | Login</title>
 
-        <title>Khemeia | Login</title>
-        
-    </head>
-    <body class="hold-transition login-page" cz-shortcut-listen="true">
-        <div class="login-box">
-            <div>
+</head>
+<body class="hold-transition login-page" cz-shortcut-listen="true">
+<div class="login-box">
+    <div>
 
-                {% for message in app.flashes('error') %}
-                    <div class="box-body">
-                        <div class="alert alert-danger alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                            <h4><i class="icon fa fa-ban"></i> Alerte!</h4>
-                            <p>{{ message }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-
-                {% for message in app.flashes('success') %}
-                    <div class="box-body">
-                        <div class="alert alert-success alert-dismissible">
-                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                            <h4><i class="icon fa fa-check"></i> Bravo!</h4>
-                            <p>{{ message }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
-
-                <div class="login-logo">
-                    <b>Khemeia</b>
-                    <h3 class="box-title">Connexion</h3>
-                </div>
-                        
-                <div class="login-box-body">
-                    <p class="login-box-msg">Connectez-vous pour démarrer votre session</p>
-                    <form method="post">
-                        {% if error %}
-                            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-                        {% endif %}
-
-                        {% if app.user %}
-                            <div class="mb-3">
-                                Vous êtes connecté en tant que {{ app.user.username }}, <a href="{{ path('app_logout') }}">Déconnexion</a>
-                            </div>
-                        {% endif %}
-
-                        <div class="box-body">
-                            <div class="form-group has-feedback">
-                                <input class="form-control" type="text" value="{{ last_username }}" name="username" class="form-control" id="inputEmail3" placeholder="Login" required autofocus>
-                                <span class="glyphicon glyphicon-user form-control-feedback"></span>
-                            </div>
-                            <div class="form-group has-feedback">
-                                <input class="form-control" type="password" name="password" id="inputPassword3" class="form-control" placeholder="Mot de passe" required>
-                                <span class="glyphicon glyphicon-lock form-control-feedback"></span>
-                            </div>
-
-                            <input type="hidden" name="_csrf_token"
-                                value="{{ csrf_token('authenticate') }}">
-
-                            <div class="row">
-                                <div class="col-xs-8">
-
-                                </div> <!-- /.col -->
-                                <div class="col-xs-4">
-                                    <button type="submit" class="btn btn-warning pull-right">Connexion</button>
-                                </div><!-- /.col -->
-                            </div>
-                        </div> {# box-body #}
-
-                        <div class="social-auth-links text-center">
-                            <p>- OU -</p>
-                            <a href="{{ path('app_cas_login') }}" id="ul_button" class="btn btn-block btn-social btn-ul">
-                                <img src="{{ asset('build/images/logo_ul.png') }}" width="30"/>
-                                <div class="bloc_big_button">
-                                    <div id="left_logo">
-
-                                    </div>
-                                </div>
-                                <div id="text_big_button">
-                                    Connexion via votre compte UL
-                                </div>
-                            </a>
-                        </div> {# social-auth-links text-center #}
-                    </form>
+        {% for message in app.flashes('error') %}
+            <div class="box-body">
+                <div class="alert alert-danger alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h4><i class="icon fa fa-ban"></i> Alerte!</h4>
+                    <p>{{ message }}</p>
                 </div>
             </div>
+        {% endfor %}
 
+        {% for message in app.flashes('success') %}
+            <div class="box-body">
+                <div class="alert alert-success alert-dismissible">
+                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                    <h4><i class="icon fa fa-check"></i> Bravo!</h4>
+                    <p>{{ message }}</p>
+                </div>
+            </div>
+        {% endfor %}
+
+        <div class="login-logo">
+            <b>Khemeia</b>
+            <h3 class="box-title">Connexion</h3>
         </div>
-    </body>
+
+        <div class="login-box-body">
+            <p class="login-box-msg">Connectez-vous pour démarrer votre session</p>
+            <form method="post">
+                {% if error %}
+                    <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
+                {% endif %}
+
+                {% if app.user %}
+                    <div class="mb-3">
+                        Vous êtes connecté en tant que {{ app.user.username }}, <a href="{{ path('app_logout') }}">Déconnexion</a>
+                    </div>
+                {% endif %}
+
+                <div class="box-body">
+                    <div class="form-group has-feedback">
+                        <input class="form-control" type="text" value="{{ last_username }}" name="username"
+                               class="form-control" id="inputEmail3" placeholder="Login" required autofocus>
+                        <span class="glyphicon glyphicon-user form-control-feedback"></span>
+                    </div>
+                    <div class="form-group has-feedback">
+                        <input class="form-control" type="password" name="password" id="inputPassword3"
+                               class="form-control" placeholder="Mot de passe" required>
+                        <span class="glyphicon glyphicon-lock form-control-feedback"></span>
+                    </div>
+
+                    <input type="hidden" name="_csrf_token"
+                           value="{{ csrf_token('authenticate') }}">
+
+                    <div class="row">
+                        <div class="col-xs-8">
+
+                        </div> <!-- /.col -->
+                        <div class="col-xs-4">
+                            <button type="submit" class="btn btn-warning pull-right">Connexion</button>
+                        </div><!-- /.col -->
+                    </div>
+                </div> {# box-body #}
+
+                <div class="social-auth-links text-center">
+                    <p>- OU -</p>
+                    <a href="http://geor-be-srv-w01.ad.univ-lorraine.fr{{ path('app_cas_login') }}" id="ul_button"
+                       class="btn btn-block btn-social btn-ul">
+                        <img src="{{ asset('build/images/logo_ul.png') }}" width="30"/>
+                        <div class="bloc_big_button">
+                            <div id="left_logo">
+
+                            </div>
+                        </div>
+                        <div id="text_big_button">
+                            Connexion via votre compte UL
+                        </div>
+                    </a>
+                </div> {# social-auth-links text-center #}
+            </form>
+        </div>
+    </div>
+
+</div>
+</body>
 </html>

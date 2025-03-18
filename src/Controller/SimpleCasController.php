@@ -80,6 +80,9 @@ class SimpleCasController extends AbstractController
                     $userRepository = $this->entityManager->getRepository(User::class);
                     $user = $userRepository->findOneBy(['username' => $casUsername]);
 
+                    // Variable pour suivre si c'est un nouvel utilisateur
+                    $isNewUser = false;
+
                     if (!$user) {
                         // L'utilisateur n'existe pas dans la base de données, on le crée
                         $user = new User();
@@ -108,7 +111,12 @@ class SimpleCasController extends AbstractController
                         }
 
                         // Définir les propriétés de l'utilisateur
-                        $user->setRoles(['ROLE_USER']);
+                        $status = $this->entityManager->getReference(\App\Entity\Status::class, 1);
+                        $user->setIdStatus($status);
+
+                        $site = $this->entityManager->getReference(\App\Entity\Site::class, 1);
+                        $user->setIdSite($site);
+
                         $user->setFullname($fullname);
                         $user->setMail($email);
                         $user->setPassword(''); // Pas besoin de mot de passe avec CAS
@@ -116,6 +124,9 @@ class SimpleCasController extends AbstractController
                         // Enregistrer l'utilisateur dans la base de données
                         $this->entityManager->persist($user);
                         $this->entityManager->flush();
+
+                        // Marquer qu'il s'agit d'un nouvel utilisateur
+                        $isNewUser = true;
                     } else if ($user->getIsArchived()) {
                         // L'utilisateur existe mais il est archivé
                         return $this->render('security/cas_error.html.twig', [
@@ -124,7 +135,17 @@ class SimpleCasController extends AbstractController
                     }
 
                     // 4. Connecter l'utilisateur avec Symfony Security
-                    return $userAuthenticator->authenticateUser($user, $authenticator, $request);
+                    $authenticatedResponse = $userAuthenticator->authenticateUser($user, $authenticator, $request);
+
+                    // Si c'est un nouvel utilisateur, ajouter un message flash
+                    if ($isNewUser) {
+                        $this->addFlash(
+                            'info',
+                            'Votre compte a été créé avec des droits de consultation uniquement. Veuillez contacter un administrateur pour obtenir l\'accès complet au site approprié.'
+                        );
+                    }
+
+                    return $authenticatedResponse;
                 }
             }
 
