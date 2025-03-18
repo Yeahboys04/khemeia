@@ -67,7 +67,7 @@ class StoragecardRepository extends ServiceEntityRepository
             ->innerJoin('App\Entity\Cupboard', 'c', 'WITH', 'c.idCupboard = sh.idCupboard')
             ->innerJoin('App\Entity\Stock', 'st', 'WITH', 'c.idStock = st.idStock')
             ->where('st.idSite = :querysite')
-            ->andWhere('(sc.stockquantity > (0.10*sc.capacity))')
+            ->andWhere('(sc.stockquantity > (0.10*sc.capacity)) OR sc.stockquantity IS NULL')
             ->andWhere('sc.expirationdate >= :querydate OR sc.expirationdate IS NULL')
             ->andWhere('sc.isarchived = false')
             ->setParameters([
