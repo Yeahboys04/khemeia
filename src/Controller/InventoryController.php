@@ -283,7 +283,8 @@ class InventoryController extends AbstractController
             $user = $tokenStorage->getToken()->getUser();
             $form = $this->createForm(StoragecardRespType::class, $newStoragecard, [
                 'method' => 'POST',
-                'idSite' => $user->getIdSite()->getIdSite()
+                'idSite' => $user->getIdSite()->getIdSite(),
+                'action' => 'copy'
             ]);
             $form->handleRequest($request);
 

@@ -183,17 +183,30 @@ class StoragecardRespType extends AbstractType
                     ])
                 ],
             ])
-            ->add('idProperty')
-            ->add('idShelvingunit',EntityType::class,
-                ['class' => Shelvingunit::class,
-                    'query_builder' => function (EntityRepository $er) use ($options) {
-                        return $er->createQueryBuilder('qb')
-                            ->innerJoin('App\Entity\Cupboard', 'c', 'WITH', 'c.idCupboard = qb.idCupboard')
-                            ->innerJoin('App\Entity\Stock', 'st', 'WITH', 'c.idStock = st.idStock')
-                            ->where('st.idSite = :querysite')
-                            ->setParameter('querysite' , $options['idSite']);},
-                ])
-            ->add('idSupplier')
+            ->add('idProperty');
+
+            if($options['action'] == 'copy'){
+                $builder->add('idShelvingunit',EntityType::class,
+                    ['class' => Shelvingunit::class,
+                        'query_builder' => function (EntityRepository $er) use ($options) {
+                            return $er->createQueryBuilder('qb')
+                                ->innerJoin('App\Entity\Cupboard', 'c', 'WITH', 'c.idCupboard = qb.idCupboard')
+                                ->innerJoin('App\Entity\Stock', 'st', 'WITH', 'c.idStock = st.idStock');},
+                    ]);
+
+            }else{
+                $builder->add('idShelvingunit',EntityType::class,
+                    ['class' => Shelvingunit::class,
+                        'query_builder' => function (EntityRepository $er) use ($options) {
+                            return $er->createQueryBuilder('qb')
+                                ->innerJoin('App\Entity\Cupboard', 'c', 'WITH', 'c.idCupboard = qb.idCupboard')
+                                ->innerJoin('App\Entity\Stock', 'st', 'WITH', 'c.idStock = st.idStock')
+                                ->where('st.idSite = :querysite')
+                                ->setParameter('querysite' , $options['idSite']);},
+                    ]);
+            }
+
+            $builder->add('idSupplier')
             ->add('reference')
             ->add('commentary');
 

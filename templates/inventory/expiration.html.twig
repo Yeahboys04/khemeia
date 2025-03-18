@@ -60,7 +60,12 @@ Khemeia | Inventaire
                                                                     <td data-title="Quantité en stock">{{ oneStoragecard.getStockquantity() }}</td>
                                                                     <td data-title="Capacité totale">{{ oneStoragecard.getCapacity() }}</td>
                                                                     <td data-title="Fournisseur">{{ oneStoragecard.getIdSupplier() }}</td>
+                                                                    {% if oneStoragecard.getExpirationdate() is not null %}
                                                                     <td data-title="Date d'expiration">{{ oneStoragecard.getExpirationdate().format('d/m/Y') }}</td>
+                                                                    {% else %}
+                                                                        <td data-title="Date d'expiration">Non renseignée</td>
+                                                                    {% endif %}
+
                                                                     
                                                                     <td style="min-width: 200px;">
                                                                         <a href="{{ path('read', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn bg-aqua no-print" title="Consultation">
