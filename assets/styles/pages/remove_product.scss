@@ -255,19 +255,40 @@
     gap: 15px;
 }
 
-/* Animation pour le champ de site */
+/* Modifications pour le grisage au lieu de la disparition */
 .site-field {
     transition: all 0.5s ease;
-    max-height: 150px;
-
-    opacity: 1;
+    position: relative;
 }
 
+/* NOUVEAU: Comportement modifié pour griser au lieu de cacher */
 .site-field.hidden {
-    max-height: 0;
-    opacity: 0;
-    margin: 0;
-    padding: 0;
+    max-height: initial;
+    opacity: 0.5;
+    margin: inherit;
+    padding: inherit;
+    position: relative;
+    pointer-events: none;
+    background-color: #f8f8f8;
+    transition: all 0.3s ease;
+}
+
+.site-field.hidden::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(240, 240, 240, 0.5);
+    border-radius: 8px;
+}
+
+/* Style pour indiquer visuellement que le champ est désactivé */
+.site-field.hidden label,
+.site-field.hidden input,
+.site-field.hidden select {
+    color: #999;
 }
 
 /* Badge pour la recherche multi-sites */
@@ -288,6 +309,17 @@
     0% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7); }
     70% { box-shadow: 0 0 0 6px rgba(52, 152, 219, 0); }
     100% { box-shadow: 0 0 0 0 rgba(52, 152, 219, 0); }
+}
+
+/* Animation pour l'effet de pulsation lors du changement d'état */
+@keyframes pulse-transition {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4); }
+    50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(243, 156, 18, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
+}
+
+.pulse-effect {
+    animation: pulse-transition 0.6s ease;
 }
 
 /* Material design ripple effect on buttons */
@@ -327,6 +359,42 @@
 .form-control:focus, .select2-container--focus .select2-selection {
     border-color: #f39c12 !important;
     box-shadow: 0 0 0 0.2rem rgba(243, 156, 18, 0.25) !important;
+}
+
+.site-field-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    background-color: #f8f8f8;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.site-field-disabled::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(240, 240, 240, 0.5);
+    border-radius: 8px;
+}
+
+/* Style pour indiquer visuellement que le champ est désactivé */
+.site-field-disabled label,
+.site-field-disabled input,
+.site-field-disabled select {
+    color: #999;
+}
+
+@keyframes pulse-transition {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(243, 156, 18, 0.4); }
+    50% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(243, 156, 18, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(243, 156, 18, 0); }
+}
+
+.pulse-effect {
+    animation: pulse-transition 0.6s ease;
 }
 
 /* Pour les écrans mobiles */

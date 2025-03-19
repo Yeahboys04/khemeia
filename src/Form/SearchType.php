@@ -50,11 +50,10 @@ class SearchType extends AbstractType
         $builder->add('idSite', EntityType::class, [
             'class' => Site::class,
             'mapped' => false,
-            'placeholder' => 'Tous les sites',
+            'placeholder' => 'Sélectionnez un site',
             'required' => true,
             'attr' => [
                 'class' => 'form-select',
-                'data-placeholder' => 'Sélectionnez un site',
             ],
         ]);
 

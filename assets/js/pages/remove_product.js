@@ -88,11 +88,27 @@ document.addEventListener('DOMContentLoaded', function() {
     if (siteField && siteSelect) {
         const toggleSiteField = (value) => {
             if (value === 'oui') {
-                siteField.classList.add('hidden');
+                // IMPORTANT: Utiliser notre nouvelle classe spécifique
+                // au lieu de la classe 'hidden' générique
+                siteField.classList.add('site-field-disabled');
+                siteSelect.setAttribute('disabled', 'disabled');
                 siteSelect.removeAttribute('required');
+
+                // Effet visuel pour indiquer le changement
+                siteField.classList.add('pulse-effect');
+                setTimeout(() => {
+                    siteField.classList.remove('pulse-effect');
+                }, 600);
             } else {
-                siteField.classList.remove('hidden');
+                siteField.classList.remove('site-field-disabled');
+                siteSelect.removeAttribute('disabled');
                 siteSelect.setAttribute('required', 'required');
+
+                // Effet visuel pour indiquer le changement
+                siteField.classList.add('pulse-effect');
+                setTimeout(() => {
+                    siteField.classList.remove('pulse-effect');
+                }, 600);
             }
         };
 
@@ -112,6 +128,13 @@ document.addEventListener('DOMContentLoaded', function() {
     if (resultsTable) {
         requestAnimationFrame(() => {
             resultsTable.style.animation = 'fadeIn 0.5s ease';
+        });
+    }
+
+    // Ajout de la fonctionnalité d'impression si le bouton existe
+    if (printButton) {
+        printButton.addEventListener('click', function() {
+            window.print();
         });
     }
 });

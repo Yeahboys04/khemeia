@@ -404,6 +404,7 @@
                                                                     <th>Nom du produit</th>
                                                                     <th>Lieu de stockage</th>
                                                                     <th>Numéro de série</th>
+                                                                    <th>Archivé</th>
                                                                     <th>Actions</th>
                                                                 </tr>
                                                                 </thead>
@@ -420,6 +421,13 @@
                                                                                 <td data-title="Nom du produit" class="sorting_1">{{ oneStoragecard.getIdChimicalproduct() }}</td>
                                                                                 <td data-title="Lieu de stockage" class="sorting_1">{{ oneStoragecard.getIdShelvingunit() }}</td>
                                                                                 <td data-title="Numéro de série" class="sorting_1">{{ oneStoragecard.getSerialnumber() }}</td>
+                                                                                <td data-title="Archivé">
+                                                                                    {% if oneStoragecard.getIsarchived() %}
+                                                                                        <span class="label label-danger">Oui</span>
+                                                                                    {% else %}
+                                                                                        <span class="label label-default">Non</span>
+                                                                                    {% endif %}
+                                                                                </td>
 
                                                                                 <td>
                                                                                     <a href="{{ path('admin_storage_modify', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-success">
