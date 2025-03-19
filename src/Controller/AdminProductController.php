@@ -41,7 +41,7 @@ class AdminProductController extends AbstractController
                 $entityManager->flush();
                 //On enregistre un message flash
                 $this->addFlash('success',
-                    'Le produit a été créé avec succès.');
+                    'Le produit numéro '. $product->getIdChimicalproduct() .' a été créé avec succès.');
 
                 //On renvoi la page initiale
                 return $this->redirectToRoute('admin_product');

@@ -52,14 +52,7 @@ class AdminStorageController extends AbstractController
 
                 if ($form->has('stateType')) {
                     $stateType = $form->get('stateType')->getData();
-                    // Vérifiez si $stateType est null
-                    if ($stateType === null) {
-                        // Forcer une valeur par défaut
-                        $stateType = 'solid6EX';
-                    }
                     $storagecard->setStateType($stateType);
-                    // Vérifiez immédiatement si la valeur a été définie
-                    $this->addFlash('info', 'État physique: ' . $storagecard->getStateType());
                 }
 
                 $idShelvingunit = $form->get('idShelvingunit')->getData();
@@ -114,7 +107,7 @@ class AdminStorageController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success',
-                    'La fiche de stockage a été créée avec succès.');
+                    'La fiche de stockage numéro ' . $storagecard->getIdStoragecard() . ' a été créée avec succès.');
                 return $this->redirectToRoute('admin_storage');
             }
         }

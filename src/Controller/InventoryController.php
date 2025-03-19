@@ -77,7 +77,7 @@ class InventoryController extends AbstractController
                 $entityManager->flush();
                 //On enregistre un message flash
                 $this->addFlash('success',
-                    'Le produit numéro' . $product->getIdChimicalproduct() . ' a été créé avec succès.');
+                    'Le produit numéro ' . $product->getIdChimicalproduct() . ' a été créé avec succès.');
 
                 //On renvoi la page initiale
                 return $this->redirectToRoute('inventory_product');
@@ -157,13 +157,22 @@ class InventoryController extends AbstractController
             if ($form->isSubmitted() && $form->isValid()) {
 
                 $storagecard = $form->getData();
+
+                // Définir la date de création
+                $storagecard->setCreationDate(new \DateTime());
+
+                // Récupérer l'état physique
+                if ($form->has('stateType')) {
+                    $stateType = $form->get('stateType')->getData();
+                    $storagecard->setStateType($stateType);
+                }
+
                 $idShelvingunit = $form->get('idShelvingunit')->getData();
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();
 
 
                 $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager);
 
-                echo "bonjour";
                 $securityFile = $form->get('uploadedSecurityFile')->getData();
                 $analysisFile = $form->get('uploadedAnalysisFile')->getData();
 
@@ -214,7 +223,7 @@ class InventoryController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success',
-                    'La fiche de stockage a été créé avec succès.');
+                    'La fiche de stockage numéro ' . $storagecard->getIdStoragecard() . ' a été créée avec succès.');
                 return $this->redirectToRoute('inventory_storage');
             }
         }
@@ -279,6 +288,8 @@ class InventoryController extends AbstractController
             $newStoragecard->setIdProperty($storagecard->getIdProperty());
             $newStoragecard->setIdSupplier($storagecard->getIdSupplier());
             $newStoragecard->setReference($storagecard->getReference());
+            // Copier l'état physique
+            $newStoragecard->setStateType($storagecard->getStateType());
 
             $user = $tokenStorage->getToken()->getUser();
             $form = $this->createForm(StoragecardRespType::class, $newStoragecard, [
@@ -290,6 +301,16 @@ class InventoryController extends AbstractController
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $newStoragecard = $form->getData();
+
+                // Définir la date de création
+                $newStoragecard->setCreationDate(new \DateTime());
+
+                // Récupérer l'état physique directement à partir des données soumises
+                $formData = $request->request->get('storagecard_resp');
+                if (isset($formData['stateType'])) {
+                    $stateType = $formData['stateType'];
+                    $newStoragecard->setStateType($stateType);
+                }
 
                 $idShelvingunit = $form->get('idShelvingunit')->getData();
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();
@@ -349,7 +370,7 @@ class InventoryController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success',
-                    'La fiche de stockage a été créé avec succès.');
+                    'La fiche de stockage numéro ' . $newStoragecard->getIdStoragecard() . ' a été créée avec succès.');
                 return $this->redirectToRoute('inventory_storage');
             }
         }
@@ -423,6 +444,13 @@ class InventoryController extends AbstractController
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $newStoragecard = $form->getData();
+
+                // Récupérer l'état physique directement à partir des données soumises
+                $formData = $request->request->get('storagecard_resp');
+                if (isset($formData['stateType'])) {
+                    $stateType = $formData['stateType'];
+                    $newStoragecard->setStateType($stateType);
+                }
 
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();
 
