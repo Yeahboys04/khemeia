@@ -336,7 +336,8 @@ class AdminStorageController extends AbstractController
             // Créer le formulaire avec la nouvelle fiche pré-remplie
             $form = $this->createForm(StoragecardRespType::class, $newStoragecard, [
                 'method' => 'POST',
-                'idSite' => $user->getIdSite()->getIdSite()
+                'idSite' => $user->getIdSite()->getIdSite(),
+                'action' => 'copy'
             ]);
 
             $form->handleRequest($request);
