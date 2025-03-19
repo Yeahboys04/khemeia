@@ -36,9 +36,12 @@ class AdminStorageController extends AbstractController
 
             $storagecards = $repositoryStoragecard->findAll();
             $storagecard = new Storagecard();
+            $user = $tokenStorage->getToken()->getUser();
 
             $form = $this->createForm(StoragecardRespType::class, $storagecard, [
-                'method' => 'POST',]);
+                'method' => 'POST',
+                'idSite' => $user->getIdSite()->getIdSite()
+                ]);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
@@ -150,11 +153,13 @@ class AdminStorageController extends AbstractController
 
             $previousStoragecard = $repositoryStoragecard->find($id);
             $previousLocalisation = $previousStoragecard->getIdShelvingunit();
+            $user = $tokenStorage->getToken()->getUser();
 
             if ($previousStoragecard != null || !empty($previousStoragecard) ){
 
                 $form = $this->createForm(StoragecardRespType::class, $previousStoragecard, [
                     'method' => 'POST',
+                    'idSite' => $user->getIdSite()->getIdSite()
                 ]);
 
                 $form->handleRequest($request);
@@ -277,6 +282,7 @@ class AdminStorageController extends AbstractController
 
                 $form = $this->createForm(StoragecardRespType::class, $storagecard, [
                     'method' => 'POST',
+
                 ]);
 
                 $form->handleRequest($request);
