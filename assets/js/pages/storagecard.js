@@ -543,6 +543,29 @@ document.addEventListener('DOMContentLoaded', function() {
             selector.setAttribute('data-dropdown-auto-width', 'true');
         });
     }
+    /**
+     * Vérifie et définit l'état physique par défaut (solide/liquide)
+     */
+    function setDefaultStateType() {
+        // Vérifie si un état est déjà sélectionné
+        const stateOptions = document.querySelectorAll('.state-option input');
+        const anySelected = Array.from(stateOptions).some(option => option.checked);
+
+        if (!anySelected) {
+            // Si aucun état n'est sélectionné, sélectionner solide par défaut
+            const solidOption = document.querySelector('input[name="storagecard_resp[stateType]"][value="solid"]');
+            if (solidOption) {
+                solidOption.checked = true;
+                solidOption.parentElement.classList.add('active');
+
+                // Déclencher l'événement change pour mettre à jour les unités
+                const event = new Event('change');
+                solidOption.dispatchEvent(event);
+            }
+        }
+    }
+
+
 
     /**
      * Initialize all features
@@ -560,6 +583,7 @@ document.addEventListener('DOMContentLoaded', function() {
             handleValidation();
             enhanceSections();
             enhanceRadioButtons();
+            setDefaultStateType();
 
             // Add button effects
             try { addButtonEffects(); } catch (e) { console.log('Button effects not supported'); }

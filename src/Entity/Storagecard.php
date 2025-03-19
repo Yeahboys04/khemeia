@@ -85,6 +85,13 @@ class Storagecard
     #[ORM\JoinColumn(name: 'id_supplier', referencedColumnName: 'id_supplier')]
     private ?Supplier $idSupplier = null;
 
+    #[ORM\Column(name: 'state_type', type: 'string', length: 10, nullable: true)]
+    private ?string $stateType = null;
+
+    #[ORM\Column(name: 'creation_date', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $creationDate = null;
+
+
     public function getIdStoragecard(): ?string
     {
         return $this->idStoragecard;
@@ -330,5 +337,27 @@ class Storagecard
     public function __toString(): string
     {
         return "Fiche de stockage du produit : " . $this->idChimicalproduct . " - " . $this->idShelvingunit;
+    }
+
+    public function getStateType(): ?string
+    {
+        return $this->stateType;
+    }
+
+    public function setStateType(?string $stateType): self
+    {
+        $this->stateType = $stateType;
+        return $this;
+    }
+
+    public function getCreationDate(): ?\DateTimeInterface
+    {
+        return $this->creationDate;
+    }
+
+    public function setCreationDate(?\DateTimeInterface $creationDate): self
+    {
+        $this->creationDate = $creationDate;
+        return $this;
     }
 }

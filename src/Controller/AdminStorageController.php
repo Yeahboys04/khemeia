@@ -41,11 +41,27 @@ class AdminStorageController extends AbstractController
             $form = $this->createForm(StoragecardRespType::class, $storagecard, [
                 'method' => 'POST',
                 'idSite' => $user->getIdSite()->getIdSite()
-                ]);
+            ]);
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $storagecard = $form->getData();
+
+                // Définir la date de création
+                $storagecard->setCreationDate(new \DateTime());
+
+                if ($form->has('stateType')) {
+                    $stateType = $form->get('stateType')->getData();
+                    // Vérifiez si $stateType est null
+                    if ($stateType === null) {
+                        // Forcer une valeur par défaut
+                        $stateType = 'solid6EX';
+                    }
+                    $storagecard->setStateType($stateType);
+                    // Vérifiez immédiatement si la valeur a été définie
+                    $this->addFlash('info', 'État physique: ' . $storagecard->getStateType());
+                }
+
                 $idShelvingunit = $form->get('idShelvingunit')->getData();
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();
 
@@ -98,7 +114,7 @@ class AdminStorageController extends AbstractController
                 $entityManager->flush();
 
                 $this->addFlash('success',
-                    'La fiche de stockage a été créé avec succès.');
+                    'La fiche de stockage a été créée avec succès.');
                 return $this->redirectToRoute('admin_storage');
             }
         }
@@ -155,8 +171,7 @@ class AdminStorageController extends AbstractController
             $previousLocalisation = $previousStoragecard->getIdShelvingunit();
             $user = $tokenStorage->getToken()->getUser();
 
-            if ($previousStoragecard != null || !empty($previousStoragecard) ){
-
+            if ($previousStoragecard != null || !empty($previousStoragecard)) {
                 $form = $this->createForm(StoragecardRespType::class, $previousStoragecard, [
                     'method' => 'POST',
                     'idSite' => $user->getIdSite()->getIdSite()
@@ -165,6 +180,13 @@ class AdminStorageController extends AbstractController
                 $form->handleRequest($request);
                 if ($form->isSubmitted() && $form->isValid()) {
                     $storagecard = $form->getData();
+
+                    // Récupérer l'état physique directement à partir des données soumises
+                    $formData = $request->request->get('storagecard_resp');
+                    if (isset($formData['stateType'])) {
+                        $stateType = $formData['stateType'];
+                        $storagecard->setStateType($stateType);
+                    }
 
                     $idShelvingunit = $form->get('idShelvingunit')->getData();
                     $chimicalproduct = $form->get('idChimicalproduct')->getData();
@@ -221,7 +243,7 @@ class AdminStorageController extends AbstractController
 
                     $entityManager->flush();
                     $this->addFlash('success',
-                        'La fiche de stockage a été modifié avec succès.');
+                        'La fiche de stockage a été modifiée avec succès.');
 
                     return $this->redirectToRoute('admin_storage');
                 }
@@ -238,8 +260,9 @@ class AdminStorageController extends AbstractController
             $this->addFlash('error', $le->getMessage());
             return $this->render('admin/storage.html.twig', [
                 'form' => $form->createView(),
-                'action' => 'create',
+                'action' => 'modify',
                 'storagecards' => $storagecards,
+                'id' => $id
             ]);
         }
         catch (FileException $e) {
@@ -267,6 +290,165 @@ class AdminStorageController extends AbstractController
     }
 
     /**
+     * Dupliquer une fiche de stockage via un formulaire
+     */
+    #[Route('/admin/storage/duplicate/{id}', name: 'admin_storage_duplicate')]
+    public function duplicate(
+        Request $request,
+        FileUploader $fileUploader,
+        Utility $utility,
+        EntityManagerInterface $entityManager,
+        TokenStorageInterface $tokenStorage,
+        $id
+    ): Response {
+        try {
+            // Initialise le repository pour la base de données
+            $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
+
+            // Cherche tous les storagecards pour l'affichage de la liste
+            $storagecards = $repositoryStoragecard->findAll();
+
+            // Récupère la fiche originale à dupliquer
+            $originalStoragecard = $repositoryStoragecard->find($id);
+            $user = $tokenStorage->getToken()->getUser();
+
+            if ($originalStoragecard === null || empty($originalStoragecard)) {
+                $this->addFlash('error',
+                    'Attention, une erreur est survenue. La fiche de stockage '
+                    .' N° \' ' .$id. ' \' n\'existe pas.');
+                return $this->redirectToRoute('admin_storage');
+            }
+
+            // Créer une nouvelle fiche basée sur l'originale
+            $newStoragecard = new Storagecard();
+            // Copier les propriétés de l'original
+            $newStoragecard->setIdChimicalproduct($originalStoragecard->getIdChimicalproduct());
+            $newStoragecard->setIdShelvingunit($originalStoragecard->getIdShelvingunit());
+            $newStoragecard->setCapacity($originalStoragecard->getCapacity());
+            $newStoragecard->setStockquantity($originalStoragecard->getStockquantity());
+            $newStoragecard->setPurity($originalStoragecard->getPurity());
+            $newStoragecard->setTemperature($originalStoragecard->getTemperature());
+            $newStoragecard->setSerialnumber($originalStoragecard->getSerialnumber());
+            $newStoragecard->setOpendate(new \DateTime());  // Date d'ouverture actuelle
+            $newStoragecard->setExpirationdate($originalStoragecard->getExpirationdate());
+            $newStoragecard->setIdProperty($originalStoragecard->getIdProperty());
+            $newStoragecard->setIdSupplier($originalStoragecard->getIdSupplier());
+            $newStoragecard->setReference($originalStoragecard->getReference());
+            $newStoragecard->setIsarchived(false); // Par défaut non archivé
+            $newStoragecard->setIsrisked($originalStoragecard->getIsrisked());
+            $newStoragecard->setIspublished($originalStoragecard->getIspublished());
+            $newStoragecard->setCommentary($originalStoragecard->getCommentary() . ' (Copie)');
+            $newStoragecard->setStateType($originalStoragecard->getStateType()); // Copier l'état physique
+
+            // Créer le formulaire avec la nouvelle fiche pré-remplie
+            $form = $this->createForm(StoragecardRespType::class, $newStoragecard, [
+                'method' => 'POST',
+                'idSite' => $user->getIdSite()->getIdSite()
+            ]);
+
+            $form->handleRequest($request);
+            if ($form->isSubmitted() && $form->isValid()) {
+                // Récupérer les données du formulaire
+                $newStoragecard = $form->getData();
+                $newStoragecard->setCreationDate(new \DateTime()); // Définir la date de création
+
+                // Récupérer l'état physique directement à partir des données soumises
+                $formData = $request->request->get('storagecard_resp');
+                if (isset($formData['stateType'])) {
+                    $stateType = $formData['stateType'];
+                    $newStoragecard->setStateType($stateType);
+                }
+
+                $idShelvingunit = $form->get('idShelvingunit')->getData();
+                $chimicalproduct = $form->get('idChimicalproduct')->getData();
+
+                $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager);
+
+                // Traitement des fichiers comme dans la méthode index (création)
+                $securityFile = $form->get('uploadedSecurityFile')->getData();
+                $analysisFile = $form->get('uploadedAnalysisFile')->getData();
+
+                if ($securityFile != null) {
+                    $newSecurityFileName = $fileUploader->upload(
+                        $securityFile,
+                        $this->getParameter('idSecurityFile_directory'));
+
+                    $securityfile = new Securityfile();
+                    $securityfile->setNameSecurityfile($newSecurityFileName);
+                    $entityManager->persist($securityfile);
+                    $entityManager->flush();
+                    $newStoragecard->setIdSecurityfile($securityfile);
+                } else {
+                    // Utiliser les fichiers de l'original si aucun nouveau n'est téléchargé
+                    $newStoragecard->setIdSecurityfile($originalStoragecard->getIdSecurityfile());
+                }
+
+                if ($analysisFile != null) {
+                    $newAnalysisFileName = $fileUploader->upload(
+                        $analysisFile,
+                        $this->getParameter('idAnalysisFile_directory'));
+
+                    $analysisFile = new Analysisfile();
+                    $analysisFile->setNameAnalysisfile($newAnalysisFileName);
+                    $entityManager->persist($analysisFile);
+                    $entityManager->flush();
+                    $newStoragecard->setIdAnalysisfile($analysisFile);
+                } else {
+                    // Utiliser les fichiers de l'original si aucun nouveau n'est téléchargé
+                    $newStoragecard->setIdAnalysisfile($originalStoragecard->getIdAnalysisfile());
+                }
+
+                // Persister la nouvelle fiche
+                $entityManager->persist($newStoragecard);
+                $entityManager->flush();
+
+                // Créer l'historique de mouvement
+                $movedHistory = new Movedhistory();
+                $movedHistory->setMovedate(new DateTime());
+                $movedHistory->setIdShelvingunit($newStoragecard->getIdShelvingunit());
+                $movedHistory->setIdStoragecard($newStoragecard);
+                $movedHistory->setIdUser($tokenStorage->getToken()->getUser());
+
+                $entityManager->persist($movedHistory);
+                $entityManager->flush();
+
+                $this->addFlash('success', 'La fiche de stockage a été dupliquée avec succès.');
+                return $this->redirectToRoute('admin_storage');
+            }
+        }
+        catch (LogicException $le) {
+            $this->addFlash('error', $le->getMessage());
+            return $this->render('admin/storage.html.twig', [
+                'form' => $form->createView(),
+                'action' => 'duplicate',
+                'storagecards' => $storagecards,
+                'id' => $id
+            ]);
+        }
+        catch (FileException $e) {
+            $this->addFlash('error',
+                'Attention, une erreur est survenue lors du déplacement du fichier.'
+                .' Contactez votre administrateur.');
+            return $this->redirectToRoute('home_page');
+        }
+        catch (\Exception $e) {
+            $this->addFlash('error',
+                'Attention, une erreur est survenue.'
+                .' Contactez votre administrateur.');
+            return $this->redirectToRoute('home_page');
+        }
+
+        // Afficher le formulaire de duplication
+        return $this->render('admin/storage.html.twig', [
+            'form' => $form->createView(),
+            'action' => 'duplicate',
+            'storagecards' => $storagecards,
+            'id' => $id,
+            'originalStoragecard' => $originalStoragecard // Pour référence si nécessaire
+        ]);
+    }
+
+    /**
      * Supprimer une fiche de stockage
      */
     #[Route('/admin/storage/remove/{id}', name: 'admin_storage_remove')]
@@ -278,20 +460,17 @@ class AdminStorageController extends AbstractController
             $storagecards = $repositoryStoragecard->findAll();
             $storagecard = $repositoryStoragecard->find($id);
 
-            if ($storagecard != null || !empty($storagecard) ){
-
+            if ($storagecard != null || !empty($storagecard)) {
                 $form = $this->createForm(StoragecardRespType::class, $storagecard, [
                     'method' => 'POST',
-
                 ]);
 
                 $form->handleRequest($request);
                 if ($form->isSubmitted() && $form->isValid()) {
-
                     $entityManager->remove($storagecard);
                     $entityManager->flush();
                     $this->addFlash('success',
-                        'La fiche de stockage a été supprimé avec succès.');
+                        'La fiche de stockage a été supprimée avec succès.');
                     return $this->redirectToRoute('admin_storage');
                 }
             }

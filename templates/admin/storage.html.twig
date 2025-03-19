@@ -90,12 +90,15 @@
                                             <h3>Propriétés physiques</h3>
                                         </div>
 
+                                        {# Dans storage.html.twig, dans la section de l'état physique #}
                                         <div class="form-group">
                                             <label class="form-label">État physique du produit <span class="text-red">*</span></label>
                                             <div class="state-selector">
                                                 {% for choice in form.stateType %}
                                                     <div class="state-option">
-                                                        {{ form_widget(choice, {'attr': {'class': 'state-option-input'}}) }}
+                                                        {{ form_widget(choice, {'attr': {
+                                                            'class': 'state-option-input'
+                                                        }}) }}
                                                         <label for="{{ choice.vars.id }}">
                                                             <i class="fas {% if choice.vars.value == 'solid' %}fa-cube{% else %}fa-tint{% endif %} icon"></i>
                                                             <span>{{ choice.vars.label }}</span>
@@ -432,6 +435,9 @@
                                                                                 <td>
                                                                                     <a href="{{ path('admin_storage_modify', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-success">
                                                                                         <i class="fas fa-edit"></i> Modifier
+                                                                                    </a>
+                                                                                    <a href="{{ path('admin_storage_duplicate', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-info">
+                                                                                        <i class="fas fa-copy"></i> Dupliquer
                                                                                     </a>
                                                                                     <a href="{{ path('admin_storage_remove', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-danger">
                                                                                         <i class="fas fa-trash"></i> Supprimer

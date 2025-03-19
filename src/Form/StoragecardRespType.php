@@ -32,16 +32,14 @@ class StoragecardRespType extends AbstractType
 
         // Ajouter le champ pour choisir entre solide et liquide
         $builder->add('stateType', ChoiceType::class, [
-            'mapped' => false,
-            'label' => 'État physique du produit',
             'choices' => [
                 'Solide' => 'solid',
                 'Liquide' => 'liquid'
             ],
             'expanded' => true,
             'multiple' => false,
-            'data' => 'solid', // Valeur par défaut
-            'attr' => ['class' => 'state-type-selector']
+            'required' => true,
+            'label' => 'État physique du produit'
         ]);
 
         // Quantité adaptative avec unités
@@ -92,7 +90,7 @@ class StoragecardRespType extends AbstractType
                 'kg' => 'kg',
                 'ml' => 'ml',
                 'cl' => 'cl',
-                'l' => 'l'
+                'L' => 'L'
             ],
             'data' => 'g',
             'attr' => ['class' => 'unit-selector solid-units']
@@ -229,7 +227,7 @@ class StoragecardRespType extends AbstractType
                     case 'cl':
                         $data['stockquantity'] = $data['stockquantity'] * 10; // cl -> ml
                         break;
-                    case 'l':
+                    case 'L':
                         $data['stockquantity'] = $data['stockquantity'] * 1000; // l -> ml
                         break;
                 }
@@ -249,7 +247,7 @@ class StoragecardRespType extends AbstractType
                     case 'cl':
                         $data['capacity'] = $data['capacity'] * 10; // cl -> ml
                         break;
-                    case 'l':
+                    case 'L':
                         $data['capacity'] = $data['capacity'] * 1000; // l -> ml
                         break;
                 }
@@ -258,7 +256,6 @@ class StoragecardRespType extends AbstractType
             // On retire les champs non mappés avant de soumettre
             unset($data['stockUnit']);
             unset($data['capacityUnit']);
-            unset($data['stateType']);
 
             $event->setData($data);
         });
