@@ -408,6 +408,7 @@
                                                                     <th>Lieu de stockage</th>
                                                                     <th>Numéro de série</th>
                                                                     <th>Archivé</th>
+                                                                    <th>Date de création</th>
                                                                     <th>Actions</th>
                                                                 </tr>
                                                                 </thead>
@@ -431,6 +432,7 @@
                                                                                         <span class="label label-default">Non</span>
                                                                                     {% endif %}
                                                                                 </td>
+                                                                                <td data-title="Date de création" class="sorting_1">{{ oneStoragecard.getCreationdate()|date('d/m/Y') }}</td>
 
                                                                                 <td>
                                                                                     <a href="{{ path('admin_storage_modify', {id: oneStoragecard.getIdStoragecard()}) }}" class="btn btn-success">
