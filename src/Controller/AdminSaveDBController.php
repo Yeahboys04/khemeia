@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\HttpFoundation\ResponseHeaderBag;
 
 class AdminSaveDBController extends AbstractController
 {
@@ -33,13 +34,12 @@ class AdminSaveDBController extends AbstractController
 
             $file = fopen($restoreFile, "r");
             $line = fgets($file);
-            if (!stristr($line,'#**************** BASE DE DONNEES')){
+            if (!stristr($line, '#**************** BASE DE DONNEES')) {
                 fclose($file);
                 $this->addFlash('error',
                     'Il ne s\'agit pas d\'un fichier de sauvegarde Khemeia.');
                 return $this->redirectToRoute('admin_database');
-            }
-            else {
+            } else {
                 fclose($file);
                 $file = fopen($restoreFile, "r");
                 $ok = "";
@@ -58,7 +58,6 @@ class AdminSaveDBController extends AbstractController
                 fclose($file);
 
 
-
                 if (strrpos($ok, '0')) {
                     $this->addFlash('success',
                         'La restauration est terminée ! ' .
@@ -74,25 +73,27 @@ class AdminSaveDBController extends AbstractController
 
         }
         //Quoi qu'il arrive on rend la page initiale
-        return $this->render('admin/save.html.twig',[
+        return $this->render('admin/save.html.twig', [
             'form' => $form->createView(),
         ]);
     }
 
     #[Route('/admin/save', name: 'admin_save')]
-    public function save(): BinaryFileResponse
+    public function save(): Response
     {
-        //ini_set('memory_limit', '1024M');
+        // Connexion à la base de données
         $host = '127.0.0.1';
         $username = 'root';
-        $password = 'root';
+        $password = 'Geor-2023';
         $dbname = 'sgpc';
-        $GLOBALS['db'] = new \mysqli($host, $username, $password, $dbname);
-        if ($GLOBALS['db']->connect_error) {
-            die("Connection failed: " . $GLOBALS['db']->connect_error);
+        $db = new \mysqli($host, $username, $password, $dbname);
+        if ($db->connect_error) {
+            throw $this->createNotFoundException("Connexion à la base de données échouée: " . $db->connect_error);
         }
-        mysqli_set_charset($GLOBALS['db'], "utf8");
-        $liste_tables = array(
+        mysqli_set_charset($db, "utf8");
+
+        // Liste des tables à sauvegarder
+        $liste_tables_a_verifier = array(
             'cautionaryAdvice',
             'dangerNote',
             'dangerSymbol',
@@ -120,103 +121,116 @@ class AdminSaveDBController extends AbstractController
             'controlbytype'
         );
 
-
-        $nomsql = $dbname."_le_".date("d_m_Y_\a_H\hi").".sql";
-        $now = date('D, d M Y H:i:s') . ' GMT';
-
-        header('Content-Type: text/x-csv');
-        header('Expires: ' . $now);
-        if (isset($_SERVER['HTTP_USER_AGENT'])){
-            if (preg_match('`MSIE`', $_SERVER['HTTP_USER_AGENT'])){
-                header('Content-Disposition: inline; filename="' . $nomsql . '"');
-                header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-                header('Pragma: public');
-            }else{
-                header('Content-Disposition: attachment; filename="' . $nomsql . '"');
-                header('Pragma: no-cache');
+        // Vérifier quelles tables existent réellement
+        $liste_tables = array();
+        foreach ($liste_tables_a_verifier as $table) {
+            $query = "SHOW TABLES LIKE '$table'";
+            $result = mysqli_query($db, $query);
+            if ($result && mysqli_num_rows($result) > 0) {
+                $liste_tables[] = $table;
             }
         }
-        $fd = "#**************** BASE DE DONNEES ".$dbname." ****************"."\n".date("\#\ \L\\e\ \:\ d\ m\ Y\ \a\ H\h\ i")."\n";
-        if (isset($_SERVER['SERVER_NAME'])){
-            $fd .= "# Serveur : ".$_SERVER['SERVER_NAME']."\n";
+
+        // Si aucune table n'existe, afficher un message d'erreur
+        if (empty($liste_tables)) {
+            throw $this->createNotFoundException("Aucune des tables spécifiées n'existe dans la base de données '$dbname'");
         }
 
-        $fd .= "# Version PHP : " . $this->php_version()."\n";
-        $fd .= "# Version mySQL : " . $this->mysql_version()."\n";
+        $nomsql = $dbname . "_le_" . date("d_m_Y_\a_H\hi") . ".sql";
+        $chemin = $this->getParameter('save_db');
+        $path = $chemin . $nomsql;
+
+        // Génération du contenu du fichier SQL
+        $fd = "#**************** BASE DE DONNEES " . $dbname . " ****************" . "\n" . date("\#\ \L\\e\ \:\ d\ m\ Y\ \a\ H\h\ i") . "\n";
+
+        if (isset($_SERVER['SERVER_NAME'])) {
+            $fd .= "# Serveur : " . $_SERVER['SERVER_NAME'] . "\n";
+        }
+
+        $fd .= "# Version PHP : " . $this->php_version() . "\n";
+        $fd .= "# Version mySQL : " . $this->mysql_version($db) . "\n";
         if (isset($_SERVER['REMOTE_ADDR'])) {
             $fd .= "# IP Client : " . $_SERVER['REMOTE_ADDR'] . "\n";
         }
         $fd .= "# Fichier SQL compatible PHPMyadmin\n#\n";
         $fd .= "# ******* debut du fichier ********\n";
         $fd .= "#\n# Nettoyage de la base\n#\n";
-        $i = '0';
+
+        // Ajout des instructions DROP TABLE
         $arrayReversed = array_reverse($liste_tables);
-        while ($i < count($arrayReversed)){
-            //$fd .= "#\n# Nettoyage de la base\n#\n";
-            $temp = $arrayReversed[$i];
-            $fd .= "DROP TABLE IF EXISTS `$temp`;\n";
-            $i++;
+        foreach ($arrayReversed as $table) {
+            $fd .= "DROP TABLE IF EXISTS `$table`;\n";
         }
+
         $fd .= "#\n# Construction de la base \n#\n";
-        $j = '0';
-        while ($j < count($liste_tables)){
-            $temp = $liste_tables[$j];
-            $fd .= "#\n# Structure de la table $temp\n#\n";
-            //$fd .= "DROP TABLE IF EXISTS `$temp`;\n";
-            // requete de creation de la table
-            $query = "SHOW CREATE TABLE $temp";
-            $resCreate = mysqli_query($GLOBALS['db'], $query);
-            $row = mysqli_fetch_array($resCreate);
-            $schema = $row[1].";";
-            $fd.="$schema\n";
-            $fd.="#\n# Données de $temp\n#\n";
-            $query = "SELECT * FROM $temp";
-            $resData = mysqli_query($GLOBALS['db'], $query);
-            //peut survenir avec la corruption d'une table, on prévient
-            if (!$resData) {
-                $fd .= "Problème avec les données de $temp, corruption possible !\n";
+
+        // Génération du SQL pour chaque table
+        foreach ($liste_tables as $table) {
+            $fd .= "#\n# Structure de la table $table\n#\n";
+
+            // Récupération de la structure de la table
+            $query = "SHOW CREATE TABLE $table";
+            $resCreate = mysqli_query($db, $query);
+            if (!$resCreate) {
+                $fd .= "# Erreur lors de la récupération de la structure de $table: " . mysqli_error($db) . "\n";
+                continue;
             }
-            else{
-                if (mysqli_num_rows($resData) > 0){
-                    $sFieldnames = "";
-                    $num_fields = mysqli_field_count($GLOBALS['db']);
-                    $sInsert = "INSERT INTO $temp $sFieldnames values ";
-                    while ($rowdata = mysqli_fetch_row($resData)){
+
+            $row = mysqli_fetch_array($resCreate);
+            $schema = $row[1] . ";";
+            $fd .= "$schema\n";
+
+            $fd .= "#\n# Données de $table\n#\n";
+            $query = "SELECT * FROM $table";
+            $resData = mysqli_query($db, $query);
+
+            if (!$resData) {
+                $fd .= "# Problème avec les données de $table: " . mysqli_error($db) . "\n";
+            } else {
+                if (mysqli_num_rows($resData) > 0) {
+                    $num_fields = mysqli_field_count($db);
+                    $sInsert = "INSERT INTO $table values ";
+
+                    while ($rowdata = mysqli_fetch_row($resData)) {
                         $lesDonnees = "";
-                        for ($mp = 0; $mp < $num_fields; $mp++){
-                            //on vérifie si la valeur null est rentrée dans la base
-                            $uneDonnee = mysqli_real_escape_string($GLOBALS['db'], $rowdata[$mp]);
-                            if ($uneDonnee == null) {
+                        for ($mp = 0; $mp < $num_fields; $mp++) {
+                            $uneDonnee = $rowdata[$mp];
+                            if ($uneDonnee === null) {
                                 $lesDonnees .= "null";
+                            } else {
+                                $lesDonnees .= "'" . mysqli_real_escape_string($db, $rowdata[$mp]) . "'";
                             }
-                            else {
-                                $lesDonnees .= "'" . mysqli_real_escape_string($GLOBALS['db'], $rowdata[$mp]) . "'";
-                            }
-                            //on ajoute à la fin une virgule si nécessaire
-                            if ($mp<$num_fields-1)
+
+                            if ($mp < $num_fields - 1) {
                                 $lesDonnees .= ", ";
+                            }
                         }
                         $lesDonnees = "$sInsert($lesDonnees);\n";
-                        $fd.="$lesDonnees";
+                        $fd .= "$lesDonnees";
                     }
                 }
             }
-            $j++;
         }
-        $fd.="#********* fin du fichier ***********";
-        $chemin = $this->getParameter('save_db');
-        $path = $chemin.$nomsql;
+
+        $fd .= "#********* fin du fichier ***********";
+
+        // Écriture dans le fichier
         file_put_contents($path, $fd);
 
-        //Quoi qu'il arrive on rend la page initiale
-        return new BinaryFileResponse($path);
+        // Création de la réponse avec les en-têtes appropriés
+        $response = new BinaryFileResponse($path);
+        $response->setContentDisposition(
+            ResponseHeaderBag::DISPOSITION_ATTACHMENT,
+            $nomsql
+        );
+
+        return $response;
     }
 
     private function php_version(): string
     {
         preg_match('`([0-9]{1,2}).([0-9]{1,2})`', phpversion(), $match);
-        if (isset($match) && !empty($match[1]))
-        {
+        if (isset($match) && !empty($match[1])) {
             if (!isset($match[2]))
                 $match[2] = 0;
         }
@@ -225,15 +239,15 @@ class AdminSaveDBController extends AbstractController
         return $match[1] . "." . $match[2] . "." . $match[3];
     }
 
-    private function mysql_version(): string
+    private function mysql_version($db): string
     {
-        $result = mysqli_query($GLOBALS['db'], 'SELECT VERSION() AS version');
-        if ($result != FALSE && mysqli_num_rows($result) > 0){
+        $result = mysqli_query($db, 'SELECT VERSION() AS version');
+        if ($result != FALSE && mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_array($result);
             $match = explode('.', $row['version']);
-        }else{
-            $result = mysqli_query($GLOBALS['db'], 'SHOW VARIABLES LIKE \'version\'');
-            if ($result != FALSE && mysqli_num_rows($result) > 0){
+        } else {
+            $result = mysqli_query($db, 'SHOW VARIABLES LIKE \'version\'');
+            if ($result != FALSE && mysqli_num_rows($result) > 0) {
                 $row = mysqli_fetch_row($result);
                 $match = explode('.', $row[1]);
             }
