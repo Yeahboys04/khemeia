@@ -2,67 +2,114 @@
 
 {% block title %}Utilisateurs archivés{% endblock %}
 
-{% block body %}
-    <div class="container mt-4">
-        <h1>Gestion des utilisateurs archivés</h1>
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('datatable') }}
+    {{ encore_entry_link_tags('global') }}
+{% endblock %}
 
-        <div class="mb-3">
-            <a href="{{ path('admin_user') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour aux utilisateurs actifs
-            </a>
+{% block body %}
+    <div class="container-fluid py-4">
+        <div class="row mb-4 align-items-center">
+            <div class="col">
+                <h1 class="display-5 fw-bold text-primary">Gestion des utilisateurs archivés</h1>
+            </div>
+            <div class="col-auto mb-5">
+                <a href="{{ path('admin_user') }}" class="btn btn-secondary align-items-center">
+                    <i class="fas fa-arrow-left me-2"></i> Retour aux utilisateurs actifs
+                </a>
+            </div>
         </div>
 
+        <!-- Messages flash -->
         {% for label, messages in app.flashes %}
             {% for message in messages %}
-                <div class="alert alert-{{ label }}">
-                    {{ message }}
+                <div class="alert alert-{{ label }} shadow-sm fade show" role="alert">
+                    <div class="d-flex align-items-center">
+                        {% if label == 'success' %}
+                            <i class="fas fa-check-circle me-2 fs-5"></i>
+                        {% elseif label == 'danger' %}
+                            <i class="fas fa-exclamation-circle me-2 fs-5"></i>
+                        {% elseif label == 'warning' %}
+                            <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                        {% elseif label == 'info' %}
+                            <i class="fas fa-info-circle me-2 fs-5"></i>
+                        {% endif %}
+                        <div>{{ message }}</div>
+                    </div>
                 </div>
             {% endfor %}
         {% endfor %}
 
-        {% if archivedUsers is empty %}
-            <div class="alert alert-info">
-                Aucun utilisateur archivé.
+        <!-- Liste des utilisateurs archivés -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <h5 class="mb-0 fw-bold">Liste des utilisateurs archivés</h5>
+                </div>
             </div>
-        {% else %}
-            <div class="table-responsive">
-                <table class="table table-striped">
-                    <thead>
-                    <tr>
-                        <th>Login</th>
-                        <th>Nom et prénom</th>
-                        <th>Email</th>
-                        <th>Site</th>
-                        <th>Statut</th>
-                        <th>Date d'archivage</th>
-                        <th>Actions</th>
-                    </tr>
-                    </thead>
-                    <tbody>
-                    {% for user in archivedUsers %}
-                        <tr>
-                            <td>{{ user.username }}</td>
-                            <td>{{ user.fullname }}</td>
-                            <td>{{ user.mail }}</td>
-                            <td>{{ user.idSite }}</td>
-                            <td>{{ user.idStatus }}</td>
-                            <td>{{ user.archivedDate ? user.archivedDate|date('d/m/Y H:i') : '' }}</td>
-                            <td>
-                                <div class="btn-group" role="group">
-                                    <a href="{{ path('admin_user_unarchive', {'id': user.idUser}) }}"
-                                       class="btn btn-success btn-sm"
-                                       data-bs-toggle="tooltip"
-                                       data-bs-placement="top"
-                                       title="Désarchiver">
-                                        <i class="fas fa-undo"></i> Désarchiver
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                    </tbody>
-                </table>
+            <div class="card-body p-0">
+                {% if archivedUsers is empty %}
+                    <div class="p-4 text-center">
+                        <i class="fas fa-info-circle text-info fs-4 mb-3"></i>
+                        <p class="mb-0">Aucun utilisateur archivé pour le moment.</p>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table id="archived-users-table" class="table table-striped table-hover mb-0 khemeia-datatable"
+                               data-per-page="10"
+                               data-language="fr">
+                            <thead class="table-light">
+                            <tr>
+                                <th>Login</th>
+                                <th>Nom et prénom</th>
+                                <th>Email</th>
+                                <th>Site</th>
+                                <th>Statut</th>
+                                <th>Date d'archivage</th>
+                                <th data-sortable="false">Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for user in archivedUsers %}
+                                <tr>
+                                    <td class="align-middle">
+                                        <div class="d-flex align-items-center">
+                                            <i class="fas fa-user text-secondary me-2"></i>
+                                            <span>{{ user.username }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="align-middle">{{ user.fullname }}</td>
+                                    <td class="align-middle">
+                                        <a href="mailto:{{ user.mail }}" class="text-decoration-none">{{ user.mail }}</a>
+                                    </td>
+                                    <td class="align-middle">{{ user.idSite }}</td>
+                                    <td class="align-middle">
+                                            <span class="badge bg-{% if user.idStatus == 'Administrateur' %}primary{% elseif user.idStatus == 'Utilisateur' %}success{% else %}secondary{% endif %} rounded-pill">
+                                                {{ user.idStatus }}
+                                            </span>
+                                    </td>
+                                    <td class="align-middle">
+                                        {{ user.archivedDate ? user.archivedDate|date('d/m/Y H:i') : '' }}
+                                    </td>
+                                    <td class="align-middle text-center">
+                                        <a href="{{ path('admin_user_unarchive', {'id': user.idUser}) }}" class="btn btn-outline-success btn-sm" title="Désarchiver">
+                                            <i class="fas fa-undo-alt me-1"></i> Désarchiver
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
             </div>
-        {% endif %}
+            <div class="card-footer bg-light py-2">
+                <small class="text-muted">Total : {{ archivedUsers|length }} utilisateur(s) archivé(s)</small>
+            </div>
+        </div>
     </div>
+{% endblock %}
+
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('datatable') }}
 {% endblock %}
