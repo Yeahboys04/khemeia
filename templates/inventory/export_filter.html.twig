@@ -1,0 +1,238 @@
+{% extends 'base.html.twig' %}
+
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('inventory_export') }}
+    {{ encore_entry_link_tags('select') }}
+{% endblock %}
+
+{% block title %}
+    Khemeia | Exportation de l'inventaire de stock
+{% endblock %}
+
+{% block body %}
+    <section class="content-header">
+        <h1>
+            Exportation de l'inventaire de stock
+            <small>{{ site }}</small>
+        </h1>
+    </section>
+
+    <div class="storage-container">
+        {{ form_start(form, {'attr': {'id': 'inventory-export-form', 'target': '_blank'}}) }}
+
+        <!-- Option 1: Export par défaut -->
+        <div class="export-option" id="default-export-option">
+            <h3><i class="fa fa-file-pdf-o"></i> Export standard</h3>
+            <div class="export-description">
+                Exportation de l'inventaire complet avec tous les produits et les informations essentielles.
+            </div>
+            <div class="checkbox-wrapper mb-4">
+                <input type="checkbox" id="use-default-filter" checked>
+                <label for="use-default-filter" class="checkbox-label">Utiliser l'export par défaut</label>
+            </div>
+
+            <div class="hidden">
+                {{ form_widget(form.defaultFilter) }}
+            </div>
+        </div>
+
+        <!-- Options personnalisées (initialement cachées) -->
+        <div id="custom-export-container" style="display: none;">
+            <div class="export-option">
+                <h3><i class="fa fa-filter"></i> Filtres</h3>
+                <div class="export-description">
+                    Définissez les critères pour filtrer les produits à inclure dans le rapport d'inventaire.
+                </div>
+
+                {% if is_admin is defined and is_admin %}
+                    <div class="admin-section">
+                        <div class="admin-section-title">
+                            <i class="fa fa-shield"></i> Options administrateur
+                        </div>
+                        <div class="checkbox-wrapper mt-2 mb-3">
+                            {{ form_widget(form.allSites) }}
+                            <label for="{{ form.allSites.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-globe"></i> Afficher les produits de tous les sites
+                            </label>
+                        </div>
+                        <div id="site-selection-container" class="site-selection-container">
+                            <div class="form-group visible">
+                                {{ form_label(form.site, 'Ou sélectionner un site spécifique', {'label_attr': {'class': 'form-label'}}) }}
+                                {{ form_widget(form.site, {'attr': {'class': 'form-control select2'}}) }}
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group visible">
+                            {{ form_label(form.stockStatus, 'Statut du stock', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.stockStatus, {'attr': {'class': 'form-control select2'}}) }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group visible">
+                            {{ form_label(form.sortBy, 'Trier par', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.sortBy, {'attr': {'class': 'form-control select2'}}) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group visible">
+                            {{ form_label(form.product, 'Produit chimique', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.product, {'attr': {'class': 'form-control select2'}}) }}
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group visible">
+                            {{ form_label(form.location, 'Emplacement', {'label_attr': {'class': 'form-label'}}) }}
+                            {{ form_widget(form.location, {'attr': {'class': 'form-control select2'}}) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="checkbox-wrapper mt-3 mb-3">
+                    {{ form_widget(form.filterByCMR) }}
+                    <label for="{{ form.filterByCMR.vars.id }}" class="checkbox-label">
+                        <i class="fa fa-exclamation-triangle"></i> Filtrer uniquement les produits CMR (Cancérigènes, Mutagènes, Reprotoxiques)
+                    </label>
+                </div>
+            </div>
+
+            <div class="export-option mt-4">
+                <h3><i class="fa fa-columns"></i> Colonnes à afficher</h3>
+                <div class="export-description">
+                    Sélectionnez les informations que vous souhaitez afficher dans le rapport PDF d'inventaire.
+                </div>
+
+                <div class="checkbox-wrapper mb-3">
+                    {{ form_widget(form.showDetails) }}
+                    <label for="{{ form.showDetails.vars.id }}" class="checkbox-label">
+                        <i class="fa fa-th-list"></i> Afficher les détails complets de chaque produit
+                    </label>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="checkbox-wrapper">
+                            {{ form_widget(form.showLocation) }}
+                            <label for="{{ form.showLocation.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-map-marker"></i> Emplacement complet
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="checkbox-wrapper">
+                            {{ form_widget(form.showQuantity) }}
+                            <label for="{{ form.showQuantity.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-balance-scale"></i> Quantité en stock
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="checkbox-wrapper">
+                            {{ form_widget(form.showExpiration) }}
+                            <label for="{{ form.showExpiration.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-calendar"></i> Date d'expiration
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="checkbox-wrapper">
+                            {{ form_widget(form.showOpenDate) }}
+                            <label for="{{ form.showOpenDate.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-calendar-plus-o"></i> Date d'ouverture
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="checkbox-wrapper">
+                            {{ form_widget(form.showCMR) }}
+                            <label for="{{ form.showCMR.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-exclamation-triangle"></i> Statut CMR
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="checkbox-wrapper">
+                            {{ form_widget(form.showSupplier) }}
+                            <label for="{{ form.showSupplier.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-truck"></i> Fournisseur
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-4">
+                        <div class="checkbox-wrapper">
+                            {{ form_widget(form.showSymbols) }}
+                            <label for="{{ form.showSymbols.vars.id }}" class="checkbox-label">
+                                <i class="fa fa-warning"></i> Symboles de danger
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+            <a href="{{ path('inventory_make') }}" class="action-button secondary">
+                <i class="fa fa-arrow-left"></i> Retour
+            </a>
+            <button type="submit" class="action-button primary">
+                <i class="fa fa-file-pdf-o"></i> Générer le PDF
+            </button>
+        </div>
+
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('inventory_export') }}
+    {{ encore_entry_script_tags('select') }}
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion de l'option "Tous les sites"
+            const allSitesCheckbox = document.getElementById('inventory_export_filter_allSites');
+            const siteSelectionContainer = document.getElementById('site-selection-container');
+            const siteSelect = siteSelectionContainer?.querySelector('select');
+
+            if (allSitesCheckbox && siteSelectionContainer) {
+                // Fonction pour basculer l'affichage du sélecteur de site
+                function toggleSiteSelection() {
+                    if (allSitesCheckbox.checked) {
+                        // Désactiver le sélecteur de site
+                        siteSelectionContainer.classList.add('disabled');
+                        siteSelect.disabled = true;
+                        siteSelect.value = ''; // Réinitialiser la sélection
+                    } else {
+                        // Activer le sélecteur de site
+                        siteSelectionContainer.classList.remove('disabled');
+                        siteSelect.disabled = false;
+                    }
+                }
+
+                // Initialiser l'état
+                toggleSiteSelection();
+
+                // Ajouter l'écouteur d'événement
+                allSitesCheckbox.addEventListener('change', toggleSiteSelection);
+            }
+        });
+    </script>
+{% endblock %}

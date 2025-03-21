@@ -169,34 +169,5 @@ class InventoryInfoController extends AbstractController
         return $response;
     }
 
-    #[Route('inventory/pdf', name: 'inventory_pdf')]
-    public function exportPDF(EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response
-    {
-        //try {
-        $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
 
-        $site = $tokenStorage->getToken()->getUser()->getIdSite()->getIdSite();
-        $storagecards = $repositoryStoragecard->loadStorageCardBySiteForPDF($site);
-
-        $pdfOptions = new Options();
-        $pdfOptions->set('defaultFont', 'Arial');
-        $dompdf = new Dompdf($pdfOptions);
-
-        $html = $this->renderView('pdf/pdf.html.twig', [
-            'storagecards' => $storagecards,
-        ]);
-
-        $dompdf->loadHtml($html);
-
-        $dompdf->setPaper('A4', 'landscape');
-
-        $dompdf->render();
-
-        $output = $dompdf->output();
-        $pdfFilepath = $this->getParameter('pdf_directory')."/export.pdf";
-
-        file_put_contents($pdfFilepath, $output);
-
-        return $this->file($pdfFilepath);
-    }
 }

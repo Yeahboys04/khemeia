@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Inventaire des produits chimiques</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            line-height: 1.3;
+            color: #333;
+        }
+        h1 {
+            font-size: 16px;
+            color: #3c8dbc;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .inventory-header {
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        .inventory-info {
+            font-size: 9px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .filter-info {
+            font-size: 8px;
+            margin-bottom: 15px;
+            padding: 5px;
+            background-color: #f5f5f5;
+            border-radius: 3px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        table, th, td {
+            border: 0.5px solid #ddd;
+        }
+        th {
+            background-color: #3c8dbc;
+            color: white;
+            font-weight: bold;
+            text-align: left;
+            padding: 3px;
+            font-size: 9px;
+        }
+        td {
+            padding: 3px;
+            font-size: 8px;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .warning {
+            color: #f39c12;
+        }
+        .danger {
+            color: #e74c3c;
+        }
+        .cmr {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .footer {
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+            text-align: center;
+            font-size: 7px;
+            color: #999;
+            padding: 5px 0;
+        }
+        .page-number:after {
+            content: counter(page);
+        }
+    </style>
+</head>
+<body>
+<div class="inventory-header">
+    <h1>Inventaire des produits chimiques</h1>
+    <div class="inventory-info">
+        Site: {{ site }} | Date d'export: {{ "now"|date("d/m/Y") }}
+    </div>
+</div>
+
+{% if filters is defined and not filters.defaultFilter %}
+    <div class="filter-info">
+        <strong>Filtres appliqués:</strong>
+        {% if filters.stockStatus is defined and filters.stockStatus != 'all' %}
+            {% if filters.stockStatus == 'sufficient' %}
+                Produits avec stock suffisant |
+            {% elseif filters.stockStatus == 'low_expired' %}
+                Produits avec stock faible ou périmés |
+            {% elseif filters.stockStatus == 'empty' %}
+                Produits en rupture de stock |
+            {% endif %}
+        {% endif %}
+
+        {% if filters.filterByCMR is defined and filters.filterByCMR %}
+            Uniquement produits CMR |
+        {% endif %}
+
+        {% if filters.product is defined and filters.product %}
+            Produit: {{ filters.product }} |
+        {% endif %}
+
+        {% if filters.location is defined and filters.location %}
+            Emplacement: {{ filters.location }} |
+        {% endif %}
+
+        {% if filters.allSites is defined and filters.allSites %}
+            Tous les sites |
+        {% endif %}
+    </div>
+{% endif %}
+
+<table>
+    <thead>
+    <tr>
+        <th>Produit</th>
+        {% if showLocation %}
+            <th>Emplacement complet</th>
+        {% endif %}
+        {% if showQuantity %}
+            <th>Quantité</th>
+        {% endif %}
+        {% if showOpenDate %}
+            <th>Date d'ouverture</th>
+        {% endif %}
+        {% if showExpiration %}
+            <th>Date d'expiration</th>
+        {% endif %}
+        {% if showCMR %}
+            <th>CMR</th>
+        {% endif %}
+        {% if showSupplier %}
+            <th>Fournisseur</th>
+        {% endif %}
+        {% if showSymbols %}
+            <th>Symboles de danger</th>
+        {% endif %}
+        {% if showDetails %}
+            <th>Détails supplémentaires</th>
+        {% endif %}
+    </tr>
+    </thead>
+    <tbody>
+    {% for card in storagecards %}
+        <tr>
+            <td>
+                {% if card.idChimicalproduct %}
+                    {{ card.idChimicalproduct.nameChimicalproduct }}
+                    {% if card.idChimicalproduct.casnumber %}
+                        <br><small>CAS: {{ card.idChimicalproduct.casnumber }}</small>
+                    {% endif %}
+                {% else %}
+                    Non spécifié
+                {% endif %}
+            </td>
+
+            {% if showLocation %}
+                <td>
+                    {% if card.idShelvingunit %}
+                        <strong>{{ card.idShelvingunit.getHiddenName() }}</strong> -
+                        {% set cupboard = card.idShelvingunit.getIdCupboard() %}
+                        {% if cupboard %}
+                            {% set stock = cupboard.getIdStock() %}
+                            {% if stock %}{{ stock.getNameStock() }}{% endif %} -
+                            {{ cupboard.getNameCupboard() }} :
+                        {% endif %}
+                        {{ card.idShelvingunit.getNameShelvingunit() }}
+                    {% else %}
+                        Non spécifié
+                    {% endif %}
+                </td>
+            {% endif %}
+
+            {% if showQuantity %}
+                <td>
+                    {% if card.stockquantity is not null %}
+                        {% if card.stockquantity == 0 %}
+                            <span class="danger">0 {{ card.stateType|default('') }}</span>
+                        {% elseif card.capacity and card.stockquantity <= (0.10 * card.capacity) %}
+                            <span class="warning">{{ card.stockquantity|number_format(2) ~ ' ' ~ card.stateType|default('') }}</span>
+                        {% else %}
+                            {{ card.stockquantity|number_format(2) ~ ' ' ~ card.stateType|default('') }}
+                        {% endif %}
+                    {% else %}
+                        Non spécifié
+                    {% endif %}
+                </td>
+            {% endif %}
+
+            {% if showOpenDate %}
+                <td>
+                    {% if card.opendate %}
+                        {{ card.opendate|date("d/m/Y") }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            {% endif %}
+
+            {% if showExpiration %}
+                <td>
+                    {% if card.expirationdate %}
+                        {% if card.expirationdate < date() %}
+                            <span class="danger">{{ card.expirationdate|date("d/m/Y") }}</span>
+                        {% elseif date('+3 months') > card.expirationdate %}
+                            <span class="warning">{{ card.expirationdate|date("d/m/Y") }}</span>
+                        {% else %}
+                            {{ card.expirationdate|date("d/m/Y") }}
+                        {% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            {% endif %}
+
+            {% if showCMR %}
+                <td>
+                    {% if card.idChimicalproduct and card.idChimicalproduct.iscmr %}
+                        <span class="cmr">OUI</span>
+                    {% else %}
+                        Non
+                    {% endif %}
+                </td>
+            {% endif %}
+
+            {% if showSupplier %}
+                <td>
+                    {% if card.idSupplier %}
+                        {{ card.idSupplier }}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            {% endif %}
+
+            {% if showSymbols %}
+                <td>
+                    {% if card.idChimicalproduct and card.idChimicalproduct.idDangersymbol|length > 0 %}
+                        {% set counter = 0 %}
+                        {% for symbol in card.idChimicalproduct.idDangersymbol %}
+                            {% if counter < 3 %}
+                                {{ symbol.nameDangersymbol }}{% if not loop.last and counter < 2 %}, {% endif %}
+                            {% endif %}
+                            {% set counter = counter + 1 %}
+                        {% endfor %}
+                        {% if card.idChimicalproduct.idDangersymbol|length > 3 %}
+                            ...
+                        {% endif %}
+                    {% else %}
+                        -
+                    {% endif %}
+                </td>
+            {% endif %}
+
+            {% if showDetails %}
+                <td>
+                    {% if card.purity %}P: {{ card.purity }}{% endif %}
+                    {% if card.serialnumber %}{% if card.purity %} | {% endif %}S/N: {{ card.serialnumber }}{% endif %}
+                    {% if card.reference %}{% if card.purity or card.serialnumber %} | {% endif %}Ref: {{ card.reference }}{% endif %}
+                </td>
+            {% endif %}
+        </tr>
+    {% else %}
+        <tr>
+            <td colspan="{{ 1 + (showLocation ? 1 : 0) + (showQuantity ? 1 : 0) + (showOpenDate ? 1 : 0) + (showExpiration ? 1 : 0) + (showCMR ? 1 : 0) + (showSupplier ? 1 : 0) + (showSymbols ? 1 : 0) + (showDetails ? 1 : 0) }}">
+                Aucun produit trouvé avec les filtres sélectionnés.
+            </td>
+        </tr>
+    {% endfor %}
+    </tbody>
+</table>
+
+<div class="footer">
+    <p>Généré le {{ "now"|date("d/m/Y à H:i") }} | Page <span class="page-number"></span></p>
+</div>
+</body>
+</html>
