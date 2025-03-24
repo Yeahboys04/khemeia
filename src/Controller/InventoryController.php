@@ -6,6 +6,7 @@ use App\Entity\Analysisfile;
 use App\Entity\Chimicalproduct;
 use App\Entity\Movedhistory;
 use App\Entity\Securityfile;
+use App\Entity\Shelvingunit;
 use App\Entity\Storagecard;
 use App\Form\ChimicalproductType;
 use App\Form\StoragecardRespType;
@@ -686,4 +687,151 @@ class InventoryController extends AbstractController
             'incompatibility_detected' => false
         ]);
     }
+
+    /**
+     * Crée une fiche de stockage à partir d'une demande de dérogation approuvée
+     */
+    #[Route('/inventory/storagecard/from-request/{productId}/{shelvingUnitId}', name: 'inventory_storage_from_request')]
+    public function createStoragecardFromRequest(
+        Request $request,
+        FileUploader $fileUploader,
+        Utility $utility,
+        EntityManagerInterface $entityManager,
+        TokenStorageInterface $tokenStorage,
+        int $productId,
+        int $shelvingUnitId
+    ): Response
+    {
+        try {
+            // Récupérer le produit et l'emplacement
+            $product = $entityManager->getRepository(Chimicalproduct::class)->find($productId);
+            $shelvingUnit = $entityManager->getRepository(Shelvingunit::class)->find($shelvingUnitId);
+
+            if (!$product || !$shelvingUnit) {
+                $this->addFlash('error', 'Produit ou emplacement non trouvé.');
+                return $this->redirectToRoute('user_incompatibility_requests');
+            }
+
+            // Créer une nouvelle fiche de stockage pré-remplie
+            $storagecard = new Storagecard();
+            $storagecard->setIdChimicalproduct($product);
+            $storagecard->setIdShelvingunit($shelvingUnit);
+
+            // Initialiser avec des valeurs par défaut pour les champs obligatoires
+            $storagecard->setCapacity(0);
+            $storagecard->setIsarchived(false);
+            $storagecard->setIsrisked(false);
+            $storagecard->setIspublished(false);
+
+            // Vérifier si l'utilisateur est autorisé à stocker ce produit à cet emplacement
+            // Note: On ne fait pas la vérification d'incompatibilité car la demande a été approuvée
+
+            $user = $tokenStorage->getToken()->getUser();
+            $form = $this->createForm(StoragecardRespType::class, $storagecard, [
+                'method' => 'POST',
+                'idSite' => $user->getIdSite()->getIdSite()
+            ]);
+
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $storagecard = $form->getData();
+
+                // Définir la date de création
+                $storagecard->setCreationDate(new \DateTime());
+
+                // Récupérer l'état physique
+                if ($form->has('stateType')) {
+                    $stateType = $form->get('stateType')->getData();
+                    $storagecard->setStateType($stateType);
+                }
+
+                // Traiter les fichiers téléchargés
+                $securityFile = $form->get('uploadedSecurityFile')->getData();
+                $analysisFile = $form->get('uploadedAnalysisFile')->getData();
+
+                if ($securityFile != null) {
+                    $newSecurityFileName =
+                        $fileUploader->upload(
+                            $securityFile,
+                            $this->getParameter('idSecurityFile_directory'));
+
+                    $securityfile = new Securityfile();
+                    $securityfile->setNameSecurityfile($newSecurityFileName);
+                    $entityManager->persist($securityfile);
+                    $entityManager->flush();
+                    $storagecard->setIdSecurityfile($securityfile);
+                }
+
+                if ($analysisFile != null) {
+                    $newAnalysisFileName =
+                        $fileUploader->upload(
+                            $analysisFile,
+                            $this->getParameter('idAnalysisFile_directory'));
+
+                    $analysisFile = new Analysisfile();
+                    $analysisFile->setNameAnalysisfile($newAnalysisFileName);
+                    $entityManager->persist($analysisFile);
+                    $entityManager->flush();
+                    $storagecard->setIdAnalysisfile($analysisFile);
+                }
+
+                $entityManager->persist($storagecard);
+                $entityManager->flush();
+
+                // Enregistrer l'historique du mouvement
+                $movedHistory = new Movedhistory();
+                $movedHistory->setMovedate(new DateTime());
+                $movedHistory->setIdShelvingunit($storagecard->getIdShelvingunit());
+                $movedHistory->setIdStoragecard($storagecard);
+                $movedHistory->setIdUser($tokenStorage->getToken()->getUser());
+
+                $entityManager->persist($movedHistory);
+                $entityManager->flush();
+
+                // Récupérer l'ID de la demande depuis la session
+                $requestId = $request->getSession()->get('incompatibility_request_id');
+                if ($requestId) {
+                    // Mettre à jour la demande pour indiquer qu'elle a été utilisée (optionnel)
+                    $incompatibilityRequest = $entityManager->getRepository(\App\Entity\IncompatibilityRequest::class)->find($requestId);
+                    if ($incompatibilityRequest) {
+                        // Vous pourriez ajouter un champ à l'entité pour suivre si la demande a été utilisée
+                        // $incompatibilityRequest->setUsed(true);
+                        // $entityManager->flush();
+                    }
+
+                    // Supprimer l'ID de la session
+                    $request->getSession()->remove('incompatibility_request_id');
+                }
+
+                $this->addFlash('success',
+                    'La fiche de stockage numéro ' . $storagecard->getIdStoragecard() . ' a été créée avec succès à partir de votre demande de dérogation.');
+
+                return $this->redirectToRoute('inventory');
+            }
+
+            // Message spécial pour indiquer que c'est une création à partir d'une demande de dérogation
+            $this->addFlash('info', 'Vous êtes en train de créer une fiche de stockage à partir d\'une demande de dérogation approuvée. Veuillez compléter les informations nécessaires.');
+
+            return $this->render('inventory/storagecard.html.twig', [
+                'form' => $form->createView(),
+                'action' => 'create',
+                'show_override' => false,
+                'incompatibility_detected' => false,
+                'from_request' => true
+            ]);
+
+        } catch (FileException $e) {
+            $this->addFlash('error',
+                'Attention, une erreur est survenue lors du déplacement du fichier.'
+                .' Contactez votre administrateur.');
+            return $this->redirectToRoute('home_page');
+        } catch (\Exception $e) {
+            $this->addFlash('error',
+                'Attention, une erreur est survenue.'
+                .' Contactez votre administrateur.');
+            return $this->redirectToRoute('home_page');
+        }
+    }
+
 }

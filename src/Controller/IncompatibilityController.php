@@ -259,4 +259,89 @@ class IncompatibilityController extends AbstractController
             error_log('Erreur lors de l\'envoi de la notification à l\'utilisateur: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Affiche les demandes de dérogation de l'utilisateur actuel
+     */
+    #[Route('/incompatibility/my-requests', name: 'user_incompatibility_requests')]
+    public function userRequests(EntityManagerInterface $entityManager, TokenStorageInterface $tokenStorage): Response
+    {
+        $user = $tokenStorage->getToken()->getUser();
+        $repository = $entityManager->getRepository(IncompatibilityRequest::class);
+
+        // Récupérer les demandes de l'utilisateur actuel, triées par statut
+        $pendingRequests = $repository->findBy(
+            ['requester' => $user, 'status' => 'pending'],
+            ['requestDate' => 'DESC']
+        );
+
+        $approvedRequests = $repository->findBy(
+            ['requester' => $user, 'status' => 'approved'],
+            ['responseDate' => 'DESC']
+        );
+
+        $rejectedRequests = $repository->findBy(
+            ['requester' => $user, 'status' => 'rejected'],
+            ['responseDate' => 'DESC']
+        );
+
+        return $this->render('incompatibility/user_requests.html.twig', [
+            'pendingRequests' => $pendingRequests,
+            'approvedRequests' => $approvedRequests,
+            'rejectedRequests' => $rejectedRequests
+        ]);
+    }
+
+    /**
+     * Crée une fiche de stockage à partir d'une demande de dérogation approuvée
+     */
+    #[Route('/incompatibility/create-storage/{id}', name: 'create_storage_from_request')]
+    public function createStorageFromRequest(
+        Request $request,
+        EntityManagerInterface $entityManager,
+        TokenStorageInterface $tokenStorage,
+        int $id
+    ): Response
+    {
+        // Récupérer la demande de dérogation
+        $incompatibilityRequest = $entityManager->getRepository(IncompatibilityRequest::class)->find($id);
+
+        if (!$incompatibilityRequest) {
+            $this->addFlash('error', 'Demande non trouvée.');
+            return $this->redirectToRoute('user_incompatibility_requests');
+        }
+
+        // Vérifier que la demande appartient à l'utilisateur actuel
+        $currentUser = $tokenStorage->getToken()->getUser();
+        if ($incompatibilityRequest->getRequester() !== $currentUser) {
+            $this->addFlash('error', 'Vous n\'êtes pas autorisé à accéder à cette demande.');
+            return $this->redirectToRoute('user_incompatibility_requests');
+        }
+
+        // Vérifier que la demande est approuvée
+        if ($incompatibilityRequest->getStatus() !== 'approved') {
+            $this->addFlash('error', 'Seules les demandes approuvées peuvent être utilisées pour créer une fiche de stockage.');
+            return $this->redirectToRoute('user_incompatibility_requests');
+        }
+
+        // Créer une nouvelle fiche de stockage pré-remplie avec les informations de la demande
+        $storagecard = new Storagecard();
+        $storagecard->setIdChimicalproduct($incompatibilityRequest->getProduct());
+        $storagecard->setIdShelvingunit($incompatibilityRequest->getShelvingUnit());
+
+        // Initialiser avec des valeurs par défaut pour les champs obligatoires
+        $storagecard->setCapacity(0);
+        $storagecard->setIsarchived(false);
+        $storagecard->setIsrisked(false);
+        $storagecard->setIspublished(false);
+
+        // Stocker temporairement l'ID de la demande dans la session
+        $request->getSession()->set('incompatibility_request_id', $id);
+
+        // Rediriger vers le formulaire de création de fiche de stockage pré-rempli
+        return $this->redirectToRoute('inventory_storage_from_request', [
+            'productId' => $incompatibilityRequest->getProduct()->getIdChimicalproduct(),
+            'shelvingUnitId' => $incompatibilityRequest->getShelvingUnit()->getIdShelvingunit()
+        ]);
+    }
 }

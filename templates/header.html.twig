@@ -108,6 +108,16 @@
                     </li>
                 {% endif %}
 
+                {# Les utilisateurs, les responsables et les administrateurs peuvent voir leurs demandes de dérogation #}
+                {% if app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() == 'utilisateur' %}
+                    <li>
+                        <a href="{{ path('user_incompatibility_requests') }}">
+                            <i class="fa fa-list-alt"></i>
+                            <span>Mes demandes de dérogation</span>
+                        </a>
+                    </li>
+                {% endif %}
+
                 {# Les administrateurs peuvent acceder à la gestion de la base de donnée #}
                 {% if app.user.getIdStatus.getNameStatus() == 'administrateur' %}
                     <li class="treeview">
