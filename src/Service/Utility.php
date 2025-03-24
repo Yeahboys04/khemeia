@@ -3,56 +3,87 @@
 namespace App\Service;
 
 use App\Entity\Chimicalproduct;
+use App\Entity\Controlbytype;
 use App\Entity\Shelvingunit;
 use App\Entity\Storagecard;
-use Doctrine\ORM\EntityManager;
+use App\Repository\ControlbytypeRepository;
+use App\Repository\StoragecardRepository;
+use Doctrine\ORM\EntityManagerInterface;
 use LogicException;
 
 class Utility
 {
-    
-    
-    public function movedIsAuthorised (Shelvingunit $idShelvingunit,
-                                       Chimicalproduct $chimicalproduct,
-                                       EntityManager $entityManager)
-    {
-        //Je récupère la liste des types de mon produit
-        $types = $chimicalproduct->getIdType();
-        //Je récupère la liste des types avec lesquels mon produit est incompatible
-        $incompatibleTypes = null;
-        foreach ($types as $type) {
-            $collectionTypes = $type->getIdType2();
-            foreach ($collectionTypes as $collectionType){
-                $incompatibleTypes [] = $collectionType->getIdType();
-            }
+    /**
+     * Vérifie si le placement d'un produit chimique dans une unité de rangement est autorisé
+     * basé sur les règles de compatibilité entre les types de produits
+     *
+     * @param Shelvingunit $shelvingunit L'unité de rangement où placer le produit
+     * @param Chimicalproduct $chimicalProduct Le produit chimique à placer
+     * @param EntityManagerInterface $entityManager L'entity manager pour accéder aux repositories
+     * @throws LogicException Si le placement n'est pas autorisé
+     * @return bool True si le placement est autorisé
+     */
+    public function movedIsAuthorised(
+        Shelvingunit $shelvingunit,
+        Chimicalproduct $chimicalProduct,
+        EntityManagerInterface $entityManager
+    ): bool {
+        // Récupérer les repositories nécessaires
+        $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
+        $repositoryControlByType = $entityManager->getRepository(Controlbytype::class);
+
+        // Obtenir tous les produits déjà présents dans cette unité de rangement
+        $existingStoragecards = $repositoryStoragecard->loadStorageCardByShelvingunit($shelvingunit->getIdShelvingunit());
+
+        // Si aucun produit n'est présent, le placement est autorisé
+        if (empty($existingStoragecards)) {
+            return true;
         }
-        //Je récupère les produits présents sur l'étagère où je tente de placer mon produit
-        $repositoryStoragecard = $entityManager
-            ->getRepository(Storagecard::class);
-        
-        $storagecards = $repositoryStoragecard->loadStorageCardByShelvingunit($idShelvingunit);
-        //Pour chaque produit présent, je récupère la liste des types de ces produits
-        $compatibleTypes = null;
-        foreach ($storagecards as $storagecard){
-            $shelvingunitTypes = $storagecard->getIdChimicalproduct()->getIdType();
-            foreach ($shelvingunitTypes as $shelvingunitType) {
-                $compatibleTypes [] = $shelvingunitType->getIdType();
+
+        // Récupérer les types du nouveau produit
+        $types1 = $chimicalProduct->getIdType();
+
+        // Si le nouveau produit n'a pas de types, le placement est autorisé
+        if ($types1->isEmpty()) {
+            return true;
+        }
+
+        // Vérifier la compatibilité avec chaque produit existant
+        foreach ($existingStoragecards as $existingCard) {
+            $existingChimicalProduct = $existingCard->getIdChimicalproduct();
+
+            // Si le produit existant n'a pas de types, continuer vers le suivant
+            $types2 = $existingChimicalProduct->getIdType();
+            if ($types2->isEmpty()) {
+                continue;
             }
-            //S'il n'y a pas de types dans les produits présents, on valide
-            if(!empty($compatibleTypes) && !empty($incompatibleTypes)){
-                //Pour chaque type, je compare les deux tableaux
-                $result = array_intersect($incompatibleTypes, $compatibleTypes);
-                //S'il y a une valeur de retour dans les résultats, 
-                //Alors le produit ne peux pas aller sur cette étagère
-                if (!empty($result)) {
-                    throw new LogicException("Attention, vous ne pouvez pas ranger le produit '"
-                        . $chimicalproduct->getNameChimicalproduct() . 
-                        "' sur l'étagère '"
-                        . $idShelvingunit->getNameShelvingunit()
-                        ."' car ce produit est incompatible avec ceux déja présent." 
-                        ." Merci de le ranger ailleurs.");
+
+            // Vérifier les combinaisons de types pour incompatibilité
+            foreach ($types1 as $type1) {
+                foreach ($types2 as $type2) {
+                    // Utiliser la méthode personnalisée du repository
+                    /** @var ControlbytypeRepository $controlRepo */
+                    $controlRepo = $repositoryControlByType;
+                    $isCompatible = $controlRepo->areTypesCompatible(
+                        $type1->getIdType(),
+                        $type2->getIdType()
+                    );
+
+                    // Si une incompatibilité est explicitement définie (isCompatible = false)
+                    if ($isCompatible === false) {
+                        throw new LogicException(
+                            "Le produit " . $chimicalProduct->getNameChimicalproduct() .
+                            " de type " . $type1->getNameType() .
+                            " ne peut pas être placé avec " . $existingChimicalProduct->getNameChimicalproduct() .
+                            " de type " . $type2->getNameType() .
+                            " car ils sont incompatibles."
+                        );
+                    }
                 }
             }
         }
+
+        // Si aucune incompatibilité n'a été trouvée, le placement est autorisé
+        return true;
     }
 }

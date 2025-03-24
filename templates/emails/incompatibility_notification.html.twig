@@ -1,0 +1,45 @@
+{# templates/emails/incompatibility_notification.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background-color: #f8f9fa; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .urgent { color: #dc3545; font-weight: bold; }
+        .product-info { background-color: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .footer { font-size: 12px; color: #6c757d; margin-top: 30px; border-top: 1px solid #dee2e6; padding-top: 20px; }
+        .btn { display: inline-block; padding: 10px 20px; background-color: #007bff; color: white; text-decoration: none; border-radius: 4px; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h2>Nouvelle demande de dérogation d'incompatibilité</h2>
+        {% if request.isUrgent %}
+            <p class="urgent">[DEMANDE URGENTE - Nécessite une réponse dans les 24h]</p>
+        {% endif %}
+    </div>
+
+    <p>Une nouvelle demande de dérogation a été soumise par <strong>{{ request.requester.fullname }}</strong> le {{ request.requestDate|date('d/m/Y à H:i') }}.</p>
+
+    <div class="product-info">
+        <h3>Informations sur la demande</h3>
+        <p><strong>Produit à stocker:</strong> {{ request.product.nameChimicalproduct }}</p>
+        <p><strong>Emplacement souhaité:</strong> {{ request.shelvingUnit }}</p>
+        <p><strong>Incompatible avec:</strong> {{ request.incompatibleWith }}</p>
+
+        <h4>Raison de la demande:</h4>
+        <p>{{ request.reason }}</p>
+    </div>
+
+    <p>Veuillez vous connecter pour traiter cette demande:</p>
+    <p><a href="{{ url('admin_incompatibility_list') }}" class="btn">Gérer les demandes</a></p>
+
+    <div class="footer">
+        <p>Ce message a été envoyé automatiquement par le système Khemeia. Merci de ne pas y répondre directement.</p>
+    </div>
+</div>
+</body>
+</html>

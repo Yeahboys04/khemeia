@@ -1,0 +1,67 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demande de dérogation d'incompatibilité{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .incompatibility-container {
+            background-color: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .incompatibility-product {
+            margin: 5px 0;
+            padding: 8px;
+            background-color: #ffe8b3;
+            border-radius: 3px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Demande de dérogation d'incompatibilité</h1>
+
+        <div class="incompatibility-container">
+            <h3>Problème d'incompatibilité détecté</h3>
+            <p>Le produit <strong>{{ product.nameChimicalproduct }}</strong> que vous souhaitez stocker à l'emplacement <strong>{{ shelvingUnit }}</strong> est incompatible avec les produits suivants déjà présents :</p>
+
+            <div class="incompatibility-products">
+                {% for incompatibleProduct in incompatibleProducts %}
+                    <div class="incompatibility-product">
+                        <strong>{{ incompatibleProduct.nameChimicalproduct }}</strong>
+                        {% if incompatibleProduct.casnumber %}
+                            <span>(CAS: {{ incompatibleProduct.casnumber }})</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="alert alert-info">
+            <p>Vous pouvez demander une dérogation à un administrateur pour stocker ce produit malgré l'incompatibilité. Veuillez remplir le formulaire ci-dessous :</p>
+        </div>
+
+        {{ form_start(form, {'attr': {'class': 'form-horizontal'}}) }}
+        <div class="card">
+            <div class="card-header">
+                <h3>Formulaire de demande de dérogation</h3>
+            </div>
+            <div class="card-body">
+                {{ form_row(form.reason) }}
+                {{ form_row(form.urgencyLevel) }}
+
+                <div class="form-group">
+                    <div class="col-sm-offset-2 col-sm-10">
+                        {{ form_widget(form.submit, {'attr': {'class': 'btn btn-primary'}}) }}
+                        <a href="{{ path('inventory_storage') }}" class="btn btn-default">Annuler</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}

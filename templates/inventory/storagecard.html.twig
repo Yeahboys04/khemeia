@@ -9,6 +9,38 @@
         {{ encore_entry_link_tags('select') }}
         {{ encore_entry_link_tags('storagecard') }}
 
+        <style>
+            .required::after {
+                content: " *";
+                color: red;
+            }
+
+            .card-header {
+                background-color: #f8f9fa;
+            }
+
+            .alert-incompatibility {
+                background-color: #fff3cd;
+                border-color: #ffeeba;
+                color: #856404;
+                padding: 10px;
+                margin-bottom: 15px;
+                border-radius: 5px;
+            }
+
+            .checkbox-override {
+                margin-top: 15px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: #f9f9f9;
+            }
+
+            .checkbox-override label {
+                font-weight: bold;
+            }
+        </style>
+
     {% endblock %}
 
     {% block title %}
@@ -334,6 +366,25 @@
 
                     {{ form_rest(form) }}
 
+                    {% if show_override is defined and show_override %}
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <div class="checkbox">
+                                    <label>
+                                        <input type="checkbox" name="override_incompatibility" value="1"
+                                               {% if incompatibility_detected is defined and incompatibility_detected %}checked="checked"{% endif %}>
+                                        <strong>Contourner les alertes d'incompatibilité (administrateur uniquement)</strong>
+                                    </label>
+                                </div>
+                                {% if incompatibility_detected is defined and incompatibility_detected %}
+                                    <div class="alert alert-warning mt-2">
+                                        <i class="fa fa-exclamation-triangle"></i> Une incompatibilité a été détectée. En tant qu'administrateur, vous pouvez choisir de l'ignorer en cochant la case ci-dessus.
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endif %}
+
                     <div class="form-footer">
                         {% if action == 'create' %}
                             <button type="submit" class="btn btn-primary btn-lg">
@@ -363,3 +414,4 @@
         {{ encore_entry_script_tags('storagecard') }}
 
     {% endblock %}
+

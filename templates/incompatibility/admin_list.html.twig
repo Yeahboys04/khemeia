@@ -1,0 +1,182 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion des demandes de dérogation{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('global') }}
+    <style>
+        .request-card {
+            margin-bottom: 20px;
+        }
+        .card-header-pending {
+            background-color: #fff3cd;
+        }
+        .card-header-approved {
+            background-color: #d4edda;
+        }
+        .card-header-rejected {
+            background-color: #f8d7da;
+        }
+        .request-urgent {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        .request-date {
+            font-size: 0.9em;
+            color: #6c757d;
+        }
+        .request-action {
+            margin-top: 10px;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <h1>Gestion des demandes de dérogation</h1>
+
+        <ul class="nav nav-tabs" id="requestTabs" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab">
+                    Demandes en attente <span class="badge badge-warning">{{ pendingRequests|length }}</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="processed-tab" data-toggle="tab" href="#processed" role="tab">
+                    Demandes traitées <span class="badge badge-secondary">{{ processedRequests|length }}</span>
+                </a>
+            </li>
+        </ul>
+
+        <div class="tab-content" id="requestTabsContent">
+            <div class="tab-pane fade show active" id="pending" role="tabpanel">
+                <div class="mt-3">
+                    {% if pendingRequests is empty %}
+                        <div class="alert alert-info">Aucune demande en attente.</div>
+                    {% else %}
+                        {% for request in pendingRequests %}
+                            <div class="card request-card">
+                                <div class="card-header card-header-pending d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        Demande #{{ request.id }}
+                                        {% if request.isUrgent %}
+                                            <span class="request-urgent">[URGENT]</span>
+                                        {% endif %}
+                                    </h5>
+                                    <span class="request-date">{{ request.requestDate|date('d/m/Y H:i') }}</span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Demandeur</h6>
+                                            <p>{{ request.requester.fullname }} ({{ request.requester.username }})</p>
+
+                                            <h6>Produit à stocker</h6>
+                                            <p>{{ request.product.nameChimicalproduct }}
+                                                {% if request.product.casnumber %}
+                                                    <br><small>CAS: {{ request.product.casnumber }}</small>
+                                                {% endif %}
+                                            </p>
+
+                                            <h6>Emplacement</h6>
+                                            <p>{{ request.shelvingUnit }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Incompatible avec</h6>
+                                            <p>{{ request.incompatibleWith }}</p>
+
+                                            <h6>Raison de la demande</h6>
+                                            <p>{{ request.reason }}</p>
+                                        </div>
+                                    </div>
+
+                                    <div class="request-action">
+                                        <form id="processForm{{ request.id }}" method="post" action="{{ path('admin_incompatibility_process', {'id': request.id, 'action': 'approve'}) }}">
+                                            <div class="form-group">
+                                                <label for="comment{{ request.id }}">Commentaire (optionnel)</label>
+                                                <textarea class="form-control" id="comment{{ request.id }}" name="comment" rows="2"></textarea>
+                                            </div>
+                                            <button type="button" class="btn btn-success" onclick="submitForm('processForm{{ request.id }}', 'approve')">Approuver</button>
+                                            <button type="button" class="btn btn-danger" onclick="submitForm('processForm{{ request.id }}', 'reject')">Rejeter</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="processed" role="tabpanel">
+                <div class="mt-3">
+                    {% if processedRequests is empty %}
+                        <div class="alert alert-info">Aucune demande traitée.</div>
+                    {% else %}
+                        {% for request in processedRequests %}
+                            <div class="card request-card">
+                                <div class="card-header {{ request.status == 'approved' ? 'card-header-approved' : 'card-header-rejected' }} d-flex justify-content-between align-items-center">
+                                    <h5 class="mb-0">
+                                        Demande #{{ request.id }} -
+                                        {% if request.status == 'approved' %}
+                                            <span class="text-success">Approuvée</span>
+                                        {% else %}
+                                            <span class="text-danger">Rejetée</span>
+                                        {% endif %}
+                                    </h5>
+                                    <span class="request-date">
+                                        Demandé le {{ request.requestDate|date('d/m/Y') }} -
+                                        Traité le {{ request.responseDate|date('d/m/Y') }}
+                                    </span>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Demandeur</h6>
+                                            <p>{{ request.requester.fullname }}</p>
+
+                                            <h6>Produit / Emplacement</h6>
+                                            <p>{{ request.product.nameChimicalproduct }} à {{ request.shelvingUnit }}</p>
+
+                                            <h6>Incompatible avec</h6>
+                                            <p>{{ request.incompatibleWith }}</p>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Raison de la demande</h6>
+                                            <p>{{ request.reason }}</p>
+
+                                            <h6>Réponse</h6>
+                                            <p>
+                                                Par: {{ request.responder.fullname }}<br>
+                                                {% if request.responseComment %}
+                                                    Commentaire: {{ request.responseComment }}
+                                                {% else %}
+                                                    <em>Aucun commentaire</em>
+                                                {% endif %}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        function submitForm(formId, action) {
+            const form = document.getElementById(formId);
+            // Changer l'action du formulaire selon l'action (approuver/rejeter)
+            if (action === 'reject') {
+                const currentAction = form.action;
+                form.action = currentAction.replace('approve', 'reject');
+            }
+            form.submit();
+        }
+    </script>
+{% endblock %}

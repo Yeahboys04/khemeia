@@ -132,6 +132,7 @@ class InventoryController extends AbstractController
 
         return new JsonResponse($results);
     }
+
     #[Route('/inventory/storagecard', name: 'inventory_storage')]
     public function createStoragecard(
         Request $request,
@@ -170,8 +171,36 @@ class InventoryController extends AbstractController
                 $idShelvingunit = $form->get('idShelvingunit')->getData();
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();
 
+                // Récupérer l'option d'override (pour les admins)
+                $overrideCheck = false;
+                if ($request->request->has('override_incompatibility')) {
+                    $overrideCheck = $request->request->get('override_incompatibility') === "1";
+                }
 
-                $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager);
+                try {
+                    // Vérifier la compatibilité avec l'option de dérogation pour les admins
+                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, $overrideCheck);
+                } catch (LogicException $le) {
+                    // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
+                    if (!$this->isGranted('ROLE_ADMIN')) {
+                        // Rediriger vers le formulaire de demande de dérogation
+                        return $this->redirectToRoute('incompatibility_request', [
+                            'productId' => $chimicalproduct->getIdChimicalproduct(),
+                            'shelvingUnitId' => $idShelvingunit->getIdShelvingunit()
+                        ]);
+                    }
+                    // Si c'est un admin mais qu'il n'a pas coché l'option de dérogation
+                    else {
+                        // Afficher le message d'erreur et renvoyer au formulaire avec l'option de dérogation
+                        $this->addFlash('warning', $le->getMessage() . ' En tant qu\'administrateur, vous pouvez contourner cette restriction en cochant l\'option de dérogation.');
+                        return $this->render('inventory/storagecard.html.twig', [
+                            'form' => $form->createView(),
+                            'action' => 'create',
+                            'show_override' => true,
+                            'incompatibility_detected' => true
+                        ]);
+                    }
+                }
 
                 $securityFile = $form->get('uploadedSecurityFile')->getData();
                 $analysisFile = $form->get('uploadedAnalysisFile')->getData();
@@ -224,14 +253,26 @@ class InventoryController extends AbstractController
 
                 $this->addFlash('success',
                     'La fiche de stockage numéro ' . $storagecard->getIdStoragecard() . ' a été créée avec succès.');
+
+                // Si l'admin a utilisé l'option de dérogation, ajouter un message spécial
+                if ($this->isGranted('ROLE_ADMIN') && $overrideCheck) {
+                    $this->addFlash('info', 'Vous avez utilisé votre droit d\'administrateur pour ignorer les incompatibilités détectées.');
+                }
+
                 return $this->redirectToRoute('inventory_storage');
             }
         }
         catch (LogicException $le) {
             $this->addFlash('error', $le->getMessage());
+
+            // Si c'est un admin, afficher l'option de dérogation
+            $showOverride = $this->isGranted('ROLE_ADMIN');
+
             return $this->render('inventory/storagecard.html.twig', [
                 'form' => $form->createView(),
-                'action' => 'create'
+                'action' => 'create',
+                'show_override' => $showOverride,
+                'incompatibility_detected' => true
             ]);
         }
         catch (FileException $e) {
@@ -248,10 +289,15 @@ class InventoryController extends AbstractController
 //                .' Contactez votre administrateur.');
 //            return $this->redirectToRoute('home_page');
 //        }
-        //Quoi qu'il arrive on rend la page initiale
+
+        // Déterminer si on doit afficher l'option de dérogation (pour les admins uniquement)
+        $showOverride = $this->isGranted('ROLE_ADMIN');
+
         return $this->render('inventory/storagecard.html.twig', [
             'form' => $form->createView(),
-            'action' => 'create'
+            'action' => 'create',
+            'show_override' => $showOverride,
+            'incompatibility_detected' => false
         ]);
     }
 
@@ -315,7 +361,36 @@ class InventoryController extends AbstractController
                 $idShelvingunit = $form->get('idShelvingunit')->getData();
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();
 
-                $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager);
+                // Récupérer l'option d'override (pour les admins)
+                $overrideCheck = false;
+                if ($request->request->has('override_incompatibility')) {
+                    $overrideCheck = $request->request->get('override_incompatibility') === "1";
+                }
+
+                try {
+                    // Vérifier la compatibilité avec l'option de dérogation pour les admins
+                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, $overrideCheck);
+                } catch (LogicException $le) {
+                    // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
+                    if (!$this->isGranted('ROLE_ADMIN')) {
+                        // Rediriger vers le formulaire de demande de dérogation
+                        return $this->redirectToRoute('incompatibility_request', [
+                            'productId' => $chimicalproduct->getIdChimicalproduct(),
+                            'shelvingUnitId' => $idShelvingunit->getIdShelvingunit()
+                        ]);
+                    }
+                    // Si c'est un admin mais qu'il n'a pas coché l'option de dérogation
+                    else {
+                        // Afficher le message d'erreur et renvoyer au formulaire avec l'option de dérogation
+                        $this->addFlash('warning', $le->getMessage() . ' En tant qu\'administrateur, vous pouvez contourner cette restriction en cochant l\'option de dérogation.');
+                        return $this->render('inventory/storagecard.html.twig', [
+                            'form' => $form->createView(),
+                            'action' => 'copy',
+                            'show_override' => true,
+                            'incompatibility_detected' => true
+                        ]);
+                    }
+                }
 
                 $securityFile = $form->get('uploadedSecurityFile')->getData();
                 $analysisFile = $form->get('uploadedAnalysisFile')->getData();
@@ -371,14 +446,26 @@ class InventoryController extends AbstractController
 
                 $this->addFlash('success',
                     'La fiche de stockage numéro ' . $newStoragecard->getIdStoragecard() . ' a été créée avec succès.');
+
+                // Si l'admin a utilisé l'option de dérogation, ajouter un message spécial
+                if ($this->isGranted('ROLE_ADMIN') && $overrideCheck) {
+                    $this->addFlash('info', 'Vous avez utilisé votre droit d\'administrateur pour ignorer les incompatibilités détectées.');
+                }
+
                 return $this->redirectToRoute('inventory_storage');
             }
         }
         catch (LogicException $le) {
             $this->addFlash('error', $le->getMessage());
+
+            // Si c'est un admin, afficher l'option de dérogation
+            $showOverride = $this->isGranted('ROLE_ADMIN');
+
             return $this->render('inventory/storagecard.html.twig', [
                 'form' => $form->createView(),
-                'action' => 'copy'
+                'action' => 'copy',
+                'show_override' => $showOverride,
+                'incompatibility_detected' => true
             ]);
         }
         catch (FileException $e) {
@@ -395,10 +482,16 @@ class InventoryController extends AbstractController
                 .' Contactez votre administrateur.');
             return $this->redirectToRoute('home_page');
         }
+
+        // Déterminer si on doit afficher l'option de dérogation (pour les admins uniquement)
+        $showOverride = $this->isGranted('ROLE_ADMIN');
+
         //Quoi qu'il arrive on rend la page initiale
         return $this->render('inventory/storagecard.html.twig', [
             'form' => $form->createView(),
-            'action' => 'copy'
+            'action' => 'copy',
+            'show_override' => $showOverride,
+            'incompatibility_detected' => false
         ]);
     }
 
@@ -453,14 +546,42 @@ class InventoryController extends AbstractController
                 }
 
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();
+                $idShelvingunit = $newStoragecard->getIdShelvingunit();
 
-                $securityFile = $form->get('uploadedSecurityFile')->getData();
-                $analysisFile = $form->get('uploadedAnalysisFile')->getData();
+                // Récupérer l'option d'override (pour les admins)
+                $overrideCheck = false;
+                if ($request->request->has('override_incompatibility')) {
+                    $overrideCheck = $request->request->get('override_incompatibility') === "1";
+                }
 
                 // On vérifie si le produit a été déplacé
-                if ($oldIdShelvingUnit != $newStoragecard->getIdShelvingunit()->getIdShelvingunit())
+                if ($oldIdShelvingUnit != $idShelvingunit->getIdShelvingunit())
                 {
-                    $utility->movedIsAuthorised($newStoragecard->getIdShelvingunit(), $chimicalproduct, $entityManager);
+                    try {
+                        // Vérifier la compatibilité avec l'option de dérogation pour les admins
+                        $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, $overrideCheck);
+                    } catch (LogicException $le) {
+                        // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
+                        if (!$this->isGranted('ROLE_ADMIN')) {
+                            // Rediriger vers le formulaire de demande de dérogation
+                            return $this->redirectToRoute('incompatibility_request', [
+                                'productId' => $chimicalproduct->getIdChimicalproduct(),
+                                'shelvingUnitId' => $idShelvingunit->getIdShelvingunit()
+                            ]);
+                        }
+                        // Si c'est un admin mais qu'il n'a pas coché l'option de dérogation
+                        else {
+                            // Afficher le message d'erreur et renvoyer au formulaire avec l'option de dérogation
+                            $this->addFlash('warning', $le->getMessage() . ' En tant qu\'administrateur, vous pouvez contourner cette restriction en cochant l\'option de dérogation.');
+                            return $this->render('inventory/storagecard.html.twig', [
+                                'form' => $form->createView(),
+                                'action' => 'modify',
+                                'show_override' => true,
+                                'incompatibility_detected' => true
+                            ]);
+                        }
+                    }
+
                     //On enregistre le déplacement du produit
                     $movedHistory = new Movedhistory();
                     $movedHistory->setMovedate(new DateTime());
@@ -471,6 +592,10 @@ class InventoryController extends AbstractController
                     $entityManager->persist($movedHistory);
                     $entityManager->flush();
                 }
+
+                $securityFile = $form->get('uploadedSecurityFile')->getData();
+                $analysisFile = $form->get('uploadedAnalysisFile')->getData();
+
                 //cette condition est necessaire car le champ "Fiche de prudence" n'est
                 //pas obligatoire
                 if ($securityFile != null) {
@@ -509,16 +634,27 @@ class InventoryController extends AbstractController
                 $entityManager->persist($newStoragecard);
                 $entityManager->flush();
 
-                $this->addFlash('success',
-                    'La fiche de stockage a été modifiée avec succès.');
+                $this->addFlash('success', 'La fiche de stockage a été modifiée avec succès.');
+
+                // Si l'admin a utilisé l'option de dérogation, ajouter un message spécial
+                if ($this->isGranted('ROLE_ADMIN') && $overrideCheck && $oldIdShelvingUnit != $idShelvingunit->getIdShelvingunit()) {
+                    $this->addFlash('info', 'Vous avez utilisé votre droit d\'administrateur pour ignorer les incompatibilités détectées.');
+                }
+
                 return $this->redirectToRoute('inventory_make');
             }
         }
         catch (LogicException $le) {
             $this->addFlash('error', $le->getMessage());
+
+            // Si c'est un admin, afficher l'option de dérogation
+            $showOverride = $this->isGranted('ROLE_ADMIN');
+
             return $this->render('inventory/storagecard.html.twig', [
                 'form' => $form->createView(),
-                'action' => 'modify'
+                'action' => 'modify',
+                'show_override' => $showOverride,
+                'incompatibility_detected' => true
             ]);
         }
         catch (FileException $e) {
@@ -535,10 +671,16 @@ class InventoryController extends AbstractController
                 .' Contactez votre administrateur.');
             return $this->redirectToRoute('home_page');
         }
+
+        // Déterminer si on doit afficher l'option de dérogation (pour les admins uniquement)
+        $showOverride = $this->isGranted('ROLE_ADMIN');
+
         //Quoi qu'il arrive on rend la page initiale
         return $this->render('inventory/storagecard.html.twig', [
             'form' => $form->createView(),
-            'action' => 'modify'
+            'action' => 'modify',
+            'show_override' => $showOverride,
+            'incompatibility_detected' => false
         ]);
     }
 }

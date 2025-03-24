@@ -1,0 +1,65 @@
+{# templates/emails/incompatibility_response.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { padding: 15px; border-radius: 5px; margin-bottom: 20px; }
+        .header-approved { background-color: #d4edda; }
+        .header-rejected { background-color: #f8d7da; }
+        .product-info { background-color: #e9ecef; padding: 10px; border-radius: 5px; margin-bottom: 15px; }
+        .footer { font-size: 12px; color: #6c757d; margin-top: 30px; border-top: 1px solid #dee2e6; padding-top: 20px; }
+        .btn { display: inline-block; padding: 10px 20px; color: white; text-decoration: none; border-radius: 4px; }
+        .btn-approved { background-color: #28a745; }
+        .btn-rejected { background-color: #dc3545; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header {{ request.status == 'approved' ? 'header-approved' : 'header-rejected' }}">
+        <h2>Réponse à votre demande de dérogation</h2>
+        <p>Demande #{{ request.id }} -
+            {% if request.status == 'approved' %}
+                <strong>Approuvée</strong>
+            {% else %}
+                <strong>Rejetée</strong>
+            {% endif %}
+        </p>
+    </div>
+
+    <p>Votre demande de dérogation pour stocker le produit <strong>{{ request.product.nameChimicalproduct }}</strong> à l'emplacement <strong>{{ request.shelvingUnit }}</strong> a été
+        {% if request.status == 'approved' %}
+            <strong>approuvée</strong>{% if request.responder %} par {{ request.responder.fullname }}{% endif %}.
+        {% else %}
+            <strong>rejetée</strong>{% if request.responder %} par {{ request.responder.fullname }}{% endif %}.
+        {% endif %}
+    </p>
+
+    <div class="product-info">
+        <h3>Rappel de votre demande</h3>
+        <p><strong>Produit:</strong> {{ request.product.nameChimicalproduct }}</p>
+        <p><strong>Incompatible avec:</strong> {{ request.incompatibleWith }}</p>
+        <p><strong>Raison de votre demande:</strong> {{ request.reason }}</p>
+
+        {% if request.responseComment %}
+            <h4>Commentaire de l'administrateur:</h4>
+            <p>{{ request.responseComment }}</p>
+        {% endif %}
+    </div>
+
+    {% if request.status == 'approved' %}
+        <p>Vous pouvez maintenant procéder au stockage du produit à l'emplacement demandé.</p>
+        <p><a href="{{ url('inventory_storage') }}" class="btn btn-approved">Créer une fiche de stockage</a></p>
+    {% else %}
+        <p>Veuillez choisir un autre emplacement pour ce produit ou contacter l'administrateur pour plus d'informations.</p>
+        <p><a href="{{ url('inventory_storage') }}" class="btn btn-rejected">Retour à l'inventaire</a></p>
+    {% endif %}
+
+    <div class="footer">
+        <p>Ce message a été envoyé automatiquement par le système Khemeia. Merci de ne pas y répondre directement.</p>
+    </div>
+</div>
+</body>
+</html>
