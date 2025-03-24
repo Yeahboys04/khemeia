@@ -174,12 +174,13 @@ class InventoryController extends AbstractController
                 // Récupérer l'option d'override (pour les admins)
                 $overrideCheck = false;
                 if ($request->request->has('override_incompatibility')) {
-                    $overrideCheck = $request->request->get('override_incompatibility') === "1";
+                    $overrideCheck = ($request->request->get('override_incompatibility') === "1");
                 }
 
                 try {
                     // Vérifier la compatibilité avec l'option de dérogation pour les admins
-                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, $overrideCheck);
+                    // Passez explicitement le paramètre en boolean
+                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, (bool)$overrideCheck);
                 } catch (LogicException $le) {
                     // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
                     if (!$this->isGranted('ROLE_ADMIN')) {
@@ -364,12 +365,13 @@ class InventoryController extends AbstractController
                 // Récupérer l'option d'override (pour les admins)
                 $overrideCheck = false;
                 if ($request->request->has('override_incompatibility')) {
-                    $overrideCheck = $request->request->get('override_incompatibility') === "1";
+                    $overrideCheck = ($request->request->get('override_incompatibility') === "1");
                 }
 
                 try {
                     // Vérifier la compatibilité avec l'option de dérogation pour les admins
-                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, $overrideCheck);
+                    // Passez explicitement le paramètre en boolean
+                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, (bool)$overrideCheck);
                 } catch (LogicException $le) {
                     // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
                     if (!$this->isGranted('ROLE_ADMIN')) {
@@ -551,7 +553,7 @@ class InventoryController extends AbstractController
                 // Récupérer l'option d'override (pour les admins)
                 $overrideCheck = false;
                 if ($request->request->has('override_incompatibility')) {
-                    $overrideCheck = $request->request->get('override_incompatibility') === "1";
+                    $overrideCheck = ($request->request->get('override_incompatibility') === "1");
                 }
 
                 // On vérifie si le produit a été déplacé
@@ -559,7 +561,8 @@ class InventoryController extends AbstractController
                 {
                     try {
                         // Vérifier la compatibilité avec l'option de dérogation pour les admins
-                        $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, $overrideCheck);
+                        // Passez explicitement le paramètre en boolean
+                        $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, (bool)$overrideCheck);
                     } catch (LogicException $le) {
                         // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
                         if (!$this->isGranted('ROLE_ADMIN')) {

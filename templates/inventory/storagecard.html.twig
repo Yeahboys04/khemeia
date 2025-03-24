@@ -367,11 +367,11 @@
                     {{ form_rest(form) }}
 
                     {% if show_override is defined and show_override %}
-                        <div class="form-group">
+                        <div class="form-group override-section" {% if incompatibility_detected is defined and incompatibility_detected %}style="background-color: #fff3cd; padding: 15px; margin: 15px 0; border-radius: 5px; border: 1px solid #ffeeba;"{% endif %}>
                             <div class="col-sm-offset-2 col-sm-10">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" name="override_incompatibility" value="1"
+                                        <input type="checkbox" name="override_incompatibility" value="1" id="override_incompatibility"
                                                {% if incompatibility_detected is defined and incompatibility_detected %}checked="checked"{% endif %}>
                                         <strong>Contourner les alertes d'incompatibilité (administrateur uniquement)</strong>
                                     </label>
