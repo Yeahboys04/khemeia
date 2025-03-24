@@ -109,7 +109,7 @@
                 {% endif %}
 
                 {# Les utilisateurs, les responsables et les administrateurs peuvent voir leurs demandes de dérogation #}
-                {% if app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() == 'utilisateur' %}
+                {% if app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() == 'utilisateur' %}
                     <li>
                         <a href="{{ path('user_incompatibility_requests') }}">
                             <i class="fa fa-list-alt"></i>
