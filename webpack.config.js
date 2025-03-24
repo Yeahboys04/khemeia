@@ -37,7 +37,6 @@ Encore
     .addEntry('user', './assets/js/pages/users.js')
     .addEntry('inventory_export', './assets/js/pages/inventory_export.js')
     .addStyleEntry('inventoryExport', './assets/styles/pages/inventoryExport.scss')
-    .addEntry('storagecard_from_request', './assets/storagecard_form_request.js')
 
     .addEntry('datepicker', './assets/js/components/datepicker.js')
     .addEntry('select', './assets/js/components/select.js')
