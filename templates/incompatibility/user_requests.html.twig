@@ -1,249 +1,164 @@
+{#
+Extrait de incompatibility/user_requests.html.twig
+À adapter selon votre template existant
+#}
+
 {% extends 'base.html.twig' %}
 
 {% block title %}Mes demandes de dérogation{% endblock %}
 
-{% block stylesheets %}
-    {{ parent() }}
-    {{ encore_entry_link_tags('global') }}
-    <style>
-        .request-card {
-            margin-bottom: 20px;
-        }
-        .card-header-pending {
-            background-color: #fff3cd;
-        }
-        .card-header-approved {
-            background-color: #d4edda;
-        }
-        .card-header-rejected {
-            background-color: #f8d7da;
-        }
-        .request-urgent {
-            color: #dc3545;
-            font-weight: bold;
-        }
-        .request-date {
-            font-size: 0.9em;
-            color: #6c757d;
-        }
-        .btn-create-storage {
-            margin-top: 10px;
-        }
-        .empty-state {
-            text-align: center;
-            padding: 30px;
-            background-color: #f8f9fa;
-            border-radius: 5px;
-            margin: 20px 0;
-        }
-        .empty-state i {
-            font-size: 3em;
-            color: #6c757d;
-            margin-bottom: 15px;
-        }
-    </style>
-{% endblock %}
-
 {% block body %}
-    <div class="container">
-        <h1>Mes demandes de dérogation</h1>
+    <section class="content-header">
+        <h1>Mes demandes de dérogation d'incompatibilité</h1>
+        <ol class="breadcrumb">
+            <li><a href="{{ path('home_page') }}"><i class="fa fa-dashboard"></i> Accueil</a></li>
+            <li class="active">Mes demandes de dérogation</li>
+        </ol>
+    </section>
 
-        <ul class="nav nav-tabs" id="requestTabs" role="tablist">
-            <li class="nav-item">
-                <a class="nav-link active" id="pending-tab" data-toggle="tab" href="#pending" role="tab">
-                    En attente <span class="badge badge-warning">{{ pendingRequests|length }}</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="approved-tab" data-toggle="tab" href="#approved" role="tab">
-                    Approuvées <span class="badge badge-success">{{ approvedRequests|length }}</span>
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" id="rejected-tab" data-toggle="tab" href="#rejected" role="tab">
-                    Rejetées <span class="badge badge-danger">{{ rejectedRequests|length }}</span>
-                </a>
-            </li>
-        </ul>
-
-        <div class="tab-content" id="requestTabsContent">
-            <!-- Demandes en attente -->
-            <div class="tab-pane fade show active" id="pending" role="tabpanel">
-                <div class="mt-3">
-                    {% if pendingRequests is empty %}
-                        <div class="empty-state">
-                            <i class="fa fa-hourglass-half"></i>
-                            <h4>Aucune demande en attente</h4>
-                            <p>Vous n'avez pas de demandes de dérogation en cours de traitement.</p>
-                        </div>
-                    {% else %}
-                        {% for request in pendingRequests %}
-                            <div class="card request-card">
-                                <div class="card-header card-header-pending d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">
-                                        Demande #{{ request.id }}
-                                        {% if request.isUrgent %}
-                                            <span class="request-urgent">[URGENT]</span>
-                                        {% endif %}
-                                    </h5>
-                                    <span class="request-date">Soumise le {{ request.requestDate|date('d/m/Y H:i') }}</span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>Produit à stocker</h6>
-                                            <p>{{ request.product.nameChimicalproduct }}
-                                                {% if request.product.casnumber %}
-                                                    <br><small>CAS: {{ request.product.casnumber }}</small>
-                                                {% endif %}
-                                            </p>
-
-                                            <h6>Emplacement</h6>
-                                            <p>{{ request.shelvingUnit }}</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>Incompatible avec</h6>
-                                            <p>{{ request.incompatibleWith }}</p>
-
-                                            <h6>Raison de la demande</h6>
-                                            <p>{{ request.reason }}</p>
-                                        </div>
-                                    </div>
-                                    <div class="alert alert-info">
-                                        <i class="fa fa-info-circle"></i> Votre demande est en cours d'examen par un administrateur.
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Demandes en attente</h3>
+                    </div>
+                    <div class="box-body">
+                        {% if pendingRequests|length > 0 %}
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Date de demande</th>
+                                    <th>Produit</th>
+                                    <th>Emplacement</th>
+                                    <th>Incompatibilité avec</th>
+                                    <th>Urgence</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for request in pendingRequests %}
+                                    <tr>
+                                        <td>{{ request.requestDate|date('d/m/Y H:i') }}</td>
+                                        <td>{{ request.product }}</td>
+                                        <td>{{ request.shelvingUnit }}</td>
+                                        <td>{{ request.incompatibleWith }}</td>
+                                        <td>
+                                            {% if request.isUrgent %}
+                                                <span class="label label-danger">Urgent</span>
+                                            {% else %}
+                                                <span class="label label-default">Normal</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>Aucune demande en attente.</p>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
 
-            <!-- Demandes approuvées -->
-            <div class="tab-pane fade" id="approved" role="tabpanel">
-                <div class="mt-3">
-                    {% if approvedRequests is empty %}
-                        <div class="empty-state">
-                            <i class="fa fa-check-circle"></i>
-                            <h4>Aucune demande approuvée</h4>
-                            <p>Vous n'avez pas encore de demandes de dérogation approuvées.</p>
-                        </div>
-                    {% else %}
-                        {% for request in approvedRequests %}
-                            <div class="card request-card">
-                                <div class="card-header card-header-approved d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">
-                                        Demande #{{ request.id }} - <span class="text-success">Approuvée</span>
-                                    </h5>
-                                    <span class="request-date">
-                                        Soumise le {{ request.requestDate|date('d/m/Y') }} -
-                                        Approuvée le {{ request.responseDate|date('d/m/Y') }}
-                                    </span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>Produit à stocker</h6>
-                                            <p>{{ request.product.nameChimicalproduct }}
-                                                {% if request.product.casnumber %}
-                                                    <br><small>CAS: {{ request.product.casnumber }}</small>
-                                                {% endif %}
-                                            </p>
-
-                                            <h6>Emplacement</h6>
-                                            <p>{{ request.shelvingUnit }}</p>
-
-                                            <h6>Incompatible avec</h6>
-                                            <p>{{ request.incompatibleWith }}</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>Raison de la demande</h6>
-                                            <p>{{ request.reason }}</p>
-
-                                            <h6>Réponse de l'administrateur</h6>
-                                            <p>
-                                                Par: {{ request.responder.fullname }}<br>
-                                                {% if request.responseComment %}
-                                                    Commentaire: {{ request.responseComment }}
-                                                {% else %}
-                                                    <em>Aucun commentaire</em>
-                                                {% endif %}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="text-center">
-                                        <a href="{{ path('create_storage_from_request', {'id': request.id}) }}" class="btn btn-success btn-create-storage">
-                                            <i class="fa fa-plus-circle"></i> Créer une fiche de stockage
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+                <div class="box box-success">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Demandes approuvées disponibles</h3>
+                    </div>
+                    <div class="box-body">
+                        {% if approvedRequests|length > 0 %}
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Date d'approbation</th>
+                                    <th>Produit</th>
+                                    <th>Emplacement</th>
+                                    <th>Commentaire</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for request in approvedRequests %}
+                                    <tr>
+                                        <td>{{ request.responseDate|date('d/m/Y H:i') }}</td>
+                                        <td>{{ request.product }}</td>
+                                        <td>{{ request.shelvingUnit }}</td>
+                                        <td>{{ request.responseComment }}</td>
+                                        <td>
+                                            <a href="{{ path('create_storage_from_request', {'id': request.id}) }}" class="btn btn-primary">
+                                                <i class="fa fa-plus"></i> Créer fiche
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>Aucune demande approuvée disponible.</p>
+                        {% endif %}
+                    </div>
                 </div>
-            </div>
 
-            <!-- Demandes rejetées -->
-            <div class="tab-pane fade" id="rejected" role="tabpanel">
-                <div class="mt-3">
-                    {% if rejectedRequests is empty %}
-                        <div class="empty-state">
-                            <i class="fa fa-times-circle"></i>
-                            <h4>Aucune demande rejetée</h4>
-                            <p>Vous n'avez pas de demandes de dérogation rejetées.</p>
-                        </div>
-                    {% else %}
-                        {% for request in rejectedRequests %}
-                            <div class="card request-card">
-                                <div class="card-header card-header-rejected d-flex justify-content-between align-items-center">
-                                    <h5 class="mb-0">
-                                        Demande #{{ request.id }} - <span class="text-danger">Rejetée</span>
-                                    </h5>
-                                    <span class="request-date">
-                                        Soumise le {{ request.requestDate|date('d/m/Y') }} -
-                                        Rejetée le {{ request.responseDate|date('d/m/Y') }}
-                                    </span>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-6">
-                                            <h6>Produit à stocker</h6>
-                                            <p>{{ request.product.nameChimicalproduct }}
-                                                {% if request.product.casnumber %}
-                                                    <br><small>CAS: {{ request.product.casnumber }}</small>
-                                                {% endif %}
-                                            </p>
-
-                                            <h6>Emplacement</h6>
-                                            <p>{{ request.shelvingUnit }}</p>
-
-                                            <h6>Incompatible avec</h6>
-                                            <p>{{ request.incompatibleWith }}</p>
-                                        </div>
-                                        <div class="col-md-6">
-                                            <h6>Raison de la demande</h6>
-                                            <p>{{ request.reason }}</p>
-
-                                            <h6>Réponse de l'administrateur</h6>
-                                            <p>
-                                                Par: {{ request.responder.fullname }}<br>
-                                                {% if request.responseComment %}
-                                                    Commentaire: {{ request.responseComment }}
-                                                {% else %}
-                                                    <em>Aucun commentaire</em>
-                                                {% endif %}
-                                            </p>
-                                        </div>
-                                    </div>
-                                    <div class="alert alert-danger">
-                                        <i class="fa fa-exclamation-triangle"></i> Votre demande a été rejetée. Veuillez envisager une autre solution de stockage ou contacter un administrateur pour plus d'informations.
-                                    </div>
-                                </div>
-                            </div>
-                        {% endfor %}
-                    {% endif %}
+                <div class="box box-danger">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Demandes rejetées</h3>
+                    </div>
+                    <div class="box-body">
+                        {% if rejectedRequests|length > 0 %}
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Date de rejet</th>
+                                    <th>Produit</th>
+                                    <th>Emplacement</th>
+                                    <th>Motif de rejet</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for request in rejectedRequests %}
+                                    <tr>
+                                        <td>{{ request.responseDate|date('d/m/Y H:i') }}</td>
+                                        <td>{{ request.product }}</td>
+                                        <td>{{ request.shelvingUnit }}</td>
+                                        <td>{{ request.responseComment }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% else %}
+                            <p>Aucune demande rejetée.</p>
+                        {% endif %}
+                    </div>
                 </div>
+
+                {% if usedRequests|length > 0 %}
+                    <div class="box box-default">
+                        <div class="box-header with-border">
+                            <h3 class="box-title">Demandes approuvées déjà utilisées</h3>
+                        </div>
+                        <div class="box-body">
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Date d'approbation</th>
+                                    <th>Produit</th>
+                                    <th>Emplacement</th>
+                                    <th>Commentaire</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for request in usedRequests %}
+                                    <tr>
+                                        <td>{{ request.responseDate|date('d/m/Y H:i') }}</td>
+                                        <td>{{ request.product }}</td>
+                                        <td>{{ request.shelvingUnit }}</td>
+                                        <td>{{ request.responseComment }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                {% endif %}
             </div>
         </div>
-    </div>
+    </section>
 {% endblock %}

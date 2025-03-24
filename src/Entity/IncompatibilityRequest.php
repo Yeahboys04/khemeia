@@ -54,10 +54,14 @@ class IncompatibilityRequest
     #[ORM\Column(name: 'response_comment', type: 'text', nullable: true)]
     private ?string $responseComment = null;
 
+    #[ORM\Column(name: 'is_used', type: 'boolean', nullable: false, options: ['default' => false])]
+    private bool $isUsed = false;
+
     public function __construct()
     {
         $this->requestDate = new \DateTime();
         $this->status = 'pending';
+        $this->isUsed = false;
     }
 
     public function getId(): ?int
@@ -183,6 +187,17 @@ class IncompatibilityRequest
     public function setResponseComment(?string $responseComment): self
     {
         $this->responseComment = $responseComment;
+        return $this;
+    }
+
+    public function getIsUsed(): bool
+    {
+        return $this->isUsed;
+    }
+
+    public function setIsUsed(bool $isUsed): self
+    {
+        $this->isUsed = $isUsed;
         return $this;
     }
 }

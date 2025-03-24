@@ -275,20 +275,29 @@ class IncompatibilityController extends AbstractController
             ['requestDate' => 'DESC']
         );
 
+        // Récupère uniquement les demandes approuvées qui n'ont pas encore été utilisées
         $approvedRequests = $repository->findBy(
-            ['requester' => $user, 'status' => 'approved'],
+            ['requester' => $user, 'status' => 'approved', 'isUsed' => false],
             ['responseDate' => 'DESC']
         );
 
+        // Pour les demandes rejetées, on peut tout afficher
         $rejectedRequests = $repository->findBy(
             ['requester' => $user, 'status' => 'rejected'],
+            ['responseDate' => 'DESC']
+        );
+
+        // Récupérer les demandes approuvées qui ont été utilisées (pour information)
+        $usedRequests = $repository->findBy(
+            ['requester' => $user, 'status' => 'approved', 'isUsed' => true],
             ['responseDate' => 'DESC']
         );
 
         return $this->render('incompatibility/user_requests.html.twig', [
             'pendingRequests' => $pendingRequests,
             'approvedRequests' => $approvedRequests,
-            'rejectedRequests' => $rejectedRequests
+            'rejectedRequests' => $rejectedRequests,
+            'usedRequests' => $usedRequests
         ]);
     }
 
@@ -324,16 +333,11 @@ class IncompatibilityController extends AbstractController
             return $this->redirectToRoute('user_incompatibility_requests');
         }
 
-        // Créer une nouvelle fiche de stockage pré-remplie avec les informations de la demande
-        $storagecard = new Storagecard();
-        $storagecard->setIdChimicalproduct($incompatibilityRequest->getProduct());
-        $storagecard->setIdShelvingunit($incompatibilityRequest->getShelvingUnit());
-
-        // Initialiser avec des valeurs par défaut pour les champs obligatoires
-        $storagecard->setCapacity(0);
-        $storagecard->setIsarchived(false);
-        $storagecard->setIsrisked(false);
-        $storagecard->setIspublished(false);
+        // Vérifier que la demande n'a pas déjà été utilisée
+        if ($incompatibilityRequest->getIsUsed()) {
+            $this->addFlash('error', 'Cette demande a déjà été utilisée pour créer une fiche de stockage.');
+            return $this->redirectToRoute('user_incompatibility_requests');
+        }
 
         // Stocker temporairement l'ID de la demande dans la session
         $request->getSession()->set('incompatibility_request_id', $id);
@@ -344,4 +348,5 @@ class IncompatibilityController extends AbstractController
             'shelvingUnitId' => $incompatibilityRequest->getShelvingUnit()->getIdShelvingunit()
         ]);
     }
+
 }

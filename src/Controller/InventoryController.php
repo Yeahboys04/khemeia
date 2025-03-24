@@ -703,12 +703,35 @@ class InventoryController extends AbstractController
     ): Response
     {
         try {
+            // Récupérer l'ID de la demande depuis la session
+            $requestId = $request->getSession()->get('incompatibility_request_id');
+            if (!$requestId) {
+                $this->addFlash('error', 'Impossible de retrouver la demande de dérogation. Veuillez réessayer.');
+                return $this->redirectToRoute('user_incompatibility_requests');
+            }
+
+            // Vérifier que la demande existe, est approuvée et n'a pas déjà été utilisée
+            $incompatibilityRequest = $entityManager->getRepository(\App\Entity\IncompatibilityRequest::class)->find($requestId);
+            if (!$incompatibilityRequest ||
+                $incompatibilityRequest->getStatus() !== 'approved' ||
+                $incompatibilityRequest->getIsUsed() === true) {
+                $this->addFlash('error', 'Cette demande de dérogation n\'est plus valide ou a déjà été utilisée.');
+                return $this->redirectToRoute('user_incompatibility_requests');
+            }
+
             // Récupérer le produit et l'emplacement
             $product = $entityManager->getRepository(Chimicalproduct::class)->find($productId);
             $shelvingUnit = $entityManager->getRepository(Shelvingunit::class)->find($shelvingUnitId);
 
             if (!$product || !$shelvingUnit) {
                 $this->addFlash('error', 'Produit ou emplacement non trouvé.');
+                return $this->redirectToRoute('user_incompatibility_requests');
+            }
+
+            // Vérifier que les informations correspondent à la demande
+            if ($incompatibilityRequest->getProduct()->getIdChimicalproduct() != $productId ||
+                $incompatibilityRequest->getShelvingUnit()->getIdShelvingunit() != $shelvingUnitId) {
+                $this->addFlash('error', 'Les informations ne correspondent pas à la demande de dérogation originale.');
                 return $this->redirectToRoute('user_incompatibility_requests');
             }
 
@@ -723,19 +746,21 @@ class InventoryController extends AbstractController
             $storagecard->setIsrisked(false);
             $storagecard->setIspublished(false);
 
-            // Vérifier si l'utilisateur est autorisé à stocker ce produit à cet emplacement
-            // Note: On ne fait pas la vérification d'incompatibilité car la demande a été approuvée
-
             $user = $tokenStorage->getToken()->getUser();
             $form = $this->createForm(StoragecardRespType::class, $storagecard, [
                 'method' => 'POST',
-                'idSite' => $user->getIdSite()->getIdSite()
+                'idSite' => $user->getIdSite()->getIdSite(),
+                'from_derogation' => true // Option pour indiquer que c'est une création depuis dérogation
             ]);
 
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $storagecard = $form->getData();
+
+                // S'assurer que le produit et l'emplacement n'ont pas été modifiés
+                $storagecard->setIdChimicalproduct($product);
+                $storagecard->setIdShelvingunit($shelvingUnit);
 
                 // Définir la date de création
                 $storagecard->setCreationDate(new \DateTime());
@@ -787,22 +812,15 @@ class InventoryController extends AbstractController
                 $movedHistory->setIdUser($tokenStorage->getToken()->getUser());
 
                 $entityManager->persist($movedHistory);
+
+                // Marquer la demande comme utilisée
+                $incompatibilityRequest->setIsUsed(true);
+                $entityManager->persist($incompatibilityRequest);
+
                 $entityManager->flush();
 
-                // Récupérer l'ID de la demande depuis la session
-                $requestId = $request->getSession()->get('incompatibility_request_id');
-                if ($requestId) {
-                    // Mettre à jour la demande pour indiquer qu'elle a été utilisée (optionnel)
-                    $incompatibilityRequest = $entityManager->getRepository(\App\Entity\IncompatibilityRequest::class)->find($requestId);
-                    if ($incompatibilityRequest) {
-                        // Vous pourriez ajouter un champ à l'entité pour suivre si la demande a été utilisée
-                        // $incompatibilityRequest->setUsed(true);
-                        // $entityManager->flush();
-                    }
-
-                    // Supprimer l'ID de la session
-                    $request->getSession()->remove('incompatibility_request_id');
-                }
+                // Supprimer l'ID de la session
+                $request->getSession()->remove('incompatibility_request_id');
 
                 $this->addFlash('success',
                     'La fiche de stockage numéro ' . $storagecard->getIdStoragecard() . ' a été créée avec succès à partir de votre demande de dérogation.');
@@ -811,14 +829,16 @@ class InventoryController extends AbstractController
             }
 
             // Message spécial pour indiquer que c'est une création à partir d'une demande de dérogation
-            $this->addFlash('info', 'Vous êtes en train de créer une fiche de stockage à partir d\'une demande de dérogation approuvée. Veuillez compléter les informations nécessaires.');
+            $this->addFlash('info', 'Vous êtes en train de créer une fiche de stockage à partir d\'une demande de dérogation approuvée. Le produit et l\'emplacement ne peuvent pas être modifiés.');
 
             return $this->render('inventory/storagecard.html.twig', [
                 'form' => $form->createView(),
                 'action' => 'create',
                 'show_override' => false,
                 'incompatibility_detected' => false,
-                'from_request' => true
+                'from_derogation' => true,
+                'product' => $product,
+                'shelvingUnit' => $shelvingUnit
             ]);
 
         } catch (FileException $e) {
@@ -829,7 +849,7 @@ class InventoryController extends AbstractController
         } catch (\Exception $e) {
             $this->addFlash('error',
                 'Attention, une erreur est survenue.'
-                .' Contactez votre administrateur.');
+                .' Contactez votre administrateur. ' . $e->getMessage());
             return $this->redirectToRoute('home_page');
         }
     }

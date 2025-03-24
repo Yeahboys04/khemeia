@@ -1,4 +1,4 @@
-    {% extends 'base.html.twig' %}
+{% extends 'base.html.twig' %}
 
     {% block page_stylesheets %}
         <!-- Font Awesome -->
@@ -48,14 +48,13 @@
     {% endblock %}
 
     {% block body %}
-        {% if from_request is defined and from_request %}
-            <div class="box-body">
-                <div class="alert alert-info alert-dismissible">
-                    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                    <h4><i class="icon fa fa-info"></i> Fiche de stockage depuis dérogation</h4>
-                    <p>Vous êtes en train de créer une fiche de stockage à partir d'une demande de dérogation approuvée.
-                        Le produit et l'emplacement ont été pré-remplis selon votre demande. Veuillez compléter les informations restantes.</p>
-                </div>
+        {% if from_derogation is defined and from_derogation %}
+            <div class="alert alert-info">
+                <h4><i class="icon fa fa-info"></i> Mode dérogation</h4>
+                <p>Vous créez une fiche de stockage suite à une dérogation approuvée par un administrateur.</p>
+                <p><strong>Produit:</strong> {{ product.nameChimicalproduct }}</p>
+                <p><strong>Emplacement:</strong> {{ shelvingUnit }}</p>
+                <p>Ces informations ne peuvent pas être modifiées.</p>
             </div>
         {% endif %}
         <div class="storage-container">
@@ -88,7 +87,8 @@
                             <label class="form-label">
                                 <i class="fas fa-tag"></i> Produit chimique concerné
                                 <span class="text-red">*</span>
-                                <i class="fas fa-info-circle ml-1 text-primary" data-bs-toggle="tooltip" title="Sélectionnez le produit chimique associé à cette fiche"></i>
+                                <i class="fas fa-info-circle ml-1 text-primary" data-bs-toggle="tooltip"
+                                   title="Sélectionnez le produit chimique associé à cette fiche"></i>
                             </label>
                             {{ form_widget(form.idChimicalproduct, {'attr': {
                                 'type' : "text",
@@ -246,7 +246,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Faut-il archiver ce produit ? <span class="text-red">*</span></label>
+                            <label class="form-label">Faut-il archiver ce produit ? <span
+                                        class="text-red">*</span></label>
                             <div class="radio-group">
                                 {% for choice in form.isarchived %}
                                     <div class="radio-card">
@@ -261,7 +262,8 @@
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label">Voulez-vous cacher l'emplacement exact ? <span class="text-red">*</span></label>
+                            <label class="form-label">Voulez-vous cacher l'emplacement exact ? <span
+                                        class="text-red">*</span></label>
                             <div class="radio-group">
                                 {% for choice in form.isrisked %}
                                     <div class="radio-card">
@@ -377,18 +379,23 @@
                     {{ form_rest(form) }}
 
                     {% if show_override is defined and show_override %}
-                        <div class="form-group override-section" {% if incompatibility_detected is defined and incompatibility_detected %}style="background-color: #fff3cd; padding: 15px; margin: 15px 0; border-radius: 5px; border: 1px solid #ffeeba;"{% endif %}>
+                        <div class="form-group override-section"
+                             {% if incompatibility_detected is defined and incompatibility_detected %}style="background-color: #fff3cd; padding: 15px; margin: 15px 0; border-radius: 5px; border: 1px solid #ffeeba;"{% endif %}>
                             <div class="col-sm-offset-2 col-sm-10">
                                 <div class="checkbox">
                                     <label>
-                                        <input type="checkbox" name="override_incompatibility" value="1" id="override_incompatibility"
+                                        <input type="checkbox" name="override_incompatibility" value="1"
+                                               id="override_incompatibility"
                                                {% if incompatibility_detected is defined and incompatibility_detected %}checked="checked"{% endif %}>
-                                        <strong>Contourner les alertes d'incompatibilité (administrateur uniquement)</strong>
+                                        <strong>Contourner les alertes d'incompatibilité (administrateur
+                                            uniquement)</strong>
                                     </label>
                                 </div>
                                 {% if incompatibility_detected is defined and incompatibility_detected %}
                                     <div class="alert alert-warning mt-2">
-                                        <i class="fa fa-exclamation-triangle"></i> Une incompatibilité a été détectée. En tant qu'administrateur, vous pouvez choisir de l'ignorer en cochant la case ci-dessus.
+                                        <i class="fa fa-exclamation-triangle"></i> Une incompatibilité a été détectée.
+                                        En tant qu'administrateur, vous pouvez choisir de l'ignorer en cochant la case
+                                        ci-dessus.
                                     </div>
                                 {% endif %}
                             </div>
@@ -423,5 +430,7 @@
         {{ encore_entry_script_tags('datepicker') }}
         {{ encore_entry_script_tags('storagecard') }}
 
+        {% if from_derogation is defined and from_derogation %}
+            {{ encore_entry_script_tags('derogation') }}
+        {% endif %}
     {% endblock %}
-

@@ -44,4 +44,24 @@ class IncompatibilityRequestRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
+
+    /**
+     * Trouve les demandes approuvées qui n'ont pas encore été utilisées
+     *
+     * @param User|int $user L'utilisateur concerné
+     * @return IncompatibilityRequest[]
+     */
+    public function findApprovedUnusedRequests($user): array
+    {
+        return $this->createQueryBuilder('ir')
+            ->where('ir.requester = :user')
+            ->andWhere('ir.status = :status')
+            ->andWhere('ir.isUsed = :isUsed')
+            ->setParameter('user', $user)
+            ->setParameter('status', 'approved')
+            ->setParameter('isUsed', false)
+            ->orderBy('ir.responseDate', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
 }
