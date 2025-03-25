@@ -1,0 +1,174 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demandes de retrait externe en attente | Khemeia{% endblock %}
+
+{% block body %}
+    <section class="content-header">
+        <h1>
+            Demandes de retrait externe en attente
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="{{ path('home_page') }}"><i class="fa fa-dashboard"></i> Accueil</a></li>
+            <li class="active">Demandes de retrait externe</li>
+        </ol>
+    </section>
+
+    <section class="content">
+        <div class="box box-primary">
+            <div class="box-header with-border">
+                <h3 class="box-title">Demandes en attente pour le site {{ site.nameSite }}</h3>
+                <div class="box-tools pull-right">
+                    <span class="label label-primary">{{ pendingRequests|length }}</span>
+                </div>
+            </div>
+
+            <div class="box-body">
+                {% if pendingRequests is empty %}
+                    <div class="alert alert-info">
+                        <h4><i class="icon fa fa-info"></i> Information</h4>
+                        <p>Il n'y a actuellement aucune demande de retrait externe en attente pour votre site.</p>
+                    </div>
+                {% else %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Urgent</th>
+                                <th>Demandeur</th>
+                                <th>Site demandeur</th>
+                                <th>Produit</th>
+                                <th>Localisation</th>
+                                <th>Quantité</th>
+                                <th>Stock disponible</th>
+                                <th>Motif</th>
+                                <th>Actions</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for request in pendingRequests %}
+                                {% set sourceStorageCard = request.sourceStoragecard %}
+                                {% set shelvingUnit = sourceStorageCard.idShelvingunit %}
+                                <tr class="{% if request.isUrgent %}warning{% endif %}">
+                                    <td>{{ request.requestDate|date('d/m/Y H:i') }}</td>
+                                    <td>
+                                        {% if request.isUrgent %}
+                                            <span class="label label-danger">Oui</span>
+                                        {% else %}
+                                            <span class="label label-default">Non</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ request.requester.fullname }}</td>
+                                    <td>{{ request.targetSite.nameSite }}</td>
+                                    <td>{{ sourceStorageCard.idChimicalproduct.nameChimicalproduct }}</td>
+                                    <td>
+                                        {{ shelvingUnit.idCupboard.idStock.nameStock }} -
+                                        {{ shelvingUnit.idCupboard.nameCupboard }} -
+                                        {{ shelvingUnit.nameShelvingunit }}
+                                    </td>
+                                    <td>{{ request.quantity }}</td>
+                                    <td>
+                                        {% if sourceStorageCard.stockquantity < request.quantity %}
+                                            <span class="label label-danger">{{ sourceStorageCard.stockquantity }}</span>
+                                        {% else %}
+                                            <span class="label label-success">{{ sourceStorageCard.stockquantity }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ request.reason }}</td>
+                                    <td>
+                                        <div class="btn-group">
+                                            <button type="button" class="btn btn-xs btn-success"
+                                                    data-toggle="modal"
+                                                    data-target="#approveModal-{{ request.id }}"
+                                                    {% if sourceStorageCard.stockquantity < request.quantity %}disabled{% endif %}>
+                                                Approuver
+                                            </button>
+                                            <button type="button" class="btn btn-xs btn-danger"
+                                                    data-toggle="modal"
+                                                    data-target="#rejectModal-{{ request.id }}">
+                                                Rejeter
+                                            </button>
+                                        </div>
+
+                                        <!-- Modal Approuver -->
+                                        <div class="modal fade" id="approveModal-{{ request.id }}" tabindex="-1" role="dialog">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                        <h4 class="modal-title">Approuver la demande</h4>
+                                                    </div>
+                                                    <form action="{{ path('admin_external_withdrawal_process', {'id': request.id, 'action': 'approve'}) }}" method="post">
+                                                        <div class="modal-body">
+                                                            <p>Vous êtes sur le point d'approuver la demande de retrait de {{ request.quantity }} unités de {{ sourceStorageCard.idChimicalproduct.nameChimicalproduct }}.</p>
+                                                            <p>Cette action réduira le stock disponible sur votre site.</p>
+
+                                                            <div class="form-group">
+                                                                <label for="comment-{{ request.id }}">Commentaire (optionnel)</label>
+                                                                <textarea id="comment-{{ request.id }}" name="comment" class="form-control" rows="3"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                                                            <button type="submit" class="btn btn-success">Approuver</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Modal Rejeter -->
+                                        <div class="modal fade" id="rejectModal-{{ request.id }}" tabindex="-1" role="dialog">
+                                            <div class="modal-dialog" role="document">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                                                            <span aria-hidden="true">&times;</span>
+                                                        </button>
+                                                        <h4 class="modal-title">Rejeter la demande</h4>
+                                                    </div>
+                                                    <form action="{{ path('admin_external_withdrawal_process', {'id': request.id, 'action': 'reject'}) }}" method="post">
+                                                        <div class="modal-body">
+                                                            <p>Vous êtes sur le point de rejeter la demande de retrait.</p>
+
+                                                            <div class="form-group">
+                                                                <label for="comment-reject-{{ request.id }}">Motif du rejet</label>
+                                                                <textarea id="comment-reject-{{ request.id }}" name="comment" class="form-control" rows="3" required></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <div class="modal-footer">
+                                                            <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                                                            <button type="submit" class="btn btn-danger">Rejeter</button>
+                                                        </div>
+                                                    </form>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="box-footer">
+                <a href="{{ path('admin_external_withdrawal_history') }}" class="btn btn-default">
+                    <i class="fa fa-history"></i> Voir l'historique
+                </a>
+            </div>
+        </div>
+    </section>
+{% endblock %}
+
+{% block page_javascripts %}
+    <script>
+        $(document).ready(function() {
+            // Highlight des lignes urgentes
+            $('.warning').addClass('bg-warning');
+        });
+    </script>
+{% endblock %}

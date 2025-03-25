@@ -10,6 +10,15 @@
 {% endblock %}
 
 {% block body %}
+
+    {% if searchAll is defined and searchAll == 'oui' and storagecards is defined and storagecards|length > 0 %}
+        <div class="alert alert-info">
+            <p>
+                <i class="fa fa-info-circle"></i> Certains produits affichés peuvent appartenir à d'autres sites.
+                Si vous sélectionnez un produit d'un autre site, vous serez redirigé vers le formulaire de demande de retrait externe.
+            </p>
+        </div>
+    {% endif %}
     <section class="content">
         <div class="search-card">
             <div class="search-header">

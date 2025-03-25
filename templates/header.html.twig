@@ -108,6 +108,34 @@
                     </li>
                 {% endif %}
 
+                {% if app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() == 'utilisateur' %}
+                    <li class="treeview">
+                        <a href="{{ path('home_page') }}">
+                            <i class="fa fa-exchange"></i>
+                            <span>Retraits externes</span>
+                            <span class="pull-right-container">
+                <i class="fa fa-angle-left pull-right"></i>
+            </span>
+                        </a>
+                        <ul class="treeview-menu">
+                            <li><a href="{{ path('external_withdrawal_request') }}">
+                                    <span>Demander un retrait</span>
+                                </a>
+                            </li>
+                            <li><a href="{{ path('user_withdrawal_requests') }}">
+                                    <span>Mes demandes</span>
+                                </a>
+                            </li>
+                            {% if app.user.getIdStatus.getNameStatus() == 'administrateur' or app.user.getIdStatus.getNameStatus() == 'responsable' %}
+                                <li><a href="{{ path('manage_withdrawal_requests') }}">
+                                        <span>Gérer les demandes</span>
+                                    </a>
+                                </li>
+                            {% endif %}
+                        </ul>
+                    </li>
+                {% endif %}
+
                 {# Les utilisateurs, les responsables et les administrateurs peuvent voir leurs demandes de dérogation #}
                 {% if app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() == 'utilisateur' %}
                     <li>

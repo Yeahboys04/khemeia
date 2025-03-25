@@ -1,0 +1,110 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demande de retrait externe | Khemeia{% endblock %}
+
+{% block body %}
+    <section class="content-header">
+        <h1>
+            Demande de retrait externe
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="{{ path('home_page') }}"><i class="fa fa-dashboard"></i> Accueil</a></li>
+            <li><a href="{{ path('remove') }}">Retrait de produit</a></li>
+            <li class="active">Demande externe</li>
+        </ol>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Demande de retrait depuis un autre site</h3>
+                    </div>
+
+                    <div class="box-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="box box-info">
+                                    <div class="box-header with-border">
+                                        <h4 class="box-title">Informations sur le produit</h4>
+                                    </div>
+                                    <div class="box-body">
+                                        <table class="table table-striped">
+                                            <tr>
+                                                <th>Produit</th>
+                                                <td>{{ storageCard.idChimicalproduct.nameChimicalproduct }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Numéro CAS</th>
+                                                <td>{{ storageCard.idChimicalproduct.casnumber }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Formule</th>
+                                                <td>{{ storageCard.idChimicalproduct.formula }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Quantité disponible</th>
+                                                <td>{{ storageCard.stockquantity }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>Site source</th>
+                                                <td>{{ productSite.nameSite }}</td>
+                                            </tr>
+                                            <tr>
+                                                <th>CMR</th>
+                                                <td>{% if storageCard.idChimicalproduct.iscmr %}<span class="label label-danger">Oui</span>{% else %}<span class="label label-success">Non</span>{% endif %}</td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                {{ form_start(form) }}
+                                <div class="form-group">
+                                    {{ form_label(form.targetSite) }}
+                                    {{ form_widget(form.targetSite, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.targetSite) }}
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form_label(form.quantity) }}
+                                    <div class="input-group">
+                                        {{ form_widget(form.quantity, {'attr': {'class': 'form-control'}}) }}
+                                        <span class="input-group-addon">
+                                            <small>Max: {{ storageCard.stockquantity }}</small>
+                                        </span>
+                                    </div>
+                                    {{ form_errors(form.quantity) }}
+                                </div>
+
+                                <div class="form-group">
+                                    {{ form_label(form.reason) }}
+                                    {{ form_widget(form.reason, {'attr': {'class': 'form-control'}}) }}
+                                    {{ form_errors(form.reason) }}
+                                </div>
+
+                                <div class="form-group">
+                                    <div class="checkbox">
+                                        <label>
+                                            {{ form_widget(form.isUrgent) }}
+                                            {{ form_label(form.isUrgent) }}
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">{{ form_help(form.isUrgent) }}</small>
+                                </div>
+
+                                <div class="box-footer">
+                                    <a href="{{ path('remove') }}" class="btn btn-default">Annuler</a>
+                                    <button type="submit" class="btn btn-primary">Envoyer la demande</button>
+                                </div>
+                                {{ form_end(form) }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

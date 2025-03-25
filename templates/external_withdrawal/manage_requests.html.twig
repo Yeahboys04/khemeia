@@ -1,0 +1,183 @@
+{% extends 'base.html.twig' %}
+{% block title %}Gestion des demandes de retrait{% endblock %}
+
+{% block body %}
+    <section class="content-header">
+        <h1>
+            Gestion des demandes de retrait
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="{{ path('home_page') }}"><i class="fa fa-dashboard"></i> Accueil</a></li>
+            <li class="active">Gestion des demandes de retrait</li>
+        </ol>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Demandes en attente de traitement</h3>
+                    </div>
+
+                    <div class="box-body">
+                        {% if pendingRequests is empty %}
+                            <p>Aucune demande en attente de traitement.</p>
+                        {% else %}
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Demandeur</th>
+                                    <th>Site destination</th>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Disponible</th>
+                                    <th>Justification</th>
+                                    <th>Urgent</th>
+                                    <th>Actions</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for request in pendingRequests %}
+                                    <tr class="{% if request.isUrgent %}bg-warning{% endif %}">
+                                        <td>{{ request.requestDate|date('d/m/Y H:i') }}</td>
+                                        <td>{{ request.requester.fullname }}</td>
+                                        <td>{{ request.destinationSite.nameSite }}</td>
+                                        <td>{{ request.sourceStoragecard.idChimicalproduct.nameChimicalproduct }}</td>
+                                        <td>{{ request.requestedQuantity }}</td>
+                                        <td>{{ request.sourceStoragecard.stockquantity }}</td>
+                                        <td>{{ request.reason }}</td>
+                                        <td>{% if request.isUrgent %}<span class="label label-danger">Oui</span>{% else %}<span class="label label-default">Non</span>{% endif %}</td>
+                                        <td>
+                                            <button type="button" class="btn btn-sm btn-success" data-toggle="modal" data-target="#approveModal{{ request.id }}">
+                                                Approuver
+                                            </button>
+                                            <button type="button" class="btn btn-sm btn-danger" data-toggle="modal" data-target="#rejectModal{{ request.id }}">
+                                                Rejeter
+                                            </button>
+
+                                            <!-- Modal pour approuver -->
+                                            <div class="modal fade" id="approveModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="approveModalLabel{{ request.id }}">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <form action="{{ path('process_withdrawal_request', {'id': request.id, 'action': 'approve'}) }}" method="post">
+                                                            <div class="modal-header">
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                                <h4 class="modal-title" id="approveModalLabel{{ request.id }}">Approuver la demande</h4>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Vous êtes sur le point d'approuver cette demande de retrait.</p>
+                                                                <p><strong>Produit:</strong> {{ request.sourceStoragecard.idChimicalproduct.nameChimicalproduct }}</p>
+                                                                <p><strong>Quantité demandée:</strong> {{ request.requestedQuantity }}</p>
+                                                                <p><strong>Quantité disponible:</strong> {{ request.sourceStoragecard.stockquantity }}</p>
+
+                                                                <div class="form-group">
+                                                                    <label for="comment">Commentaire (optionnel):</label>
+                                                                    <textarea name="comment" class="form-control" rows="3" placeholder="Commentaire pour le demandeur"></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                                                                <button type="submit" class="btn btn-success">Approuver</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Modal pour rejeter -->
+                                            <div class="modal fade" id="rejectModal{{ request.id }}" tabindex="-1" role="dialog" aria-labelledby="rejectModalLabel{{ request.id }}">
+                                                <div class="modal-dialog" role="document">
+                                                    <div class="modal-content">
+                                                        <form action="{{ path('process_withdrawal_request', {'id': request.id, 'action': 'reject'}) }}" method="post">
+                                                            <div class="modal-header">
+                                                                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                                                <h4 class="modal-title" id="rejectModalLabel{{ request.id }}">Rejeter la demande</h4>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                <p>Vous êtes sur le point de rejeter cette demande de retrait.</p>
+
+                                                                <div class="form-group">
+                                                                    <label for="comment">Motif du rejet:</label>
+                                                                    <textarea name="comment" class="form-control" rows="3" placeholder="Expliquez pourquoi la demande est rejetée" required></textarea>
+                                                                </div>
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button type="button" class="btn btn-default" data-dismiss="modal">Annuler</button>
+                                                                <button type="submit" class="btn btn-danger">Rejeter</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="box box-info">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Demandes traitées récemment</h3>
+                    </div>
+
+                    <div class="box-body">
+                        {% if processedRequests is empty %}
+                            <p>Aucune demande traitée récemment.</p>
+                        {% else %}
+                            <table class="table table-bordered table-striped">
+                                <thead>
+                                <tr>
+                                    <th>Date de demande</th>
+                                    <th>Date de réponse</th>
+                                    <th>Demandeur</th>
+                                    <th>Site destination</th>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Statut</th>
+                                    <th>Commentaire</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                {% for request in processedRequests %}
+                                    <tr>
+                                        <td>{{ request.requestDate|date('d/m/Y H:i') }}</td>
+                                        <td>{{ request.responseDate|date('d/m/Y H:i') }}</td>
+                                        <td>{{ request.requester.fullname }}</td>
+                                        <td>{{ request.destinationSite.nameSite }}</td>
+                                        <td>{{ request.sourceStoragecard.idChimicalproduct.nameChimicalproduct }}</td>
+                                        <td>{{ request.requestedQuantity }}</td>
+                                        <td>
+                                            {% if request.status == 'approved' %}
+                                                <span class="label label-success">Approuvée</span>
+                                                {% if request.isCompleted %}
+                                                    <span class="label label-info">Complétée</span>
+                                                {% else %}
+                                                    <span class="label label-warning">En attente de retrait</span>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="label label-danger">Rejetée</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>{{ request.responseComment }}</td>
+                                    </tr>
+                                {% endfor %}
+                                </tbody>
+                            </table>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="box-footer">
+                    <a href="{{ path('home_page') }}" class="btn btn-default">
+                        Retour à l'accueil
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+{% endblock %}

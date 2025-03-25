@@ -64,8 +64,6 @@ class RemoveController extends AbstractController
                 $chimicalProduct = $form->get('idChimicalproduct')->getData();
             }
 
-
-
             // Si aucun produit n'est sélectionné, affiche un message d'erreur
             if (!$chimicalProduct) {
                 $this->addFlash('error', 'Veuillez sélectionner un produit.');
@@ -86,7 +84,8 @@ class RemoveController extends AbstractController
             return $this->render('remove/index.html.twig', [
                 'form' => $form->createView(),
                 'storagecards' => $storagecards,
-                'site' => $site
+                'site' => $site,
+                'searchAll' => $searchAll
             ]);
         }
 
@@ -111,6 +110,23 @@ class RemoveController extends AbstractController
 
             //Cherche la fiche produit
             $storagecard = $repositoryStoragecard->find($id);
+
+            // Vérifier si le produit est sur un autre site
+            $user = $tokenStorage->getToken()->getUser();
+            $userSite = $user->getIdSite();
+            $productSite = $storagecard->getIdShelvingunit()->getIdCupboard()->getIdStock()->getIdSite();
+
+            // Si le produit est sur un autre site, rediriger vers la demande de retrait externe
+            if ($userSite->getIdSite() !== $productSite->getIdSite()) {
+                $this->addFlash('info', 'Ce produit appartient à un autre site. Vous allez être redirigé vers le formulaire de demande de retrait externe.');
+
+                // Rediriger vers le formulaire de demande de retrait externe avec les paramètres pré-remplis
+                return $this->redirectToRoute('external_withdrawal_request', [
+                    'sourceSite' => $productSite->getIdSite(),
+                    'productId' => $storagecard->getIdStoragecard()
+                ]);
+            }
+
             $stockQuantity = $storagecard->getStockquantity();
             $openDate = $storagecard->getOpendate();
             $expirationDate = $storagecard->getExpirationdate();

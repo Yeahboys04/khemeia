@@ -1,0 +1,131 @@
+{# templates/emails/external_withdrawal_notification.html.twig #}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Nouvelle demande de retrait de produit</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .header {
+            background-color: #3c8dbc;
+            color: white;
+            padding: 10px 20px;
+            text-align: center;
+        }
+        .content {
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-top: none;
+        }
+        .footer {
+            text-align: center;
+            padding: 10px;
+            font-size: 0.8em;
+            color: #777;
+        }
+        .urgent {
+            color: #d9534f;
+            font-weight: bold;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            background-color: #f2f2f2;
+        }
+        .btn {
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 400;
+            line-height: 1.42857143;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            cursor: pointer;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            text-decoration: none;
+        }
+        .btn-primary {
+            color: #fff;
+            background-color: #3c8dbc;
+            border-color: #367fa9;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>Nouvelle demande de retrait de produit</h1>
+</div>
+
+<div class="content">
+    <p>Bonjour,</p>
+
+    <p>Une nouvelle demande de retrait de produit a été soumise pour votre site.</p>
+
+    {% if request.isUrgent %}
+        <p class="urgent">Cette demande est marquée comme URGENTE.</p>
+    {% endif %}
+
+    <h3>Détails de la demande:</h3>
+
+    <table>
+        <tr>
+            <th>Date de la demande:</th>
+            <td>{{ request.requestDate|date('d/m/Y H:i') }}</td>
+        </tr>
+        <tr>
+            <th>Demandeur:</th>
+            <td>{{ request.requester.fullname }} ({{ request.requester.mail }})</td>
+        </tr>
+        <tr>
+            <th>Site destination:</th>
+            <td>{{ request.destinationSite.nameSite }}</td>
+        </tr>
+        <tr>
+            <th>Produit:</th>
+            <td>{{ request.sourceStoragecard.idChimicalproduct.nameChimicalproduct }}</td>
+        </tr>
+        <tr>
+            <th>Quantité demandée:</th>
+            <td>{{ request.requestedQuantity }}</td>
+        </tr>
+        <tr>
+            <th>Quantité disponible:</th>
+            <td>{{ request.sourceStoragecard.stockquantity }}</td>
+        </tr>
+        <tr>
+            <th>Justification:</th>
+            <td>{{ request.reason }}</td>
+        </tr>
+    </table>
+
+    <p>
+        <a href="{{ url('manage_withdrawal_requests') }}" class="btn btn-primary">Gérer les demandes</a>
+    </p>
+
+    <p>Merci de traiter cette demande dès que possible.</p>
+
+    <p>Cordialement,<br>L'équipe Khemeia</p>
+</div>
+
+<div class="footer">
+    <p>Ce message a été envoyé automatiquement, merci de ne pas y répondre.</p>
+</div>
+</body>
+</html>

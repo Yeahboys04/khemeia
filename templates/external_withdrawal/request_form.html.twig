@@ -1,0 +1,122 @@
+{# templates/external_withdrawal/request_form.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Demande de retrait sur un autre site{% endblock %}
+
+{% block body %}
+    <section class="content-header">
+        <h1>
+            Demande de retrait de produit sur un autre site
+        </h1>
+        <ol class="breadcrumb">
+            <li><a href="{{ path('home_page') }}"><i class="fa fa-dashboard"></i> Accueil</a></li>
+            <li class="active">Demande de retrait externe</li>
+        </ol>
+    </section>
+
+    <section class="content">
+        <div class="row">
+            <div class="col-md-12">
+                <div class="box box-primary">
+                    <div class="box-header with-border">
+                        <h3 class="box-title">Formulaire de demande</h3>
+                    </div>
+
+                    <div class="box-body">
+                        {% if prefilledSourceSite and prefilledProduct %}
+                            <div class="alert alert-info">
+                                <p>
+                                    <i class="fa fa-info-circle"></i> Vous avez été redirigé depuis la page de retrait.
+                                    Le produit que vous souhaitez utiliser appartient à un autre site.
+                                    Veuillez compléter ce formulaire pour demander l'accès à ce produit.
+                                </p>
+                            </div>
+                        {% else %}
+                            <div class="alert alert-info">
+                                <p>
+                                    <i class="fa fa-info-circle"></i> Vous êtes sur le point de demander le retrait d'un produit sur un autre site.
+                                    Cette demande sera examinée par les responsables du site concerné. Veuillez fournir une justification claire pour votre demande.
+                                </p>
+                            </div>
+                        {% endif %}
+
+                        <p>
+                            <strong>Votre site actuel :</strong> {{ currentSite.nameSite }}
+                        </p>
+
+                        {{ form_start(form) }}
+
+                        <div class="form-group">
+                            {{ form_label(form.sourceSite) }}
+                            {{ form_widget(form.sourceSite) }}
+                            {{ form_errors(form.sourceSite) }}
+                            <small class="text-muted">Sélectionnez le site où se trouve le produit que vous souhaitez retirer.</small>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.sourceStoragecard) }}
+                            {{ form_widget(form.sourceStoragecard) }}
+                            {{ form_errors(form.sourceStoragecard) }}
+                            <small class="text-muted">Sélectionnez le produit que vous souhaitez retirer.</small>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.requestedQuantity) }}
+                            {{ form_widget(form.requestedQuantity) }}
+                            {{ form_errors(form.requestedQuantity) }}
+                            <small class="text-muted">Indiquez la quantité souhaitée.</small>
+                        </div>
+
+                        <div class="form-group">
+                            {{ form_label(form.reason) }}
+                            {{ form_widget(form.reason) }}
+                            {{ form_errors(form.reason) }}
+                            <small class="text-muted">Expliquez pourquoi vous avez besoin de ce produit et pourquoi vous ne pouvez pas l'obtenir autrement.</small>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    {{ form_widget(form.isUrgent) }} Demande urgente
+                                </label>
+                            </div>
+                            <small class="text-muted">Cochez cette case uniquement si la demande est vraiment urgente.</small>
+                        </div>
+
+                        <div class="box-footer">
+                            <button type="submit" class="btn btn-primary">Soumettre la demande</button>
+                            <a href="{{ path('home_page') }}" class="btn btn-default">Annuler</a>
+                        </div>
+
+                        {{ form_end(form) }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    {% if prefilledProduct %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                // Désactiver temporairement les champs pré-remplis pour indiquer visuellement qu'ils sont déjà sélectionnés
+                var sourceSiteField = document.querySelector('#external_withdrawal_request_sourceSite');
+                var sourceProductField = document.querySelector('#external_withdrawal_request_sourceStoragecard');
+
+                if (sourceSiteField) {
+                    sourceSiteField.classList.add('selected-field');
+                }
+
+                if (sourceProductField) {
+                    sourceProductField.classList.add('selected-field');
+                }
+            });
+        </script>
+
+        <style>
+            .selected-field {
+                background-color: #f4f7fa !important;
+                border-color: #3c8dbc !important;
+            }
+        </style>
+    {% endif %}
+{% endblock %}
