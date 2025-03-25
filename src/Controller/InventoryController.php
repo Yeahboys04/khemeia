@@ -354,9 +354,9 @@ class InventoryController extends AbstractController
                 $newStoragecard->setCreationDate(new \DateTime());
 
                 // Récupérer l'état physique directement à partir des données soumises
-                $formData = $request->request->get('storagecard_resp');
-                if (isset($formData['stateType'])) {
-                    $stateType = $formData['stateType'];
+                // Récupérer l'état physique directement à partir des données soumises
+                if ($form->has('stateType')) {
+                    $stateType = $form->get('stateType')->getData();
                     $newStoragecard->setStateType($stateType);
                 }
 
@@ -542,10 +542,9 @@ class InventoryController extends AbstractController
                 $newStoragecard = $form->getData();
 
                 // Récupérer l'état physique directement à partir des données soumises
-                $formData = $request->request->get('storagecard_resp');
-                if (isset($formData['stateType'])) {
-                    $stateType = $formData['stateType'];
-                    $newStoragecard->setStateType($stateType);
+                if ($form->has('stateType')) {
+                    $stateType = $form->get('stateType')->getData();
+                    $storagecard->setStateType($stateType);
                 }
 
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();

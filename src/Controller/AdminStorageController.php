@@ -175,9 +175,8 @@ class AdminStorageController extends AbstractController
                     $storagecard = $form->getData();
 
                     // Récupérer l'état physique directement à partir des données soumises
-                    $formData = $request->request->get('storagecard_resp');
-                    if (isset($formData['stateType'])) {
-                        $stateType = $formData['stateType'];
+                    if ($form->has('stateType')) {
+                        $stateType = $form->get('stateType')->getData();
                         $storagecard->setStateType($stateType);
                     }
 
@@ -343,9 +342,8 @@ class AdminStorageController extends AbstractController
                 $newStoragecard->setCreationDate(new \DateTime()); // Définir la date de création
 
                 // Récupérer l'état physique directement à partir des données soumises
-                $formData = $request->request->get('storagecard_resp');
-                if (isset($formData['stateType'])) {
-                    $stateType = $formData['stateType'];
+                if ($form->has('stateType')) {
+                    $stateType = $form->get('stateType')->getData();
                     $newStoragecard->setStateType($stateType);
                 }
 
