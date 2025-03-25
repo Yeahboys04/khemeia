@@ -15,6 +15,7 @@ use App\Repository\ExternalWithdrawalRequestRepository;
 use App\Repository\StoragecardRepository;
 use DateTime;
 use Doctrine\ORM\EntityManagerInterface;
+use LogicException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -351,6 +352,7 @@ class ExternalWithdrawalController extends AbstractController
         Request $request,
         EntityManagerInterface $entityManager,
         TokenStorageInterface $tokenStorage,
+        \App\Service\Utility $utility,  // Ajout du service Utility
         int $requestId
     ): Response {
         $withdrawalRequest = $entityManager->getRepository(ExternalWithdrawalRequest::class)->find($requestId);
@@ -409,6 +411,39 @@ class ExternalWithdrawalController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $idShelvingunit = $destinationStoragecard->getIdShelvingunit();
+            $chimicalproduct = $destinationStoragecard->getIdChimicalproduct();
+
+            // Récupérer l'option d'override (pour les admins)
+            $overrideCheck = false;
+            if ($request->request->has('override_incompatibility')) {
+                $overrideCheck = ($request->request->get('override_incompatibility') === "1");
+            }
+
+            try {
+                // Vérifier la compatibilité avec l'utilitaire injecté
+                $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, (bool)$overrideCheck);
+            } catch (LogicException $le) {
+                // Si incompatibilité détectée et utilisateur non admin
+                if (!$this->isGranted('ROLE_ADMIN')) {
+                    // Rediriger vers demande de dérogation
+                    return $this->redirectToRoute('incompatibility_request', [
+                        'productId' => $chimicalproduct->getIdChimicalproduct(),
+                        'shelvingUnitId' => $idShelvingunit->getIdShelvingunit()
+                    ]);
+                }
+                // Si admin sans avoir coché l'option
+                else {
+                    $this->addFlash('warning', $le->getMessage() . ' En tant qu\'administrateur, vous pouvez contourner cette restriction.');
+                    return $this->render('external_withdrawal/select_location.html.twig', [
+                        'form' => $form->createView(),
+                        'request' => $withdrawalRequest,
+                        'product' => $chimicalProduct,
+                        'show_override' => true,
+                        'incompatibility_detected' => true
+                    ]);
+                }
+            }
             // Enregistrer la fiche de stockage
             $entityManager->persist($destinationStoragecard);
 
@@ -432,10 +467,13 @@ class ExternalWithdrawalController extends AbstractController
             return $this->redirectToRoute('user_withdrawal_requests');
         }
 
+        $showOverride = $this->isGranted('ROLE_ADMIN');
+
         return $this->render('external_withdrawal/select_location.html.twig', [
             'form' => $form->createView(),
             'request' => $withdrawalRequest,
-            'product' => $chimicalProduct
+            'product' => $chimicalProduct,
+            'show_override' => $showOverride
         ]);
     }
 

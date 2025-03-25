@@ -116,10 +116,8 @@
                         {% if site is not null and app.user.getIdSite() != site %}
                             <div class="alert alert-warning mb-4">
                                 <h4><i class="fa fa-exclamation-triangle"></i> Attention</h4>
-                                <p>Vous ne faites pas partie de ce site. Vous ne pouvez pas retirer ces produits.<br>
-                                    Adressez-vous au responsable du site:
-                                    {{ site.getFullnamesupervisor() }} -
-                                    {{ site.getPhonenumber() }}</p>
+                                <p>Vous ne faites pas partie de ce site. Vous devez remplir un formulaire pour retirer ces produits.<br>
+                                cliquez sur 'retire un produit
                             </div>
                         {% endif %}
 
@@ -164,15 +162,14 @@
 
                                                     {% set productSite = oneProduct.getIdShelvingunit().getIdCupboard().getIdStock().getIdSite() %}
 
-                                                    {# Si l'utilisateur fait parti du meme site que le produit #}
-                                                    {% if app.user.getIdSite() == productSite %}
-                                                        {# Si l'utilisateur a le role responsable ou utilisateur #}
-                                                        {% if app.user.getIdStatus.getNameStatus() == 'responsable' or app.user.getIdStatus.getNameStatus() =='utilisateur' %}
+
+                                                        {# Si l'utilisateur a le rôle responsable ou utilisateur #}
+                                                        {% if app.user.getIdStatus.getNameStatus() in ['responsable', 'utilisateur'] %}
                                                             {# Si le produit est publié #}
                                                             {% if oneProduct.getIspublished() %}
                                                                 {# ET Si le produit est épuisé #}
                                                                 {% if oneProduct.getStockquantity() is same as (0) %}
-                                                                    {# On empeche le retrait #}
+                                                                    {# On empêche le retrait #}
                                                                     <button class="btn btn-primary btn-sm" title="Retrait" disabled>
                                                                         <i class="fa fa-flask"></i>
                                                                     </button>
@@ -183,19 +180,21 @@
                                                                     </a>
                                                                 {% endif %}
                                                             {% else %}
-                                                                {# On empeche le retrait #}
+                                                                {# On empêche le retrait #}
                                                                 <button class="btn btn-primary btn-sm" title="Retrait" disabled>
                                                                     <i class="fa fa-flask"></i>
                                                                 </button>
+                                                                <p>Produit non publié</p>
                                                             {% endif %}
                                                         {% endif %}
+
                                                         {# Si l'utilisateur est responsable, on montre l'historique de déplacement du produit #}
-                                                        {% if app.user.getIdStatus.getNameStatus() == 'responsable'%}
+                                                        {% if app.user.getIdStatus.getNameStatus() == 'responsable' %}
                                                             <a href="{{ path('moved_history', {id: oneProduct.getIdStoragecard()}) }}" class="btn btn-purple btn-sm" title="Historique">
                                                                 <i class="fa fa-folder-open"></i>
                                                             </a>
                                                         {% endif %}
-                                                    {% endif %}
+
 
                                                     {# Si l'utilisateur est administrateur, il a tous les droits #}
                                                     {% if app.user.getIdStatus.getNameStatus() == 'administrateur' %}
