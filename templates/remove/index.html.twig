@@ -10,6 +10,11 @@
 {% endblock %}
 
 {% block body %}
+    <div class="alert alert-info">
+        <p>
+            <i class="fa fa-info-circle"></i> Si le produit que vous recherchez n'est pas publié ou est épuisé, vous ne pouvez pas le retirer.
+        </p>
+    </div>
 
     {% if searchAll is defined and searchAll == 'oui' and storagecards is defined and storagecards|length > 0 %}
         <div class="alert alert-info">
@@ -170,7 +175,7 @@
                                                                 {# ET Si le produit est épuisé #}
                                                                 {% if oneProduct.getStockquantity() is same as (0) %}
                                                                     {# On empêche le retrait #}
-                                                                    <button class="btn btn-primary btn-sm" title="Retrait" disabled>
+                                                                    <button class="btn btn-primary btn-sm" title="Produit épuisé" disabled >
                                                                         <i class="fa fa-flask"></i>
                                                                     </button>
                                                                 {% else %}
@@ -181,10 +186,9 @@
                                                                 {% endif %}
                                                             {% else %}
                                                                 {# On empêche le retrait #}
-                                                                <button class="btn btn-primary btn-sm" title="Retrait" disabled>
+                                                                <button class="btn btn-primary btn-sm" title="Produit non publié" disabled>
                                                                     <i class="fa fa-flask"></i>
                                                                 </button>
-                                                                <p>Produit non publié</p>
                                                             {% endif %}
                                                         {% endif %}
 

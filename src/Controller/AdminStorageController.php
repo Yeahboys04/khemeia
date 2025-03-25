@@ -267,11 +267,7 @@ class AdminStorageController extends AbstractController
         }
             // S'il y a tout autre exception
         catch (\Exception $e) {
-            $this->addFlash('error',
-                'Attention, une erreur est survenue.'
-                .' Contactez votre administrateur.');
-            //on redirige vers la page d'accueil
-            return $this->redirectToRoute('home_page');
+            throw $e;
         }
 
         return $this->render('admin/storage.html.twig', [
