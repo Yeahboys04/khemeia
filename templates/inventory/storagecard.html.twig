@@ -44,7 +44,7 @@
     {% endblock %}
 
     {% block title %}
-        Khemeia | {% if action == 'create' %}Création{% elseif action == 'copy' %}Duplication{% elseif action == 'modify' %}Modification{% endif %} d'une fiche de stockage
+        Khemeia | {% if operation_type == 'create' %}Création{% elseif operation_type == 'copy' %}Duplication{% elseif operation_type == 'modify' %}Modification{% endif %} d'une fiche de stockage
     {% endblock %}
 
     {% block body %}
@@ -63,11 +63,11 @@
             <div class="form-card">
                 <div class="card-header">
                     <h2>
-                        {% if action == 'create' %}
+                        {% if operation_type == 'create' %}
                             <i class="fas fa-plus-circle"></i> Création d'une fiche de stockage
-                        {% elseif action == 'copy' %}
+                        {% elseif operation_type == 'copy' %}
                             <i class="fas fa-copy"></i> Duplication d'une fiche de stockage
-                        {% elseif action == 'modify' %}
+                        {% elseif operation_type == 'modify' %}
                             <i class="fas fa-edit"></i> Modification d'une fiche de stockage
                         {% endif %}
                     </h2>
@@ -403,15 +403,15 @@
                     {% endif %}
 
                     <div class="form-footer">
-                        {% if action == 'create' %}
+                        {% if operation_type == 'create' %}
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-save"></i> Créer la fiche
                             </button>
-                        {% elseif action == 'copy' %}
+                        {% elseif operation_type == 'copy' %}
                             <button type="submit" class="btn btn-warning btn-lg">
                                 <i class="fas fa-copy"></i> Dupliquer la fiche
                             </button>
-                        {% elseif action == 'modify' %}
+                        {% elseif operation_type == 'modify' %}
                             <button type="submit" class="btn btn-success btn-lg">
                                 <i class="fas fa-check-circle"></i> Enregistrer les modifications
                             </button>

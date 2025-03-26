@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block title %}
-    Khemeia | {% if action == 'create' %}Création{% elseif action == 'modify' %}Modification{% elseif action == 'remove' %}Suppression{% elseif action == 'duplicate' %}Duplication{% endif %} d'une fiche de stockage
+    Khemeia | {% if operation_type == 'create' %}Création{% elseif operation_type == 'modify' %}Modification{% elseif operation_type == 'remove' %}Suppression{% elseif operation_type == 'duplicate' %}Duplication{% endif %} d'une fiche de stockage
 {% endblock %}
 
 {% block body %}
@@ -38,11 +38,11 @@
                         {# Selon que l'on veut créer, modifier ou supprimer une fiche produit,
                             on paramètre la méthode qui reçoit le formulaire avec la bonne route
                             ainsi que le bon texte du bouton de soumission du formulaire#}
-                        {% if action == 'modify' %}
+                        {% if operation_type == 'modify' %}
                         <form id="storage-form" role="form" action="{{ path('admin_storage_modify', {id: id}) }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
-                            {% elseif action == 'remove' %}
+                            {% elseif operation_type == 'remove' %}
                             <form id="storage-form" role="form" action="{{ path('admin_storage_remove', {id: id}) }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
-                                {% elseif action == 'duplicate' %}
+                                {% elseif operation_type == 'duplicate' %}
                                     <form id="storage-form" role="form" action="{{ path('admin_storage_duplicate', {id: id}) }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
                                 {% else %}
                                 <form id="storage-form" role="form" action="{{ path('admin_storage')}}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
@@ -378,19 +378,19 @@
                                     {% endif %}
 
                                     <div class="form-footer">
-                                        {% if action == 'create' %}
+                                        {% if operation_type == 'create' %}
                                             <button type="submit" class="btn btn-primary btn-lg">
                                                 <i class="fas fa-save"></i> Créer la fiche
                                             </button>
-                                        {% elseif action == 'modify' %}
+                                        {% elseif operation_type == 'modify' %}
                                             <button type="submit" class="btn btn-success btn-lg">
                                                 <i class="fas fa-edit"></i> Modifier
                                             </button>
-                                        {% elseif action == 'remove' %}
+                                        {% elseif operation_type == 'remove' %}
                                             <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#modal-default">
                                                 <i class="fas fa-trash"></i> Supprimer
                                             </button>
-                                        {% elseif action == 'duplicate' %}
+                                        {% elseif operation_type == 'duplicate' %}
                                             <button type="submit" class="btn btn-info btn-lg">
                                                 <i class="fas fa-trash"></i> Dupliquer
                                             </button>

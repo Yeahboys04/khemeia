@@ -2,564 +2,260 @@
 
 namespace App\Controller;
 
-use App\Entity\Analysisfile;
-use App\Entity\Movedhistory;
-use App\Entity\Securityfile;
 use App\Entity\Storagecard;
-use App\Form\StoragecardRespType;
-use App\Form\StoragecardType;
-use App\Service\FileUploader;
-use App\Service\Utility;
-use DateTime;
+use DateTimeImmutable;
 use Doctrine\DBAL\Exception\ForeignKeyConstraintViolationException;
-use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 use LogicException;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
-use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Routing\Attribute\Route;
 
-class AdminStorageController extends AbstractController
+class AdminStorageController extends AbstractStorageController
 {
     #[Route('/admin/storage', name: 'admin_storage')]
-    public function index(
-        Request $request,
-        FileUploader $fileUploader,
-        Utility $utility,
-        EntityManagerInterface $entityManager,
-        TokenStorageInterface $tokenStorage
-    ): Response {
+    public function index(Request $request): Response
+    {
         try {
-            $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
-
-            $storagecards = $repositoryStoragecard->findAll();
+            $storagecards = $this->storagecardService->getAllStoragecards();
             $storagecard = new Storagecard();
-            $user = $tokenStorage->getToken()->getUser();
 
-            $form = $this->createForm(StoragecardRespType::class, $storagecard, [
-                'method' => 'POST',
-                'idSite' => $user->getIdSite()->getIdSite()
-            ]);
+            $form = $this->createStoragecardForm($storagecard, 'create');
             $form->handleRequest($request);
 
             if ($form->isSubmitted() && $form->isValid()) {
                 $storagecard = $form->getData();
 
                 // Définir la date de création
-                $storagecard->setCreationDate(new \DateTime());
+                $storagecard->setCreationDate(new DateTimeImmutable());
 
-                if ($form->has('stateType')) {
-                    $stateType = $form->get('stateType')->getData();
-                    $storagecard->setStateType($stateType);
+                $result = $this->processStoragecardForm(
+                    $request,
+                    $form,
+                    $storagecard,
+                    'create'
+                );
+
+                if ($result instanceof Response) {
+                    return $result;
                 }
 
-                $idShelvingunit = $form->get('idShelvingunit')->getData();
-                $chimicalproduct = $form->get('idChimicalproduct')->getData();
-
-                $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager);
-
-                $securityFile = $form->get('uploadedSecurityFile')->getData();
-                $analysisFile = $form->get('uploadedAnalysisFile')->getData();
-
-                //cette condition est necessaire car le champ "Fiche de prudence" n'est
-                //pas obligatoire
-                if ($securityFile != null) {
-                    $newSecurityFileName =
-                        $fileUploader->upload(
-                            $securityFile,
-                            $this->getParameter('idSecurityFile_directory'));
-
-                    $securityfile = new Securityfile();
-                    $securityfile->setNameSecurityfile($newSecurityFileName);
-                    $entityManager->persist($securityfile);
-                    $entityManager->flush();
-                    $storagecard->setIdSecurityfile($securityfile);
-                }
-
-                //cette condition est necessaire car le champ "Certificat d'analyse" n'est
-                //pas obligatoire
-                if ($analysisFile != null) {
-                    $newAnalysisFileName =
-                        $fileUploader->upload(
-                            $analysisFile,
-                            $this->getParameter('idAnalysisFile_directory'));
-
-                    $analysisFile = new Analysisfile();
-                    $analysisFile->setNameAnalysisfile($newAnalysisFileName);
-                    $entityManager->persist($analysisFile);
-                    $entityManager->flush();
-                    $storagecard->setIdAnalysisfile($analysisFile);
-                }
-                $entityManager->persist($storagecard);
-                $entityManager->flush();
-
-                //On initialise la position du produit
-                $movedHistory = new Movedhistory();
-                $movedHistory->setMovedate(new DateTime());
-                $movedHistory->setIdShelvingunit($storagecard->getIdShelvingunit());
-                $movedHistory->setIdStoragecard($storagecard);
-                $movedHistory->setIdUser($tokenStorage->getToken()->getUser());
-
-                //On passe l'historique à la base de donnée
-                $entityManager->persist($movedHistory);
-                $entityManager->flush();
-
-                $this->addFlash('success',
-                    'La fiche de stockage numéro ' . $storagecard->getIdStoragecard() . ' a été créée avec succès.');
                 return $this->redirectToRoute('admin_storage');
             }
+
+            return $this->renderStorageForm($form, 'create', false, ['storagecards' => $storagecards]);
         }
         catch (LogicException $le) {
             $this->addFlash('error', $le->getMessage());
-            return $this->render('admin/storage.html.twig', [
-                'form' => $form->createView(),
-                'action' => 'create',
-                'storagecards' => $storagecards,
-            ]);
+            return $this->renderStorageForm($form, 'create', true, ['storagecards' => $storagecards]);
         }
         catch (FileException $e) {
             $this->addFlash('error',
-                'Attention, une erreur est survenue lors du déplacement du fichier.'
-                .' Contactez votre administrateur.');
-            //on redirige vers la page d'accueil
+                'Attention, une erreur est survenue lors du déplacement du fichier. Contactez votre administrateur.');
             return $this->redirectToRoute('home_page');
         }
-        // S'il y a tout autre exception
-        // catch (\Exception $e) {
-        //     $this->addFlash('error',
-        //         'Attention, une erreur est survenue.'
-        //         .' Contactez votre administrateur.');
-        //     return $this->redirectToRoute('home_page');
-        // }
-
-        return $this->render('admin/storage.html.twig', [
-            'form' => $form->createView(),
-            'action' => 'create',
-            'storagecards' => $storagecards,
-        ]);
+        catch (Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue. Contactez votre administrateur.');
+            return $this->redirectToRoute('home_page');
+        }
     }
 
-    /**
-     * Modifier une fiche de stockage via un formulaire
-     */
     #[Route('/admin/storage/modify/{id}', name: 'admin_storage_modify')]
-    public function modify(
-        Request $request,
-        FileUploader $fileUploader,
-        Utility $utility,
-        EntityManagerInterface $entityManager,
-        TokenStorageInterface $tokenStorage,
-        $id
-    ): Response {
+    public function modify(Request $request, int $id): Response
+    {
         try {
-            //Initialise le repositoryStoragecard pour la base de données
-            $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
+            $storagecards = $this->storagecardService->getAllStoragecards();
+            $storagecard = $this->storagecardService->getStoragecard($id);
 
-            //Cherche tous les storagecards
-            $storagecards = $repositoryStoragecard->findAll();
-
-            $previousStoragecard = $repositoryStoragecard->find($id);
-            $previousLocalisation = $previousStoragecard->getIdShelvingunit();
-            $user = $tokenStorage->getToken()->getUser();
-
-            if ($previousStoragecard != null || !empty($previousStoragecard)) {
-                $form = $this->createForm(StoragecardRespType::class, $previousStoragecard, [
-                    'method' => 'POST',
-                    'idSite' => $user->getIdSite()->getIdSite()
-                ]);
-
-                $form->handleRequest($request);
-                if ($form->isSubmitted() && $form->isValid()) {
-                    $storagecard = $form->getData();
-
-                    // Récupérer l'état physique directement à partir des données soumises
-                    if ($form->has('stateType')) {
-                        $stateType = $form->get('stateType')->getData();
-                        $storagecard->setStateType($stateType);
-                    }
-
-                    $idShelvingunit = $form->get('idShelvingunit')->getData();
-                    $chimicalproduct = $form->get('idChimicalproduct')->getData();
-
-                    // Récupérer l'option d'override (pour les admins)
-                    $overrideCheck = false;
-                    if ($request->request->has('override_incompatibility')) {
-                        $overrideCheck = ($request->request->get('override_incompatibility') === "1");
-                    }
-
-                    try {
-                        // Vérifier la compatibilité avec l'option de dérogation pour les admins
-                        $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, (bool)$overrideCheck);
-                    } catch (LogicException $le) {
-                        // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
-                        if (!$this->isGranted('ROLE_ADMIN')) {
-                            // Rediriger vers le formulaire de demande de dérogation
-                            return $this->redirectToRoute('incompatibility_request', [
-                                'productId' => $chimicalproduct->getIdChimicalproduct(),
-                                'shelvingUnitId' => $idShelvingunit->getIdShelvingunit()
-                            ]);
-                        }
-                        // Si c'est un admin mais qu'il n'a pas coché l'option de dérogation
-                        else {
-                            // Afficher le message d'erreur et renvoyer au formulaire avec l'option de dérogation
-                            $this->addFlash('warning', $le->getMessage() . ' En tant qu\'administrateur, vous pouvez contourner cette restriction en cochant l\'option de dérogation.');
-                            return $this->render('admin/storage.html.twig', [
-                                'form' => $form->createView(),
-                                'action' => 'modify',
-                                'storagecards' => $storagecards,
-                                'id' => $id,
-                                'show_override' => true,
-                                'incompatibility_detected' => true
-                            ]);
-                        }
-                    }
-
-                    $securityFile = $form->get('uploadedSecurityFile')->getData();
-                    $analysisFile = $form->get('uploadedAnalysisFile')->getData();
-                    //cette condition est necessaire car le champ "Fiche de prudence" n'est
-                    //pas obligatoire
-                    if ($securityFile != null) {
-                        $newSecurityFileName =
-                            $fileUploader->upload(
-                                $securityFile,
-                                $this->getParameter('idSecurityFile_directory'));
-
-                        $securityfile = new Securityfile();
-                        $securityfile->setNameSecurityfile($newSecurityFileName);
-                        $entityManager->persist($securityfile);
-                        $entityManager->flush();
-                        $storagecard->setIdSecurityfile($securityfile);
-                    }
-
-                    //cette condition est necessaire car le champ "Certificat d'analyse" n'est
-                    //pas obligatoire
-                    if ($analysisFile != null) {
-                        $newAnalysisFileName =
-                            $fileUploader->upload(
-                                $analysisFile,
-                                $this->getParameter('idAnalysisFile_directory'));
-
-                        $analysisFile = new Analysisfile();
-                        $analysisFile->setNameAnalysisfile($newAnalysisFileName);
-                        $entityManager->persist($analysisFile);
-                        $entityManager->flush();
-                        $storagecard->setIdAnalysisfile($analysisFile);
-                    }
-
-                    //On vérifie si le produit a été déplacé:
-                    $localisation = $form->get('idShelvingunit')->getData();
-                    //Si le produit a été déplacé
-                    if ($localisation !== $previousLocalisation){
-                        //On se souvient du déplacement du produit
-                        $movedHistory = new Movedhistory();
-                        $movedHistory->setMovedate(new DateTime());
-                        $movedHistory->setIdShelvingunit($localisation);
-                        $movedHistory->setIdStoragecard($storagecard);
-                        $movedHistory->setIdUser($tokenStorage->getToken()->getUser());
-
-                        //On passe l'historique à la base de donnée
-                        $entityManager->persist($movedHistory);
-                        $entityManager->flush();
-                    }
-
-                    $entityManager->flush();
-                    $this->addFlash('success',
-                        'La fiche de stockage a été modifiée avec succès.');
-
-                    return $this->redirectToRoute('admin_storage');
-                }
+            if (!$storagecard) {
+                $this->addFlash('error', 'La fiche de stockage N° ' . $id . ' n\'existe pas.');
+                return $this->redirectToRoute('admin_storage');
             }
-            else {
-                $this->addFlash('error',
-                    'Attention, une erreur est survenue. La fiche de stockage '
-                    .' N° \' ' .$id. ' \' n\'existe pas.');
+
+            $previousLocalisation = $storagecard->getIdShelvingunit();
+            $oldSecurityFile = $storagecard->getIdSecurityfile();
+            $oldAnalysisFile = $storagecard->getIdAnalysisfile();
+
+            $form = $this->createStoragecardForm($storagecard, 'modify');
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                // Vérifier si l'emplacement a changé
+                $newLocalisation = $form->get('idShelvingunit')->getData();
+                $hasMoved = $newLocalisation !== $previousLocalisation;
+
+                $result = $this->processStoragecardForm(
+                    $request,
+                    $form,
+                    $storagecard,
+                    'modify',
+                    $hasMoved,
+                    $oldSecurityFile,
+                    $oldAnalysisFile
+                );
+
+                if ($result instanceof Response) {
+                    return $result;
+                }
 
                 return $this->redirectToRoute('admin_storage');
             }
+
+            return $this->renderStorageForm(
+                $form,
+                'modify',
+                false,
+                ['storagecards' => $storagecards, 'id' => $id]
+            );
         }
         catch (LogicException $le) {
             $this->addFlash('error', $le->getMessage());
-            return $this->render('admin/storage.html.twig', [
-                'form' => $form->createView(),
-                'action' => 'modify',
-                'storagecards' => $storagecards,
-                'id' => $id,
-                'show_override' => true,
-                'incompatibility_detected' => true
-            ]);
+            return $this->renderStorageForm(
+                $form,
+                'modify',
+                true,
+                ['storagecards' => $storagecards, 'id' => $id]
+            );
         }
         catch (FileException $e) {
             $this->addFlash('error',
-                'Attention, une erreur est survenue lors du déplacement du fichier.'
-                .' Contactez votre administrateur.');
-            //on redirige vers la page d'accueil
+                'Attention, une erreur est survenue lors du déplacement du fichier. Contactez votre administrateur.');
             return $this->redirectToRoute('home_page');
         }
-            // S'il y a tout autre exception
-        catch (\Exception $e) {
-            throw $e;
+        catch (Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue. Contactez votre administrateur.');
+            return $this->redirectToRoute('home_page');
         }
-
-        return $this->render('admin/storage.html.twig', [
-            'form' => $form->createView(),
-            'action' => 'modify',
-            'storagecards' => $storagecards,
-            'id' => $id,
-            'show_override' => $this->isGranted('ROLE_ADMIN'),
-            'incompatibility_detected' => false
-        ]);
     }
 
-
-    /**
-     * Dupliquer une fiche de stockage via un formulaire
-     */
     #[Route('/admin/storage/duplicate/{id}', name: 'admin_storage_duplicate')]
-    public function duplicate(
-        Request $request,
-        FileUploader $fileUploader,
-        Utility $utility,
-        EntityManagerInterface $entityManager,
-        TokenStorageInterface $tokenStorage,
-        $id
-    ): Response {
+    public function duplicate(Request $request, int $id): Response
+    {
         try {
-            // Initialise le repository pour la base de données
-            $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
+            $storagecards = $this->storagecardService->getAllStoragecards();
+            $originalStoragecard = $this->storagecardService->getStoragecard($id);
 
-            // Cherche tous les storagecards pour l'affichage de la liste
-            $storagecards = $repositoryStoragecard->findAll();
-
-            // Récupère la fiche originale à dupliquer
-            $originalStoragecard = $repositoryStoragecard->find($id);
-            $user = $tokenStorage->getToken()->getUser();
-
-            if ($originalStoragecard === null || empty($originalStoragecard)) {
-                $this->addFlash('error',
-                    'Attention, une erreur est survenue. La fiche de stockage '
-                    .' N° \' ' .$id. ' \' n\'existe pas.');
+            if (!$originalStoragecard) {
+                $this->addFlash('error', 'La fiche de stockage N° ' . $id . ' n\'existe pas.');
                 return $this->redirectToRoute('admin_storage');
             }
 
-            // Créer une nouvelle fiche basée sur l'originale
-            $newStoragecard = new Storagecard();
-            // Copier les propriétés de l'original
-            $newStoragecard->setIdChimicalproduct($originalStoragecard->getIdChimicalproduct());
-            $newStoragecard->setIdShelvingunit($originalStoragecard->getIdShelvingunit());
-            $newStoragecard->setCapacity($originalStoragecard->getCapacity());
-            $newStoragecard->setStockquantity($originalStoragecard->getStockquantity());
-            $newStoragecard->setPurity($originalStoragecard->getPurity());
-            $newStoragecard->setTemperature($originalStoragecard->getTemperature());
-            $newStoragecard->setSerialnumber($originalStoragecard->getSerialnumber());
-            $newStoragecard->setOpendate(new \DateTime());  // Date d'ouverture actuelle
-            $newStoragecard->setExpirationdate($originalStoragecard->getExpirationdate());
-            $newStoragecard->setIdProperty($originalStoragecard->getIdProperty());
-            $newStoragecard->setIdSupplier($originalStoragecard->getIdSupplier());
-            $newStoragecard->setReference($originalStoragecard->getReference());
-            $newStoragecard->setIsarchived(false); // Par défaut non archivé
-            $newStoragecard->setIsrisked($originalStoragecard->getIsrisked());
-            $newStoragecard->setIspublished($originalStoragecard->getIspublished());
-            $newStoragecard->setCommentary($originalStoragecard->getCommentary() . ' (Copie)');
-            $newStoragecard->setStateType($originalStoragecard->getStateType()); // Copier l'état physique
-
-            // Créer le formulaire avec la nouvelle fiche pré-remplie
-            $form = $this->createForm(StoragecardRespType::class, $newStoragecard, [
-                'method' => 'POST',
-                'idSite' => $user->getIdSite()->getIdSite(),
-                'action' => 'copy'
-            ]);
+            // Préparer une copie de la fiche d'origine avec les spécificités de duplication
+            $newStoragecard = $this->storagecardService->prepareStoragecardDuplicate($originalStoragecard);
+            $form = $this->createStoragecardForm($newStoragecard, 'duplicate');
 
             $form->handleRequest($request);
             if ($form->isSubmitted() && $form->isValid()) {
-                // Récupérer les données du formulaire
-                $newStoragecard = $form->getData();
-                $newStoragecard->setCreationDate(new \DateTime()); // Définir la date de création
+                $oldSecurityFile = $originalStoragecard->getIdSecurityfile();
+                $oldAnalysisFile = $originalStoragecard->getIdAnalysisfile();
 
-                // Récupérer l'état physique directement à partir des données soumises
-                if ($form->has('stateType')) {
-                    $stateType = $form->get('stateType')->getData();
-                    $newStoragecard->setStateType($stateType);
+                $result = $this->processStoragecardForm(
+                    $request,
+                    $form,
+                    $newStoragecard,
+                    'duplicate',
+                    true,
+                    $oldSecurityFile,
+                    $oldAnalysisFile
+                );
+
+                if ($result instanceof Response) {
+                    return $result;
                 }
 
-                $idShelvingunit = $form->get('idShelvingunit')->getData();
-                $chimicalproduct = $form->get('idChimicalproduct')->getData();
-
-                // Récupérer l'option d'override (pour les admins)
-                $overrideCheck = false;
-                if ($request->request->has('override_incompatibility')) {
-                    $overrideCheck = ($request->request->get('override_incompatibility') === "1");
-                }
-
-                try {
-                    // Vérifier la compatibilité avec l'option de dérogation pour les admins
-                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, (bool)$overrideCheck);
-                } catch (LogicException $le) {
-                    // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
-                    if (!$this->isGranted('ROLE_ADMIN')) {
-                        // Rediriger vers le formulaire de demande de dérogation
-                        return $this->redirectToRoute('incompatibility_request', [
-                            'productId' => $chimicalproduct->getIdChimicalproduct(),
-                            'shelvingUnitId' => $idShelvingunit->getIdShelvingunit()
-                        ]);
-                    }
-                    // Si c'est un admin mais qu'il n'a pas coché l'option de dérogation
-                    else {
-                        // Afficher le message d'erreur et renvoyer au formulaire avec l'option de dérogation
-                        $this->addFlash('warning', $le->getMessage() . ' En tant qu\'administrateur, vous pouvez contourner cette restriction en cochant l\'option de dérogation.');
-                        return $this->render('admin/storage.html.twig', [
-                            'form' => $form->createView(),
-                            'action' => 'duplicate',
-                            'storagecards' => $storagecards,
-                            'id' => $id,
-                            'show_override' => true,
-                            'incompatibility_detected' => true
-                        ]);
-                    }
-                }
-
-                $securityFile = $form->get('uploadedSecurityFile')->getData();
-                $analysisFile = $form->get('uploadedAnalysisFile')->getData();
-
-                if ($securityFile != null) {
-                    $newSecurityFileName =
-                        $fileUploader->upload(
-                            $securityFile,
-                            $this->getParameter('idSecurityFile_directory'));
-
-                    $securityfile = new Securityfile();
-                    $securityfile->setNameSecurityfile($newSecurityFileName);
-                    $entityManager->persist($securityfile);
-                    $entityManager->flush();
-                    $newStoragecard->setIdSecurityfile($securityfile);
-                } else {
-                    // Utiliser les fichiers de l'original si aucun nouveau n'est téléchargé
-                    $newStoragecard->setIdSecurityfile($originalStoragecard->getIdSecurityfile());
-                }
-
-                if ($analysisFile != null) {
-                    $newAnalysisFileName =
-                        $fileUploader->upload(
-                            $analysisFile,
-                            $this->getParameter('idAnalysisFile_directory'));
-
-                    $analysisFile = new Analysisfile();
-                    $analysisFile->setNameAnalysisfile($newAnalysisFileName);
-                    $entityManager->persist($analysisFile);
-                    $entityManager->flush();
-                    $newStoragecard->setIdAnalysisfile($analysisFile);
-                } else {
-                    // Utiliser les fichiers de l'original si aucun nouveau n'est téléchargé
-                    $newStoragecard->setIdAnalysisfile($originalStoragecard->getIdAnalysisfile());
-                }
-
-                // Persister la nouvelle fiche
-                $entityManager->persist($newStoragecard);
-                $entityManager->flush();
-
-                // Créer l'historique de mouvement
-                $movedHistory = new Movedhistory();
-                $movedHistory->setMovedate(new DateTime());
-                $movedHistory->setIdShelvingunit($newStoragecard->getIdShelvingunit());
-                $movedHistory->setIdStoragecard($newStoragecard);
-                $movedHistory->setIdUser($tokenStorage->getToken()->getUser());
-
-                $entityManager->persist($movedHistory);
-                $entityManager->flush();
-
-                $this->addFlash('success', 'La fiche de stockage a été dupliquée avec succès.');
                 return $this->redirectToRoute('admin_storage');
             }
+
+            return $this->renderStorageForm(
+                $form,
+                'duplicate',
+                false,
+                ['storagecards' => $storagecards, 'id' => $id]
+            );
         }
         catch (LogicException $le) {
             $this->addFlash('error', $le->getMessage());
-            return $this->render('admin/storage.html.twig', [
-                'form' => $form->createView(),
-                'action' => 'duplicate',
-                'storagecards' => $storagecards,
-                'id' => $id,
-                'show_override' => true,
-                'incompatibility_detected' => true
-            ]);
+            return $this->renderStorageForm(
+                $form,
+                'duplicate',
+                true,
+                ['storagecards' => $storagecards, 'id' => $id]
+            );
         }
         catch (FileException $e) {
             $this->addFlash('error',
-                'Attention, une erreur est survenue lors du déplacement du fichier.'
-                .' Contactez votre administrateur.');
+                'Attention, une erreur est survenue lors du déplacement du fichier. Contactez votre administrateur.');
             return $this->redirectToRoute('home_page');
         }
-        catch (\Exception $e) {
-            $this->addFlash('error',
-                'Attention, une erreur est survenue.'
-                .' Contactez votre administrateur.');
+        catch (Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue. Contactez votre administrateur.');
             return $this->redirectToRoute('home_page');
         }
-
-        // Afficher le formulaire de duplication
-        return $this->render('admin/storage.html.twig', [
-            'form' => $form->createView(),
-            'action' => 'duplicate',
-            'storagecards' => $storagecards,
-            'id' => $id,
-            'show_override' => $this->isGranted('ROLE_ADMIN'),
-            'incompatibility_detected' => false
-        ]);
     }
 
-
-    /**
-     * Supprimer une fiche de stockage
-     */
     #[Route('/admin/storage/remove/{id}', name: 'admin_storage_remove')]
-    public function remove(Request $request, EntityManagerInterface $entityManager, $id): Response
+    public function remove(Request $request, int $id): Response
     {
         try {
-            $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
+            $storagecards = $this->storagecardService->getAllStoragecards();
+            $storagecard = $this->storagecardService->getStoragecard($id);
 
-            $storagecards = $repositoryStoragecard->findAll();
-            $storagecard = $repositoryStoragecard->find($id);
-
-            if ($storagecard != null || !empty($storagecard)) {
-                $form = $this->createForm(StoragecardRespType::class, $storagecard, [
-                    'method' => 'POST',
-                ]);
-
-                $form->handleRequest($request);
-                if ($form->isSubmitted() && $form->isValid()) {
-                    $entityManager->remove($storagecard);
-                    $entityManager->flush();
-                    $this->addFlash('success',
-                        'La fiche de stockage a été supprimée avec succès.');
-                    return $this->redirectToRoute('admin_storage');
-                }
-            }
-            else {
-                $this->addFlash('error',
-                    'Attention, une erreur est survenue. La fiche de stockage '
-                    .' N° \' ' .$id. ' \' n\'existe pas.');
-
+            if (!$storagecard) {
+                $this->addFlash('error', 'La fiche de stockage N° ' . $id . ' n\'existe pas.');
                 return $this->redirectToRoute('admin_storage');
             }
+
+            $form = $this->createStoragecardForm($storagecard, 'remove');
+            $form->handleRequest($request);
+
+            if ($form->isSubmitted() && $form->isValid()) {
+                $this->storagecardService->removeStoragecard($storagecard);
+
+                $this->addFlash('success', 'La fiche de stockage a été supprimée avec succès.');
+                return $this->redirectToRoute('admin_storage');
+            }
+
+            return $this->renderStorageForm(
+                $form,
+                'remove',
+                false,
+                ['storagecards' => $storagecards, 'id' => $id]
+            );
         }
-        catch(ForeignKeyConstraintViolationException $fkcve) {
+        catch (ForeignKeyConstraintViolationException $fkcve) {
             $this->addFlash('error',
-                'Impossible de supprimer cette fiche. Il existe un historique d\'utilisation de ce produit pour un utilisateur.'
-                .' Archivez cette fiche ou contactez votre administrateur.');
+                'Impossible de supprimer cette fiche. Il existe un historique d\'utilisation de ce produit pour un utilisateur. ' .
+                'Archivez cette fiche ou contactez votre administrateur.');
             return $this->redirectToRoute('admin_storage');
         }
-        catch (\Exception $e) {
-            $this->addFlash('error',
-                'Attention, une erreur est survenue.'
-                .' Contactez votre administrateur.');
+        catch (Exception $e) {
+            $this->addFlash('error', 'Une erreur est survenue. Contactez votre administrateur.');
             return $this->redirectToRoute('home_page');
         }
+    }
 
-        return $this->render('admin/storage.html.twig', [
+    /**
+     * Implémentation de la méthode abstraite pour le rendu des formulaires
+     */
+    protected function renderStorageForm(
+        $form,
+        string $operationType,
+        bool $incompatibilityDetected = false,
+        array $additionalParams = []
+    ): Response {
+        $params = [
             'form' => $form->createView(),
-            'action' => 'remove',
-            'storagecards' => $storagecards,
-            'id' => $id
-        ]);
+            'operation_type' => $operationType,
+            'show_override' => $this->isGranted('ROLE_ADMIN'),
+            'incompatibility_detected' => $incompatibilityDetected,
+        ];
+
+        // Ajouter les paramètres additionnels
+        foreach ($additionalParams as $key => $value) {
+            $params[$key] = $value;
+        }
+
+        return $this->render('admin/storage.html.twig', $params);
     }
 }

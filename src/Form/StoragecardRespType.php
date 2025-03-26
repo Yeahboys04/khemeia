@@ -186,7 +186,7 @@ class StoragecardRespType extends AbstractType
             ])
             ->add('idProperty');
 
-        if ($options['action'] == 'copy') {
+        if ($options['operation_type'] == 'copy') {
             $builder->add('idShelvingunit', EntityType::class,
                 ['class' => Shelvingunit::class,
                     'query_builder' => function (EntityRepository $er) use ($options) {
@@ -284,7 +284,8 @@ class StoragecardRespType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Storagecard::class,
             'idSite' => null,
-            'from_derogation' => false,  // Nouvelle option par défaut à false
+            'from_derogation' => false,
+            'operation_type' => null
         ]);
     }
 }
