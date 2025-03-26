@@ -37,7 +37,7 @@ class TracabilityController extends AbstractSearchController
     }
 
     #[Route('/tracability/cart/{id}', name: 'tracability_add')]
-    public function addProduct(int $id): Response
+    public function addProduct(int $id, Request $request): Response
     {
         try {
             $user = $this->getUser();
@@ -51,6 +51,16 @@ class TracabilityController extends AbstractSearchController
             $this->tracabilityService->addProductToTracability($storagecard, $user);
 
             $this->addFlash('success', 'Le produit a bien été ajouté à votre historique.');
+
+            // Récupérer les paramètres de la recherche d'origine pour maintenir le contexte
+            $referer = $request->headers->get('referer');
+
+            // Si on vient bien de la page de recherche, on y retourne
+            if (strpos($referer, 'tracability/search') !== false) {
+                return $this->redirect($referer);
+            }
+
+            // Par défaut, on retourne à la page de recherche
             return $this->redirectToRoute('tracability_search');
         } catch (\Exception $e) {
             return $this->handleException($e, $this->getRedirectRoute());

@@ -24,7 +24,7 @@ Encore
     .addEntry('home', './assets/home.js')
     .addEntry('login', './assets/login.js')
     .addEntry('storagecard', './assets/storagecard.js')
-    .addEntry('remove_product', './assets/remove_product.js')
+    .addEntry('search_product', './assets/search_product.js')
     .addEntry('edit_product', './assets/edit_product.js')
     .addEntry('printBtn', './assets/js/components/printBtn.js')
     .addEntry('dateWidgetConfig', './assets/js/components/dateWidgetConfig.js')

@@ -49,12 +49,15 @@ class SearchService
             'site' => null,
             'searchAll' => null,
             'error' => null,
-            'success' => true
+            'success' => true,
+            'search_submitted' => false
         ];
 
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $results['search_submitted'] = true;
+
             // Récupère le type de recherche (produit ou CAS)
             $searchType = $form->get('searchType')->getData();
 

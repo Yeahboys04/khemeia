@@ -27,6 +27,7 @@ abstract class AbstractSearchController extends AbstractController
 
         $templateVars = [
             'form' => $form->createView(),
+            'search_submitted' => $results['search_submitted']
         ];
 
         if ($results['storagecards'] !== null) {
@@ -51,6 +52,7 @@ abstract class AbstractSearchController extends AbstractController
     protected function handleException(\Exception $e, string $redirectRoute): Response
     {
         throw $e;
+        $this->addFlash('error', 'Attention, une erreur est survenue. Contactez votre administrateur.');
         return $this->redirectToRoute($redirectRoute);
     }
 

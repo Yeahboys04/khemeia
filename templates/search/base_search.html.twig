@@ -1,0 +1,46 @@
+{% extends 'base.html.twig' %}
+
+{% block page_stylesheets %}
+    {{ encore_entry_link_tags('select') }}
+    {{ encore_entry_link_tags('search_product') }}
+    {% block module_stylesheets %}{% endblock %}
+{% endblock %}
+
+{% block title %}
+    Khemeia | {% block page_title %}Recherche de produits{% endblock %}
+{% endblock %}
+
+{% block body %}
+    <div class="alert alert-info">
+        <p>
+            <i class="fa fa-info-circle"></i> {% block info_message %}Si le produit que vous recherchez n'est pas publié ou est épuisé, vous ne pouvez pas le retirer.{% endblock %}
+        </p>
+    </div>
+
+    {% block pre_search %}{% endblock %}
+
+    <section class="content">
+        {% block search_form %}
+            {% include 'search/_search_form.html.twig' with {
+                'form': form,
+                'form_action': form_action|default('search')
+            } %}
+        {% endblock %}
+
+        {% block search_results %}
+            {% include 'search/_results.html.twig' with {
+                'storagecards': storagecards|default(null),
+                'site': site|default(null),
+                'searchAll': searchAll|default(null)
+            } %}
+        {% endblock %}
+
+        {% block post_search %}{% endblock %}
+    </section>
+{% endblock %}
+
+{% block page_javascripts %}
+    {{ encore_entry_script_tags('select') }}
+    {{ encore_entry_script_tags('search_product') }}
+    {% block module_javascripts %}{% endblock %}
+{% endblock %}

@@ -1,0 +1,71 @@
+{# Macro pour afficher les symboles de danger #}
+{% macro danger_symbols(product) %}
+    {% if product.getIdChimicalproduct().getIdDangersymbol()|length > 0 %}
+        <div class="danger-icons">
+            {% for dangerSymbol in product.getIdChimicalproduct().getIdDangersymbol() %}
+                <img
+                        src="{{ asset('uploads/icon_symboles_de_danger/' ~ dangerSymbol.getIcon()) }}"
+                        alt="{{ dangerSymbol.getDescriptionDangersymbol() }}"
+                        class="danger-icon"
+                        title="{{ dangerSymbol.getDescriptionDangersymbol() }}">
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour afficher les conseils de prudence #}
+{% macro caution_advice(product) %}
+    {% if product.getIdChimicalproduct().getIdCautionaryadvice()|length > 0 %}
+        <div class="badge-container">
+            {% for cautionaryAdvice in product.getIdChimicalproduct().getIdCautionaryadvice() %}
+                <span class="badge badge-primary tooltip-trigger">
+                    {{ cautionaryAdvice.getNameCautionaryadvice() }}
+                    <span class="tooltip-content">{{ cautionaryAdvice.getSentenceCautionaryadvice() }}</span>
+                </span>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour afficher les mentions de danger #}
+{% macro danger_notes(product) %}
+    {% if product.getIdChimicalproduct().getIdDangernote()|length > 0 %}
+        <div class="badge-container">
+            {% for dangerNote in product.getIdChimicalproduct().getIdDangernote() %}
+                <span class="badge badge-danger tooltip-trigger">
+                    {{ dangerNote.getNameDangernote() }}
+                    <span class="tooltip-content">{{ dangerNote.getSentenceDangernote() }}</span>
+                </span>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour afficher les types de produit #}
+{% macro product_types(product) %}
+    {% if product.getIdChimicalproduct().getIdType()|length > 0 %}
+        <div class="badge-container">
+            {% for type in product.getIdChimicalproduct().getIdType() %}
+                <span class="badge badge-warning">{{ type.getNameType() }}</span>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour afficher le statut CMR #}
+{% macro cmr_status(product) %}
+    {% if product.getIdChimicalproduct().getIsCMR() %}
+        <span class="cmr-tag"><i class="fas fa-exclamation-triangle"></i> CMR</span>
+    {% else %}
+        <span class="badge badge-success">Non</span>
+    {% endif %}
+{% endmacro %}
+
+{# Macro pour afficher la quantité en stock #}
+{% macro stock_quantity(product) %}
+    {% if product.getStockquantity() is same as (0) %}
+        <span class="text-danger">épuisé</span>
+    {% else %}
+        {{ product.getStockquantity() }}
+    {% endif %}
+{% endmacro %}

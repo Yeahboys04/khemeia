@@ -1,0 +1,48 @@
+{% set productSite = product.getIdShelvingunit().getIdCupboard().getIdStock().getIdSite() %}
+
+{# Si l'utilisateur a le rôle responsable ou utilisateur #}
+{% if app.user.getIdStatus.getNameStatus() in ['responsable', 'utilisateur'] %}
+    {# Si le produit est publié #}
+    {% if product.getIspublished() %}
+        {# ET Si le produit est épuisé #}
+        {% if product.getStockquantity() is same as (0) %}
+            {# On empêche le retrait #}
+            <button class="btn btn-primary btn-sm" title="Produit épuisé" disabled>
+                <i class="fa fa-flask"></i>
+            </button>
+        {% else %}
+            {# Sinon on autorise le retrait #}
+            <a href="{{ path('remove_quantity', {id: product.getIdStoragecard()}) }}" class="btn btn-primary btn-sm" title="Retrait">
+                <i class="fa fa-flask"></i>
+            </a>
+        {% endif %}
+    {% else %}
+        {# On empêche le retrait #}
+        <button class="btn btn-primary btn-sm" title="Produit non publié" disabled>
+            <i class="fa fa-flask"></i>
+        </button>
+    {% endif %}
+{% endif %}
+
+{# Si l'utilisateur est responsable, on montre l'historique de déplacement du produit #}
+{% if app.user.getIdStatus.getNameStatus() == 'responsable' %}
+    <a href="{{ path('moved_history', {id: product.getIdStoragecard()}) }}" class="btn btn-purple btn-sm" title="Historique">
+        <i class="fa fa-folder-open"></i>
+    </a>
+{% endif %}
+
+{# Si l'utilisateur est administrateur, il a tous les droits #}
+{% if app.user.getIdStatus.getNameStatus() == 'administrateur' %}
+    <a href="{{ path('remove_quantity', {id: product.getIdStoragecard()}) }}" class="btn btn-primary btn-sm" title="Retrait">
+        <i class="fa fa-flask"></i>
+    </a>
+    <a href="{{ path('moved_history', {id: product.getIdStoragecard()}) }}" class="btn btn-purple btn-sm" title="Historique">
+        <i class="fa fa-folder-open"></i>
+    </a>
+    <a href="{{ path('admin_storage_modify', {id: product.getIdStoragecard()}) }}" class="btn btn-success btn-sm" title="Modifier">
+        <i class="fa fa-pencil"></i>
+    </a>
+{% endif %}
+
+{# Actions spécifiques par module #}
+{% block extra_actions %}{% endblock %}
