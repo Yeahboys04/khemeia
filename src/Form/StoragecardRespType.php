@@ -155,34 +155,42 @@ class StoragecardRespType extends AbstractType
                 ]
             ])
             ->add('uploadedSecurityFile', FileType::class, [
-                'label' => 'Fiche de prudence (fichier PDF)',
+                'label' => 'Fiche de sécurité',
                 'required' => false,
                 'mapped' => false,
                 'constraints' => [
                     new File([
-                        'maxSize' => '1024k',
+                        'maxSize' => '3M', // Augmentation à 3 Mo au lieu de 1 Mo
                         'mimeTypes' => [
                             'application/pdf',
-                            'application/x-pdf',
                         ],
-                        'mimeTypesMessage' => 'Merci d\'importer un fichier PDF valide.',
+                        'mimeTypesMessage' => 'Veuillez télécharger un document PDF valide',
+                        'maxSizeMessage' => 'Le fichier est trop volumineux ({{ size }} {{ suffix }}). La taille maximale autorisée est {{ limit }} {{ suffix }}.'
                     ])
                 ],
+                'attr' => [
+                    'accept' => '.pdf',
+                    'data-max-size' => '3000000', // 3 Mo en octets pour la validation côté client
+                ]
             ])
             ->add('uploadedAnalysisFile', FileType::class, [
-                'label' => 'Certificat d\'analyse (fichier PDF)',
+                'label' => 'Certificat d\'analyse',
                 'required' => false,
                 'mapped' => false,
                 'constraints' => [
                     new File([
-                        'maxSize' => '1024k',
+                        'maxSize' => '3M', // Augmentation à 3 Mo au lieu de 1 Mo
                         'mimeTypes' => [
                             'application/pdf',
-                            'application/x-pdf',
                         ],
-                        'mimeTypesMessage' => 'Merci d\'importer un fichier PDF valide.',
+                        'mimeTypesMessage' => 'Veuillez télécharger un document PDF valide',
+                        'maxSizeMessage' => 'Le fichier est trop volumineux ({{ size }} {{ suffix }}). La taille maximale autorisée est {{ limit }} {{ suffix }}.'
                     ])
                 ],
+                'attr' => [
+                    'accept' => '.pdf',
+                    'data-max-size' => '3000000', // 3 Mo en octets pour la validation côté client
+                ]
             ])
             ->add('idProperty');
 

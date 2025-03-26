@@ -39,6 +39,8 @@ Encore
     .addStyleEntry('inventoryExport', './assets/styles/pages/inventoryExport.scss')
     .addEntry('derogation', './assets/js/derogation.js')
 
+    .addEntry('tom-select-multiselect', './assets/js/tom-select-multiselect.js')
+
     .addEntry('datepicker', './assets/js/components/datepicker.js')
     .addEntry('select', './assets/js/components/select.js')
     .addEntry('datatable', './assets/js/components/datatable.js')

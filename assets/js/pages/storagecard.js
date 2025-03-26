@@ -567,6 +567,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 
 
+
+
     /**
      * Initialize all features
      */
@@ -606,4 +608,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize everything when DOM is ready
     init();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+    const fileInputs = document.querySelectorAll('.file-input');
+
+    fileInputs.forEach(input => {
+        input.addEventListener('change', function() {
+            const maxSize = this.getAttribute('data-max-size') || 3000000; // 3 Mo par défaut
+            const fileSize = this.files[0]?.size || 0;
+            const fileContainer = this.closest('.file-upload');
+            const errorMessage = fileContainer.querySelector('.file-error') ||
+                document.createElement('div');
+
+            // Supprimer tout message d'erreur précédent
+            if (fileContainer.querySelector('.file-error')) {
+                fileContainer.querySelector('.file-error').remove();
+            }
+
+            if (fileSize > maxSize && fileSize > 0) {
+                errorMessage.className = 'file-error text-danger';
+                errorMessage.innerHTML = `<i class="fas fa-exclamation-circle"></i> Le fichier est trop volumineux (${(fileSize/1000000).toFixed(2)} Mo). La taille maximale autorisée est 3 Mo.`;
+                fileContainer.appendChild(errorMessage);
+                this.value = ''; // Vider l'input pour empêcher l'envoi du fichier
+
+                // Masquer le nom du fichier
+                const fileNameElement = fileContainer.querySelector('.file-name');
+                if (fileNameElement) {
+                    fileNameElement.textContent = '';
+                }
+                fileContainer.querySelector('.file-selected').style.display = 'none';
+            }
+        });
+    });
 });

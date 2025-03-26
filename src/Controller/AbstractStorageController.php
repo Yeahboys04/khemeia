@@ -134,7 +134,8 @@ abstract class AbstractStorageController extends AbstractController
         bool $moveCheck = true,
         ?Securityfile $oldSecurityFile = null,
         ?Analysisfile $oldAnalysisFile = null
-    ): ?Response {
+    ): ?Response
+    {
         try {
             // Récupération de l'état physique
             if ($form->has('stateType')) {
@@ -184,10 +185,12 @@ abstract class AbstractStorageController extends AbstractController
 
             return null;
         } catch (FileException $e) {
-            $this->addFlash('error', 'Une erreur est survenue lors du déplacement du fichier. Contactez votre administrateur.');
-            throw $e;
-        } catch (\Exception $e) {
-            $this->addFlash('error', 'Une erreur est survenue. Contactez votre administrateur.');
+            // Amélioration du message d'erreur pour les problèmes de fichier
+            if (strpos($e->getMessage(), 'maxSize') !== false || strpos($e->getMessage(), 'trop volumineux') !== false) {
+                $this->addFlash('error', 'Le fichier est trop volumineux. La taille maximale autorisée est de 3 Mo.');
+            } else {
+                $this->addFlash('error', 'Une erreur est survenue lors du traitement du fichier: ' . $e->getMessage());
+            }
             throw $e;
         }
     }

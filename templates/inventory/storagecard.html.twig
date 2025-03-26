@@ -8,6 +8,7 @@
         {{ encore_entry_link_tags('datepicker') }}
         {{ encore_entry_link_tags('select') }}
         {{ encore_entry_link_tags('storagecard') }}
+        {{ encore_entry_link_tags('tom-select-search') }}
 
         <style>
             .required::after {
@@ -57,7 +58,9 @@
                 <p>Ces informations ne peuvent pas être modifiées.</p>
             </div>
         {% endif %}
-        <div class="storage-container">
+
+            <div class="storage-container">
+
 
             <!-- Main form card -->
             <div class="form-card">
@@ -73,6 +76,11 @@
                     </h2>
                 </div>
 
+                <div class="form-instruction">
+                    <h5><i class="fas fa-info-circle"></i> Comment utiliser ce formulaire</h5>
+                    <p>Ce formulaire vous permet de créer une nouvelle fiche de stockage dans la base de données. Les champs
+                        marqués d'un astérisque (*) sont obligatoires.</p>
+                </div>
                 <div class="card-content">
                     {{ form_start(form, {'attr': {'id': 'storage-form', 'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
 
@@ -319,7 +327,7 @@
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <div class="file-prompt">
                                     <p>Déposez votre fichier PDF ici ou cliquez pour parcourir</p>
-                                    <p class="text-muted">Taille maximale: 1 Mo</p>
+                                    <p class="text-muted">Taille maximale: 3 Mo</p>
                                 </div>
                                 <div class="file-selected">
                                     Fichier sélectionné: <span class="file-name"></span>
@@ -336,7 +344,7 @@
                                 <i class="fas fa-cloud-upload-alt"></i>
                                 <div class="file-prompt">
                                     <p>Déposez votre fichier PDF ici ou cliquez pour parcourir</p>
-                                    <p class="text-muted">Taille maximale: 1 Mo</p>
+                                    <p class="text-muted">Taille maximale: 3 Mo</p>
                                 </div>
                                 <div class="file-selected">
                                     Fichier sélectionné: <span class="file-name"></span>
