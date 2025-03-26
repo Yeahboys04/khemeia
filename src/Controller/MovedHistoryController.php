@@ -2,76 +2,82 @@
 
 namespace App\Controller;
 
-use App\Entity\Tracability;
-use App\Entity\Storagecard;
-use App\Entity\Movedhistory;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Routing\Attribute\Route;
+use App\Service\HistoryService;
+use App\Service\SearchService;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Attribute\Route;
 
-class MovedHistoryController extends AbstractController
+class MovedHistoryController extends AbstractSearchController
 {
+    public function __construct(
+        private readonly HistoryService $historyService,
+        SearchService $searchService
+    ) {
+        parent::__construct($searchService);
+    }
+
     #[Route('/history/{id}', name: 'moved_history')]
-    public function movedHistory(Request $request, EntityManagerInterface $entityManager, $id): Response
+    public function movedHistory(int $id): Response
     {
-        //try {
-        //Initialise le repository pour la base de données
-        $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
-        $repositoryMovedHistory = $entityManager->getRepository(Movedhistory::class);
+        try {
+            $storageCard = $this->searchService->findStorageCard($id);
 
-        //Cherche la fiche de stockage
-        $storageCard = $repositoryStoragecard->find($id);
-        $movedHistory = $repositoryMovedHistory->findAllByStoragecard($storageCard->getIdStoragecard());
+            if (!$storageCard) {
+                $this->addFlash('error', 'Fiche de stockage non trouvée.');
+                return $this->redirectToRoute($this->getRedirectRoute());
+            }
 
-        return $this->render('history/movedproduct.html.twig', [
-            'id' => $id,
-            'storageCard' => $storageCard,
-            'movedHistory' => $movedHistory
-        ]);
-        //}
-        // S'il y a tout autre exception
-        // catch (\Exception $e) {
-        //     $this->addFlash('error',
-        //         'Attention, une erreur est survenue.'
-        //         .' Contactez votre administrateur.');
-        //     //on redirige vers la page d'accueil
-        //     return $this->redirectToRoute('home_page');
-        // }
-        return $this->render('history/movedproduct.html.twig', [
-            'id' => $id,
-        ]);
+            $movedHistory = $this->historyService->getMovedHistory($storageCard->getIdStoragecard());
+
+            return $this->render('history/movedproduct.html.twig', [
+                'id' => $id,
+                'storageCard' => $storageCard,
+                'movedHistory' => $movedHistory
+            ]);
+        } catch (\Exception $e) {
+            return $this->handleException($e, $this->getRedirectRoute());
+        }
     }
 
     #[Route('/history/user/{id}', name: 'tracability_history')]
-    public function userHistory(Request $request, EntityManagerInterface $entityManager, $id): Response
+    public function userHistory(int $id): Response
     {
-        //try {
-        //Initialise le repository pour la base de données
-        $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
-        $repositoryTracability = $entityManager->getRepository(Tracability::class);
+        try {
+            $storageCard = $this->searchService->findStorageCard($id);
 
-        //Cherche la fiche de stockage
-        $storageCard = $repositoryStoragecard->find($id);
-        $tracability = $repositoryTracability->findAllByStoragecard($storageCard->getIdStoragecard());
+            if (!$storageCard) {
+                $this->addFlash('error', 'Fiche de stockage non trouvée.');
+                return $this->redirectToRoute($this->getRedirectRoute());
+            }
 
-        return $this->render('history/productuser.html.twig', [
-            'id' => $id,
-            'storageCard' => $storageCard,
-            'tracability' => $tracability
-        ]);
-        //}
-        // S'il y a tout autre exception
-        // catch (\Exception $e) {
-        //     $this->addFlash('error',
-        //         'Attention, une erreur est survenue.'
-        //         .' Contactez votre administrateur.');
-        //     //on redirige vers la page d'accueil
-        //     return $this->redirectToRoute('home_page');
-        // }
-        return $this->render('history/movedproduct.html.twig', [
-            'id' => $id,
-        ]);
+            $tracability = $this->historyService->getUserHistory($storageCard->getIdStoragecard());
+
+            return $this->render('history/productuser.html.twig', [
+                'id' => $id,
+                'storageCard' => $storageCard,
+                'tracability' => $tracability
+            ]);
+        } catch (\Exception $e) {
+            return $this->handleException($e, $this->getRedirectRoute());
+        }
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getTemplate(): string
+    {
+        // Ce contrôleur n'utilise pas directement le template de recherche
+        // mais c'est nécessaire pour l'interface
+        return 'history/movedproduct.html.twig';
+    }
+
+    /**
+     * {@inheritdoc}
+     */
+    protected function getRedirectRoute(): string
+    {
+        return 'home_page';
     }
 }

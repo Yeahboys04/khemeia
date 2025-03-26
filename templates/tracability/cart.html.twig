@@ -21,7 +21,7 @@
                         <div class="search-all-field">
                             <label class="main-label"><i class="fa fa-building"></i> Chercher sur tous les sites</label>
                             <div class="radio-toggle">
-                                {% for choice in formStoragecard.searchAll %}
+                                {% for choice in form.searchAll %}
                                     <label class="modern-radio-item">
                                         {{ form_widget(choice) }}
                                         <span class="checkmark"></span>
@@ -35,7 +35,7 @@
                     <div class="col-md-6">
                         <div class="form-group site-field" id="site-field">
                             <label><i class="fa fa-building"></i> Site</label>
-                            {{ form_widget(formStoragecard.idSite, {'attr': {
+                            {{ form_widget(form.idSite, {'attr': {
                                 'class': 'form-control select2',
                                 'style': 'width: 100%;',
                                 'data-placeholder': 'Sélectionnez un site'
@@ -47,7 +47,7 @@
                         <div class="form-group">
                             <label><i class="fa fa-search"></i> Type de recherche</label>
                             <div class="modern-radio">
-                                {% for choice in formStoragecard.searchType %}
+                                {% for choice in form.searchType %}
                                     <label class="modern-radio-item">
                                         {{ form_widget(choice) }}
                                         <span class="checkmark"></span>
@@ -61,7 +61,7 @@
 
                 <div class="form-group product-search-field">
                     <label><i class="fa fa-flask"></i> Nom du produit</label>
-                    {{ form_widget(formStoragecard.idChimicalproduct, {'attr': {
+                    {{ form_widget(form.idChimicalproduct, {'attr': {
                         'class': 'form-control select2',
                         'style': 'width: 100%;',
                         'required': 'required',
@@ -71,7 +71,7 @@
 
                 <div class="form-group cas-search-field" style="display: none;">
                     <label><i class="fa fa-barcode"></i> Numéro CAS</label>
-                    {{ form_widget(formStoragecard.casSearch, {'attr': {
+                    {{ form_widget(form.casSearch, {'attr': {
                         'class': 'form-control select2',
                         'style': 'width: 100%;',
                         'required': 'required',
@@ -79,7 +79,7 @@
                     }}) }}
                 </div>
 
-                {{ form_rest(formStoragecard) }}
+                {{ form_rest(form) }}
 
                 <div class="form-group">
                     <button type="submit" class="btn search-btn">
