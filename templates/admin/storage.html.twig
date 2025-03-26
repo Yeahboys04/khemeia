@@ -9,7 +9,7 @@
 {% endblock %}
 
 {% block title %}
-    Khemeia | {% if action == 'create' %}Création{% elseif action == 'modify' %}Modification{% elseif action == 'remove' %}Suppression{% endif %} d'une fiche de stockage
+    Khemeia | {% if action == 'create' %}Création{% elseif action == 'modify' %}Modification{% elseif action == 'remove' %}Suppression{% elseif action == 'duplicate' %}Duplication{% endif %} d'une fiche de stockage
 {% endblock %}
 
 {% block body %}
@@ -42,6 +42,8 @@
                         <form id="storage-form" role="form" action="{{ path('admin_storage_modify', {id: id}) }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
                             {% elseif action == 'remove' %}
                             <form id="storage-form" role="form" action="{{ path('admin_storage_remove', {id: id}) }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
+                                {% elseif action == 'duplicate' %}
+                                    <form id="storage-form" role="form" action="{{ path('admin_storage_duplicate', {id: id}) }}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
                                 {% else %}
                                 <form id="storage-form" role="form" action="{{ path('admin_storage')}}" method="post" enctype="multipart/form-data" class="needs-validation" novalidate="novalidate">
                                     {% endif %}
@@ -351,10 +353,34 @@
 
                                     {{ form_rest(form) }}
 
+                                    {% if show_override is defined and show_override %}
+                                        <div class="form-group override-section"
+                                             {% if incompatibility_detected is defined and incompatibility_detected %}style="background-color: #fff3cd; padding: 15px; margin: 15px 0; border-radius: 5px; border: 1px solid #ffeeba;"{% endif %}>
+                                            <div class="col-sm-offset-2 col-sm-10">
+                                                <div class="checkbox">
+                                                    <label>
+                                                        <input type="checkbox" name="override_incompatibility" value="1"
+                                                               id="override_incompatibility"
+                                                               {% if incompatibility_detected is defined and incompatibility_detected %}checked="checked"{% endif %}>
+                                                        <strong>Contourner les alertes d'incompatibilité (administrateur
+                                                            uniquement)</strong>
+                                                    </label>
+                                                </div>
+                                                {% if incompatibility_detected is defined and incompatibility_detected %}
+                                                    <div class="alert alert-warning mt-2">
+                                                        <i class="fa fa-exclamation-triangle"></i> Une incompatibilité a été détectée.
+                                                        En tant qu'administrateur, vous pouvez choisir de l'ignorer en cochant la case
+                                                        ci-dessus.
+                                                    </div>
+                                                {% endif %}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+
                                     <div class="form-footer">
                                         {% if action == 'create' %}
-                                            <button type="submit" class="btn btn-warning btn-lg">
-                                                <i class="fas fa-save"></i> Ajouter
+                                            <button type="submit" class="btn btn-primary btn-lg">
+                                                <i class="fas fa-save"></i> Créer la fiche
                                             </button>
                                         {% elseif action == 'modify' %}
                                             <button type="submit" class="btn btn-success btn-lg">
@@ -363,6 +389,10 @@
                                         {% elseif action == 'remove' %}
                                             <button type="button" class="btn btn-danger btn-lg" data-toggle="modal" data-target="#modal-default">
                                                 <i class="fas fa-trash"></i> Supprimer
+                                            </button>
+                                        {% elseif action == 'duplicate' %}
+                                            <button type="submit" class="btn btn-info btn-lg">
+                                                <i class="fas fa-trash"></i> Dupliquer
                                             </button>
                                         {% endif %}
                                     </div>

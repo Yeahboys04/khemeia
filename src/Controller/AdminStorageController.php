@@ -183,7 +183,38 @@ class AdminStorageController extends AbstractController
                     $idShelvingunit = $form->get('idShelvingunit')->getData();
                     $chimicalproduct = $form->get('idChimicalproduct')->getData();
 
-                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager);
+                    // Récupérer l'option d'override (pour les admins)
+                    $overrideCheck = false;
+                    if ($request->request->has('override_incompatibility')) {
+                        $overrideCheck = ($request->request->get('override_incompatibility') === "1");
+                    }
+
+                    try {
+                        // Vérifier la compatibilité avec l'option de dérogation pour les admins
+                        $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, (bool)$overrideCheck);
+                    } catch (LogicException $le) {
+                        // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
+                        if (!$this->isGranted('ROLE_ADMIN')) {
+                            // Rediriger vers le formulaire de demande de dérogation
+                            return $this->redirectToRoute('incompatibility_request', [
+                                'productId' => $chimicalproduct->getIdChimicalproduct(),
+                                'shelvingUnitId' => $idShelvingunit->getIdShelvingunit()
+                            ]);
+                        }
+                        // Si c'est un admin mais qu'il n'a pas coché l'option de dérogation
+                        else {
+                            // Afficher le message d'erreur et renvoyer au formulaire avec l'option de dérogation
+                            $this->addFlash('warning', $le->getMessage() . ' En tant qu\'administrateur, vous pouvez contourner cette restriction en cochant l\'option de dérogation.');
+                            return $this->render('admin/storage.html.twig', [
+                                'form' => $form->createView(),
+                                'action' => 'modify',
+                                'storagecards' => $storagecards,
+                                'id' => $id,
+                                'show_override' => true,
+                                'incompatibility_detected' => true
+                            ]);
+                        }
+                    }
 
                     $securityFile = $form->get('uploadedSecurityFile')->getData();
                     $analysisFile = $form->get('uploadedAnalysisFile')->getData();
@@ -254,7 +285,9 @@ class AdminStorageController extends AbstractController
                 'form' => $form->createView(),
                 'action' => 'modify',
                 'storagecards' => $storagecards,
-                'id' => $id
+                'id' => $id,
+                'show_override' => true,
+                'incompatibility_detected' => true
             ]);
         }
         catch (FileException $e) {
@@ -273,9 +306,12 @@ class AdminStorageController extends AbstractController
             'form' => $form->createView(),
             'action' => 'modify',
             'storagecards' => $storagecards,
-            'id' => $id
+            'id' => $id,
+            'show_override' => $this->isGranted('ROLE_ADMIN'),
+            'incompatibility_detected' => false
         ]);
     }
+
 
     /**
      * Dupliquer une fiche de stockage via un formulaire
@@ -350,16 +386,47 @@ class AdminStorageController extends AbstractController
                 $idShelvingunit = $form->get('idShelvingunit')->getData();
                 $chimicalproduct = $form->get('idChimicalproduct')->getData();
 
-                $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager);
+                // Récupérer l'option d'override (pour les admins)
+                $overrideCheck = false;
+                if ($request->request->has('override_incompatibility')) {
+                    $overrideCheck = ($request->request->get('override_incompatibility') === "1");
+                }
 
-                // Traitement des fichiers comme dans la méthode index (création)
+                try {
+                    // Vérifier la compatibilité avec l'option de dérogation pour les admins
+                    $utility->movedIsAuthorised($idShelvingunit, $chimicalproduct, $entityManager, (bool)$overrideCheck);
+                } catch (LogicException $le) {
+                    // Si une incompatibilité est détectée et que l'utilisateur n'est pas admin
+                    if (!$this->isGranted('ROLE_ADMIN')) {
+                        // Rediriger vers le formulaire de demande de dérogation
+                        return $this->redirectToRoute('incompatibility_request', [
+                            'productId' => $chimicalproduct->getIdChimicalproduct(),
+                            'shelvingUnitId' => $idShelvingunit->getIdShelvingunit()
+                        ]);
+                    }
+                    // Si c'est un admin mais qu'il n'a pas coché l'option de dérogation
+                    else {
+                        // Afficher le message d'erreur et renvoyer au formulaire avec l'option de dérogation
+                        $this->addFlash('warning', $le->getMessage() . ' En tant qu\'administrateur, vous pouvez contourner cette restriction en cochant l\'option de dérogation.');
+                        return $this->render('admin/storage.html.twig', [
+                            'form' => $form->createView(),
+                            'action' => 'duplicate',
+                            'storagecards' => $storagecards,
+                            'id' => $id,
+                            'show_override' => true,
+                            'incompatibility_detected' => true
+                        ]);
+                    }
+                }
+
                 $securityFile = $form->get('uploadedSecurityFile')->getData();
                 $analysisFile = $form->get('uploadedAnalysisFile')->getData();
 
                 if ($securityFile != null) {
-                    $newSecurityFileName = $fileUploader->upload(
-                        $securityFile,
-                        $this->getParameter('idSecurityFile_directory'));
+                    $newSecurityFileName =
+                        $fileUploader->upload(
+                            $securityFile,
+                            $this->getParameter('idSecurityFile_directory'));
 
                     $securityfile = new Securityfile();
                     $securityfile->setNameSecurityfile($newSecurityFileName);
@@ -372,9 +439,10 @@ class AdminStorageController extends AbstractController
                 }
 
                 if ($analysisFile != null) {
-                    $newAnalysisFileName = $fileUploader->upload(
-                        $analysisFile,
-                        $this->getParameter('idAnalysisFile_directory'));
+                    $newAnalysisFileName =
+                        $fileUploader->upload(
+                            $analysisFile,
+                            $this->getParameter('idAnalysisFile_directory'));
 
                     $analysisFile = new Analysisfile();
                     $analysisFile->setNameAnalysisfile($newAnalysisFileName);
@@ -410,7 +478,9 @@ class AdminStorageController extends AbstractController
                 'form' => $form->createView(),
                 'action' => 'duplicate',
                 'storagecards' => $storagecards,
-                'id' => $id
+                'id' => $id,
+                'show_override' => true,
+                'incompatibility_detected' => true
             ]);
         }
         catch (FileException $e) {
@@ -432,9 +502,11 @@ class AdminStorageController extends AbstractController
             'action' => 'duplicate',
             'storagecards' => $storagecards,
             'id' => $id,
-            'originalStoragecard' => $originalStoragecard // Pour référence si nécessaire
+            'show_override' => $this->isGranted('ROLE_ADMIN'),
+            'incompatibility_detected' => false
         ]);
     }
+
 
     /**
      * Supprimer une fiche de stockage

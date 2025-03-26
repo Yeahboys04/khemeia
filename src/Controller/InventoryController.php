@@ -317,6 +317,7 @@ class InventoryController extends AbstractController
             $repositoryStoragecard = $entityManager->getRepository(Storagecard::class);
 
             $storagecard = $repositoryStoragecard->find($id);
+
             $oldSecurityFile = $storagecard->getIdSecurityfile();
             $oldAnalysisFile = $storagecard->getIdAnalysisfile();
 
@@ -353,7 +354,6 @@ class InventoryController extends AbstractController
                 // Définir la date de création
                 $newStoragecard->setCreationDate(new \DateTime());
 
-                // Récupérer l'état physique directement à partir des données soumises
                 // Récupérer l'état physique directement à partir des données soumises
                 if ($form->has('stateType')) {
                     $stateType = $form->get('stateType')->getData();
