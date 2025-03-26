@@ -1,20 +1,19 @@
-// assets/js/tom-select-multiselect.js
+// assets/js/chemical-product-tom-select.js
 import TomSelect from 'tom-select';
 import 'tom-select/dist/css/tom-select.bootstrap4.min.css';
 import '../styles/components/tom-select-multiselect.scss';
+import '../styles/pages/product.scss';
 
-// Fonction qui s'assurera que le DOM est chargé et que TomSelect est disponible
+// Fonction principale d'initialisation de TomSelect
 function initializeTomSelect() {
-    // Vérifier si TomSelect est disponible
     if (typeof TomSelect === 'undefined') {
         console.error("TomSelect n'est pas disponible. Assurez-vous que la bibliothèque est chargée.");
         return;
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-        // Ajoutons un délai pour s'assurer que tous les éléments sont bien chargés et disponibles
         setTimeout(function() {
-            // Ajout d'indications visuelles aux champs de sélection multiples
+            // Initialisation des sélecteurs multiples avec des symboles de danger, etc.
             const multiSelects = [
                 '#chimicalproduct_idDangersymbol',
                 '#chimicalproduct_idDangernote',
@@ -26,7 +25,7 @@ function initializeTomSelect() {
                 const selectElement = document.querySelector(selectId);
                 if (!selectElement) return;
 
-                // Ajouter une classe pour indiquer que c'est un sélecteur multiple
+                // Ajout d'indications visuelles
                 const formGroup = selectElement.closest('.form-group');
                 if (formGroup) {
                     formGroup.classList.add('multiple-select-group');
@@ -36,7 +35,6 @@ function initializeTomSelect() {
                     if (label && !label.querySelector('.multiple-indicator')) {
                         const indicator = document.createElement('span');
                         indicator.className = 'multiple-indicator';
-
                         label.appendChild(indicator);
                     }
 
@@ -71,7 +69,7 @@ function initializeTomSelect() {
                 }
             });
 
-            // Créer le plugin personnalisé pour le comportement des checkboxes
+            // Plugin personnalisé pour le comportement des checkboxes
             TomSelect.define('checkbox_options', function() {
                 return {
                     setup: function() {
@@ -80,15 +78,12 @@ function initializeTomSelect() {
                         // Gérer les clics sur les options
                         this.hook('after', 'setupTemplates', function() {
                             self.on('click', '.option-container', function(evt) {
-                                // Empêcher la fermeture du dropdown
                                 evt.stopPropagation();
                                 evt.preventDefault();
 
-                                // Récupérer la valeur de l'option
                                 const value = this.getAttribute('data-value');
                                 const checkbox = this.querySelector('input[type="checkbox"]');
 
-                                // Inverser l'état de sélection
                                 if (self.items.includes(value)) {
                                     self.removeItem(value);
                                     if (checkbox) checkbox.checked = false;
@@ -115,13 +110,12 @@ function initializeTomSelect() {
                             }, 10);
                         });
 
-                        // Mettre à jour l'état des checkboxes lors de l'ajout d'un élément
+                        // Mettre à jour l'état des checkboxes lors de l'ajout/suppression d'éléments
                         this.on('item_add', function(value) {
                             const checkbox = self.dropdown.querySelector(`.option-container[data-value="${CSS.escape(value)}"] input[type="checkbox"]`);
                             if (checkbox) checkbox.checked = true;
                         });
 
-                        // Mettre à jour l'état des checkboxes lors de la suppression d'un élément
                         this.on('item_remove', function(value) {
                             const checkbox = self.dropdown.querySelector(`.option-container[data-value="${CSS.escape(value)}"] input[type="checkbox"]`);
                             if (checkbox) checkbox.checked = false;
@@ -130,16 +124,15 @@ function initializeTomSelect() {
                 };
             });
 
-            // Pour les autres champs Tom Select standards (non multiples)
-            // Version plus sûre: sélectionner explicitement les éléments select qui ont la classe tom-select
+            // Initialisation des autres champs Tom Select standards
             const standardSelectElements = document.querySelectorAll('select.tom-select:not(#chimicalproduct_idDangersymbol):not(#chimicalproduct_idDangernote):not(#chimicalproduct_idCautionaryadvice):not(#chimicalproduct_idType)');
 
             standardSelectElements.forEach(function(element) {
-                // Vérifier si l'élément existe et n'a pas déjà été initialisé par TomSelect
                 if (element && !element.tomselect) {
                     try {
                         new TomSelect(element, {
                             plugins: ['remove_button'],
+                            create: false,
                             placeholder: element.dataset.placeholder || 'Sélectionnez...',
                             allowEmptyOption: true
                         });
@@ -149,37 +142,215 @@ function initializeTomSelect() {
                 }
             });
 
-            // Fonctionnalité pour la gestion des produits CMR
+            // Initialisation du champ de recherche de produit
+            const productNameField = document.querySelector('#chimicalproduct_nameChimicalproduct');
+
+            if (productNameField) {
+                const formulaField = document.querySelector('#chimicalproduct_formula');
+                const casNumberField = document.querySelector('#chimicalproduct_casnumber');
+
+                let productExists = false;
+                let warningElement = null;
+
+                // Création de l'élément d'avertissement
+                function createWarning() {
+                    if (!warningElement) {
+                        warningElement = document.createElement('div');
+                        warningElement.className = 'alert alert-warning mt-2';
+                        warningElement.style.display = 'none';
+                        warningElement.innerHTML = 'Ce produit existe déjà dans la base de données.';
+                        productNameField.parentNode.appendChild(warningElement);
+                    }
+                }
+
+                createWarning();
+
+                // Stocker la valeur originale avant l'ouverture du dropdown
+                let originalValue = '';
+
+                // Initialiser Tom Select pour le champ de nom de produit
+                const tomSelect = new TomSelect(productNameField, {
+                    valueField: 'text',
+                    labelField: 'text',
+                    searchField: ['text'],
+                    create: true,
+                    maxItems: 1,
+                    closeAfterSelect: true,
+                    hideSelected: true,
+
+                    // Configuration pour les suggestions
+                    load: function(query, callback) {
+                        if (!query.length || query.length < 2) return callback();
+
+                        fetch(`/api/search/products?q=${encodeURIComponent(query)}`)
+                            .then(response => response.json())
+                            .then(json => {
+                                callback(json);
+                            })
+                            .catch(() => {
+                                callback();
+                            });
+                    },
+
+                    onFocus: function() {
+                        originalValue = this.items[0] || '';
+                    },
+
+                    onType: function(str) {
+                        if (warningElement) {
+                            warningElement.style.display = 'none';
+                        }
+                        productExists = false;
+                        originalValue = str;
+                    },
+
+                    onDropdownOpen: function(dropdown) {
+                        this.setActiveOption(null);
+                    },
+
+                    onChange: function(value) {
+                        if (!value) return;
+
+                        const selectedOption = this.options[value];
+
+                        if (selectedOption && selectedOption.exists) {
+                            productExists = true;
+
+                            if (warningElement) {
+                                warningElement.style.display = 'block';
+                            }
+
+                            if (formulaField && selectedOption.formula) {
+                                formulaField.value = selectedOption.formula;
+                            }
+
+                            if (casNumberField && selectedOption.casnumber) {
+                                casNumberField.value = selectedOption.casnumber;
+                            }
+                        } else {
+                            productExists = false;
+
+                            if (warningElement) {
+                                warningElement.style.display = 'none';
+                            }
+
+                            if (formulaField) {
+                                formulaField.value = '';
+                            }
+
+                            if (casNumberField) {
+                                casNumberField.value = '';
+                            }
+                        }
+                    },
+
+                    render: {
+                        option: function(item, escape) {
+                            return `<div class="py-2 px-3">
+                                <div class="mb-1 font-weight-bold">${escape(item.text)}</div>
+                                ${item.formula ? `<div class="small">${escape(item.formula)}</div>` : ''}
+                                ${item.casnumber ? `<div class="small text-muted">CAS: ${escape(item.casnumber)}</div>` : ''}
+                            </div>`;
+                        },
+                        item: function(item, escape) {
+                            return `<div>${escape(item.text)}</div>`;
+                        }
+                    }
+                });
+
+                // Gestion de la touche Entrée
+                tomSelect.control_input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' && tomSelect.isOpen) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        tomSelect.close();
+
+                        const inputValue = tomSelect.control_input.value || originalValue;
+                        let foundExact = false;
+                        let exactOption = null;
+
+                        for (const key in tomSelect.options) {
+                            const option = tomSelect.options[key];
+                            if (option.text.toLowerCase() === inputValue.toLowerCase()) {
+                                foundExact = true;
+                                exactOption = option;
+                                break;
+                            }
+                        }
+
+                        if (foundExact && exactOption) {
+                            tomSelect.clear();
+                            tomSelect.addItem(exactOption.text);
+
+                            productExists = true;
+                            if (warningElement) {
+                                warningElement.style.display = 'block';
+                            }
+
+                            if (formulaField && exactOption.formula) {
+                                formulaField.value = exactOption.formula;
+                            }
+
+                            if (casNumberField && exactOption.casnumber) {
+                                casNumberField.value = exactOption.casnumber;
+                            }
+                        } else if (inputValue) {
+                            tomSelect.clear();
+                            tomSelect.createItem(inputValue, true);
+                        }
+
+                        if (formulaField) {
+                            formulaField.focus();
+                        }
+                    }
+                }, true);
+
+                // Vérification de la soumission du formulaire
+                const form = productNameField.closest('form');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        if (!tomSelect.items.length && originalValue) {
+                            tomSelect.createItem(originalValue, true);
+                        }
+
+                        if (productExists) {
+                            if (!confirm('Ce produit existe déjà dans la base de données. Voulez-vous vraiment créer un doublon?')) {
+                                e.preventDefault();
+                            }
+                        }
+                    });
+                }
+            }
+
+            // Configuration des produits CMR
             setupCMRAutoSelection();
-        }, 100); // Petit délai pour s'assurer que le DOM est complètement chargé
+        }, 100);
     });
 }
 
+// Fonction pour la gestion des produits CMR
 function setupCMRAutoSelection() {
-    // Déclaration des variables en dehors du bloc try pour qu'elles soient accessibles partout
-    let cmrRadios, dangerSymbolSelect, productTypeSelect, dangerSymbolTomSelect, productTypeTomSelect;
-
     try {
         // Récupérer les éléments radio pour CMR
-        cmrRadios = document.querySelectorAll('input[name="chimicalproduct[iscmr]"]');
+        const cmrRadios = document.querySelectorAll('input[name="chimicalproduct[iscmr]"]');
 
         // Récupérer les sélecteurs pour les symboles de danger et types de produit
-        dangerSymbolSelect = document.querySelector('#chimicalproduct_idDangersymbol');
-        productTypeSelect = document.querySelector('#chimicalproduct_idType');
+        const dangerSymbolSelect = document.querySelector('#chimicalproduct_idDangersymbol');
+        const productTypeSelect = document.querySelector('#chimicalproduct_idType');
 
         // Vérifier que tous les éléments nécessaires sont présents
         if (!cmrRadios.length || !dangerSymbolSelect || !productTypeSelect) {
-            console.warn("Éléments du formulaire manquants pour la configuration CMR - vérifiez les IDs des éléments");
+            console.warn("Éléments du formulaire manquants pour la configuration CMR");
             return;
         }
 
         // Récupérer les instances Tom Select
-        dangerSymbolTomSelect = dangerSymbolSelect.tomselect;
-        productTypeTomSelect = productTypeSelect.tomselect;
+        const dangerSymbolTomSelect = dangerSymbolSelect.tomselect;
+        const productTypeTomSelect = productTypeSelect.tomselect;
 
         // S'assurer que les instances Tom Select sont disponibles
         if (!dangerSymbolTomSelect || !productTypeTomSelect) {
-            console.warn("Instances Tom Select non disponibles - assurez-vous que TomSelect a été initialisé correctement sur ces éléments");
+            console.warn("Instances Tom Select non disponibles");
             return;
         }
 
